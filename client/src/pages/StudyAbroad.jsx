@@ -187,7 +187,7 @@ export default function StudyAbroad() {
   const progressRef = useRef(null);
   const tickRef = useRef(0);
 
-  const SLIDE_DURATION = 3000;
+  const SLIDE_DURATION = 6000;
   const TOTAL_TICKS = SLIDE_DURATION / 50;
 
   const goTo = (i) => { setSlide(i); setProgress(0); };
