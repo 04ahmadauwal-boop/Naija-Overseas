@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
@@ -34,24 +34,24 @@ const HOW_IT_WORKS = [
   {
     step: '02',
     title: 'Compare Side by Side',
-    desc: 'Select up to 3 schools and view a detailed side-by-side comparison — fees, facilities, curriculum, contact info and more.',
+    desc: 'Select up to 3 schools and view a detailed side-by-side comparison â€” fees, facilities, curriculum, contact info and more.',
     icon: BarChart3,
   },
   {
     step: '03',
     title: 'Make Your Decision',
-    desc: 'Book a consultation, contact the school directly, or apply for study abroad placement — all in one place.',
+    desc: 'Book a consultation, contact the school directly, or apply for study abroad placement â€” all in one place.',
     icon: CheckCircle,
   },
 ];
 
 const FEATURES = [
-  { icon: BarChart3, title: 'Smart Comparison Tool', desc: 'Compare multiple schools across 10+ criteria. No guesswork — just clear, structured data to help you decide.' },
+  { icon: BarChart3, title: 'Smart Comparison Tool', desc: 'Compare multiple schools across 10+ criteria. No guesswork â€” just clear, structured data to help you decide.' },
   { icon: Globe, title: 'Study Abroad Placement', desc: 'Expert guidance for Nigerian students seeking admission in universities across UK, Canada, USA, Australia and Europe.' },
   { icon: Shield, title: 'Verified School Listings', desc: 'Every school on our platform is reviewed and verified by our team before it goes live. No fake or outdated listings.' },
-  { icon: Zap, title: 'Instant Results', desc: 'Real-time search with live filters. Find schools matching your criteria in seconds — not hours of browsing.' },
+  { icon: Zap, title: 'Instant Results', desc: 'Real-time search with live filters. Find schools matching your criteria in seconds â€” not hours of browsing.' },
   { icon: Users, title: 'Multi-Country Coverage', desc: 'Serving students and families across Nigeria, Ghana, The Gambia and Cameroon with locally relevant information.' },
-  { icon: Award, title: 'Admission Support', desc: 'From school selection to international visa guidance — our counsellors are with you at every step of the journey.' },
+  { icon: Award, title: 'Admission Support', desc: 'From school selection to international visa guidance â€” our counsellors are with you at every step of the journey.' },
 ];
 
 const TESTIMONIALS = [
@@ -66,7 +66,7 @@ const TESTIMONIALS = [
   {
     name: 'Chukwuemeka Obi',
     role: 'Student, Lagos',
-    text: 'Their study abroad team helped me secure admission to a university in Canada in just 3 months. They handled everything — application, visa, pre-departure briefing. I highly recommend them.',
+    text: 'Their study abroad team helped me secure admission to a university in Canada in just 3 months. They handled everything â€” application, visa, pre-departure briefing. I highly recommend them.',
     rating: 5,
     initials: 'CO',
     color: 'bg-blue-600',
@@ -96,7 +96,7 @@ const FAQS = [
   },
   {
     q: 'How do I list my school on the platform?',
-    a: 'Click "List Your School" in the menu. Fill in your school details through our 3-step form, pay the one-time listing fee of ₦15,000, and your listing will be reviewed and published within 24–48 hours.',
+    a: 'Click "List Your School" in the menu. Fill in your school details through our 3-step form, pay the one-time listing fee of â‚¦15,000, and your listing will be reviewed and published within 24â€“48 hours.',
   },
   {
     q: 'Which countries do you cover for study abroad placements?',
@@ -228,7 +228,7 @@ export default function Home() {
   return (
     <div className="overflow-x-hidden">
 
-      {/* ── HERO ─────────────────────────────────────────────────── */}
+      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative pt-10 pb-32 px-4 overflow-hidden min-h-160 flex items-center">
         {/* Background image */}
         <div
@@ -247,14 +247,14 @@ export default function Home() {
               Trusted by 10,000+ families across West Africa
             </div>
 
-            <h1 className="text-5xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.06] mb-6 drop-shadow-lg">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.06] mb-6 drop-shadow-lg">
               Find the perfect<br />
               school for your child.<br />
               <span className="text-green-400">Compare &amp; decide.</span>
             </h1>
 
             <p className="text-white/75 text-lg md:text-sl max-w-xxl mb-5 leading-relaxed">
-              Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools, then get expert study abroad guidance.
+              Nigeria's smartest school discovery platform â€” search, filter and compare hundreds of verified schools, then get expert study abroad guidance.
             </p>
           </div>
 
@@ -281,7 +281,7 @@ export default function Home() {
               <button
                 onClick={() => { setFilters({ ...filters, search: heroQuery }); fetchSchools(1); setShowDropdown(false); }}
                 className="bg-green-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap">
-                Search →
+                Search â†’
               </button>
             </div>
 
@@ -308,12 +308,12 @@ export default function Home() {
                           <div className="flex-1 min-w-0 text-left">
                             <p className="font-semibold text-gray-900 text-sm truncate">{s.name}</p>
                             <p className="text-xs text-gray-400 truncate">
-                              {[s.city, s.state].filter(Boolean).join(', ')} · <span className="capitalize">{s.type}</span>
+                              {[s.city, s.state].filter(Boolean).join(', ')} Â· <span className="capitalize">{s.type}</span>
                             </p>
                           </div>
                           {s.fees?.tuition && (
                             <span className="text-xs font-semibold text-green-700 shrink-0">
-                              ₦{Number(s.fees.tuition).toLocaleString()}/yr
+                              â‚¦{Number(s.fees.tuition).toLocaleString()}/yr
                             </span>
                           )}
                         </Link>
@@ -323,7 +323,7 @@ export default function Home() {
                       <button
                         onClick={() => { setFilters({ ...filters, search: heroQuery }); fetchSchools(1); setShowDropdown(false); }}
                         className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
-                        View all results for "{heroQuery}" →
+                        View all results for "{heroQuery}" â†’
                       </button>
                     </li>
                   </ul>
@@ -347,12 +347,12 @@ export default function Home() {
           <div className="mt-3">
             <Link to="/study-abroad"
               className="inline-flex items-center gap-2 text-white/70 text-sm hover:text-white transition underline underline-offset-4 decoration-white/30">
-              <ArrowRight size={14} /> Want to study abroad? Talk to our counsellors →
+              <ArrowRight size={14} /> Want to study abroad? Talk to our counsellors â†’
             </Link>
           </div>
         </div>
 
-        {/* Floating stat chips — bottom right of hero */}
+        {/* Floating stat chips â€” bottom right of hero */}
         <div className="absolute bottom-8 right-8 hidden lg:flex flex-row gap-3">
           {[
             { n: '500+', l: 'Schools Listed' },
@@ -367,7 +367,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STATS ─────────────────────────────────────────────────── */}
+      {/* â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="border-y border-gray-100 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
           {STATS.map(({ value, label }) => (
@@ -379,12 +379,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-white">
+      {/* â”€â”€ HOW IT WORKS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Simple Process</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
               Find your ideal school in 3 steps
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">No more guessing. Our structured comparison process gives you the full picture before you make any decision.</p>
@@ -410,8 +410,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SCHOOL SEARCH SECTION ─────────────────────────────────── */}
-      <section className="bg-gray-50 py-16 px-4">
+      {/* â”€â”€ SCHOOL SEARCH SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="bg-gray-50 py-8 md:py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
@@ -505,7 +505,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── COMPARE STICKY BAR ────────────────────────────────────── */}
+      {/* â”€â”€ COMPARE STICKY BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {selected.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 py-3.5 px-4 flex items-center justify-between shadow-2xl border-t border-gray-700">
           <div className="flex items-center gap-3 flex-wrap">
@@ -517,22 +517,22 @@ export default function Home() {
           <div className="flex gap-2 shrink-0">
             <button onClick={() => setSelected([])} className="text-xs border border-gray-600 px-3.5 py-1.5 rounded-lg hover:bg-gray-700 transition">Clear</button>
             <button onClick={goCompare} className="text-xs bg-green-600 font-semibold px-5 py-1.5 rounded-lg hover:bg-green-500 transition">
-              Compare Now →
+              Compare Now â†’
             </button>
           </div>
         </div>
       )}
 
-      {/* ── FEATURES GRID ─────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-white">
+      {/* â”€â”€ FEATURES GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Why Naija & Overseas</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
               Everything you need to make the right choice
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">
-              Built specifically for West African families — combining local school knowledge with international university expertise.
+              Built specifically for West African families â€” combining local school knowledge with international university expertise.
             </p>
           </div>
 
@@ -550,8 +550,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STUDY ABROAD BANNER ───────────────────────────────────── */}
-      <section className="py-20 px-4 bg-green-700 text-white relative overflow-hidden">
+      {/* â”€â”€ STUDY ABROAD BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-green-700 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_50%,white,transparent_60%)]" />
         <div className="relative max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
@@ -559,11 +559,11 @@ export default function Home() {
               <Globe size={22} className="text-yellow-300" />
               <span className="text-yellow-300 font-semibold text-sm uppercase tracking-wider">Study Abroad</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 max-w-xl">
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight mb-4 max-w-xl">
               Dream of studying in the UK, Canada or USA? We'll get you there.
             </h2>
             <p className="text-green-100 max-w-lg leading-relaxed">
-              Our international admissions team has helped over 2,000 Nigerian students gain university admission abroad — with full visa support and pre-departure briefing.
+              Our international admissions team has helped over 2,000 Nigerian students gain university admission abroad â€” with full visa support and pre-departure briefing.
             </p>
             <ul className="mt-5 space-y-2">
               {['Free initial consultation', 'University shortlisting & application', 'Student visa guidance', 'Scholarship identification'].map((item) => (
@@ -577,19 +577,19 @@ export default function Home() {
           <div className="shrink-0">
             <Link to="/study-abroad"
               className="inline-block bg-yellow-400 text-green-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-yellow-300 transition shadow-lg">
-              Start Your Application →
+              Start Your Application â†’
             </Link>
             <p className="text-green-200 text-xs mt-3 text-center">Free. No commitment required.</p>
           </div>
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-gray-50">
+      {/* â”€â”€ TESTIMONIALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Testimonials</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
               Trusted by families across West Africa
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto">Real stories from parents, students and school owners who used Naija & Overseas.</p>
@@ -619,8 +619,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FOR SCHOOL OWNERS ─────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-white">
+      {/* â”€â”€ FOR SCHOOL OWNERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="bg-gray-900 rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center gap-10">
             <div className="flex-1 text-white">
@@ -637,7 +637,7 @@ export default function Home() {
                 {[
                   ['3x', 'More enquiries on average'],
                   ['24h', 'Approval turnaround'],
-                  ['₦15k', 'One-time listing fee'],
+                  ['â‚¦15k', 'One-time listing fee'],
                   ['10k+', 'Monthly active parents'],
                 ].map(([n, l]) => (
                   <div key={l}>
@@ -648,7 +648,7 @@ export default function Home() {
               </div>
               <Link to="/list-your-school"
                 className="inline-block bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition">
-                List Your School →
+                List Your School â†’
               </Link>
             </div>
             <div className="shrink-0 w-full md:w-72 bg-gray-800 rounded-2xl p-6 border border-gray-700">
@@ -671,12 +671,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FAQ ───────────────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-gray-50">
+      {/* â”€â”€ FAQ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-gray-50">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">FAQ</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
               Frequently asked questions
             </h2>
             <p className="text-gray-500">Can't find your answer? <Link to="/contact" className="text-green-700 hover:underline font-medium">Contact us</Link> and we'll help.</p>
@@ -687,11 +687,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ─────────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-white">
+      {/* â”€â”€ FINAL CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="py-10 md:py-20 px-4 bg-white">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-            Start your school search today — it's free.
+          <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            Start your school search today â€” it's free.
           </h2>
           <p className="text-gray-500 mb-8 text-lg">
             Join over 10,000 families who found their ideal school or university placement through Naija & Overseas.
@@ -699,7 +699,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
               className="bg-green-700 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition text-base shadow-sm">
-              Create Free Account →
+              Create Free Account â†’
             </Link>
             <Link to="/study-abroad"
               className="border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition text-base">
@@ -713,3 +713,4 @@ export default function Home() {
     </div>
   );
 }
+

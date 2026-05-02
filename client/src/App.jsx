@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -22,6 +22,9 @@ import ManageBookings from './pages/admin/ManageBookings';
 import ManageApplications from './pages/admin/ManageApplications';
 import ManageBlog from './pages/admin/ManageBlog';
 import ManageMessages from './pages/admin/ManageMessages';
+import StudentDashboard from './pages/dashboard/StudentDashboard';
+import ParentDashboard from './pages/dashboard/ParentDashboard';
+import SchoolOwnerDashboard from './pages/dashboard/SchoolOwnerDashboard';
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -30,10 +33,21 @@ function AdminRoute({ children }) {
   return children;
 }
 
+function DashboardRoute({ children, role }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-500">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== role) return <Navigate to="/" />;
+  return children;
+}
+
 export default function App() {
+  const location = useLocation();
+  const isShellless = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Navbar />
+      {!isShellless && <Navbar />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -57,10 +71,14 @@ export default function App() {
           <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
           <Route path="/admin/messages" element={<AdminRoute><ManageMessages /></AdminRoute>} />
 
+          <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
+          <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />
+          <Route path="/dashboard/school-owner" element={<DashboardRoute role="school-owner"><SchoolOwnerDashboard /></DashboardRoute>} />
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
-      <Footer />
+      {!isShellless && <Footer />}
     </div>
   );
 }

@@ -1,7 +1,35 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, GraduationCap } from 'lucide-react';
+import {
+  Menu, X, GraduationCap, ChevronRight, LayoutDashboard,
+  BookOpen, Globe, School, Users, Info, Mail, LogOut, User
+} from 'lucide-react';
+
+const NAV_ITEMS = [
+  { to: '/', label: 'Compare Schools', icon: School, end: true },
+  { to: '/study-abroad', label: 'Study Abroad', icon: Globe, end: false },
+  { to: '/list-your-school', label: 'List Your School', icon: BookOpen, end: false },
+  { to: '/blog', label: 'Blog', icon: BookOpen, end: false },
+  { to: '/about', label: 'About', icon: Info, end: false },
+  { to: '/contact', label: 'Contact', icon: Mail, end: false },
+];
+
+function getDashboardLink(role) {
+  if (role === 'admin') return '/admin';
+  if (role === 'student') return '/dashboard/student';
+  if (role === 'parent') return '/dashboard/parent';
+  if (role === 'school-owner') return '/dashboard/school-owner';
+  return '/';
+}
+
+function getDashboardLabel(role) {
+  if (role === 'admin') return 'Admin Panel';
+  if (role === 'student') return 'My Dashboard';
+  if (role === 'parent') return 'My Dashboard';
+  if (role === 'school-owner') return 'School Dashboard';
+  return 'Dashboard';
+}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -20,112 +48,157 @@ export default function Navbar() {
 
   const handleLogout = () => { logout(); navigate('/'); };
 
-  const navItems = [
-    ['/', 'Compare Schools', true],
-    ['/study-abroad', 'Study Abroad', false],
-    ['/list-your-school', 'List Your School', false],
-    ['/blog', 'Blog', false],
-    ['/about', 'About', false],
-    ['/contact', 'Contact', false],
-  ];
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <header className={`bg-white sticky top-0 z-50 transition-shadow duration-200 ${scrolled ? 'shadow-md border-b border-gray-100' : 'border-b border-gray-100'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[68px]">
+    <>
+      <header className={`bg-white sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-lg border-b border-gray-100' : 'border-b border-gray-100'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 md:h-[68px]">
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
-              <GraduationCap className="text-white" size={18} />
-            </div>
-            <span className="font-bold text-gray-900 text-[17px] tracking-tight">
-              Naija<span className="text-green-600">&</span>Overseas
-            </span>
-          </Link>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
+                <GraduationCap className="text-white" size={17} />
+              </div>
+              <span className="font-bold text-gray-900 text-base tracking-tight">
+                Naija<span className="text-green-600">&</span>Overseas
+              </span>
+            </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navItems.map(([to, label, end]) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  `px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
-          </nav>
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-0.5">
+              {NAV_ITEMS.map(({ to, label, end }) => (
+                <NavLink key={to} to={to} end={end}
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                      isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`
+                  }>
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
 
-          {/* Auth */}
-          <div className="hidden lg:flex items-center gap-2 shrink-0">
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Link to="/admin" className="text-sm font-medium text-gray-600 hover:text-green-700 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
-                    Dashboard
+            {/* Desktop Auth */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
+              {user ? (
+                <>
+                  <Link to={getDashboardLink(user.role)}
+                    className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 hover:text-green-700 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
+                    <LayoutDashboard size={14} /> {getDashboardLabel(user.role)}
                   </Link>
-                )}
-                <span className="text-sm text-gray-500 px-2">Hi, {user.name.split(' ')[0]}</span>
-                <button onClick={handleLogout} className="text-sm border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium">
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-sm font-medium text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
-                  Log in
-                </Link>
-                <Link to="/register" className="text-sm font-semibold bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition">
-                  Get started →
-                </Link>
-              </>
-            )}
-          </div>
+                  <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
+                    <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {userInitial}
+                    </div>
+                    <button onClick={handleLogout}
+                      className="text-[13px] border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition font-medium">
+                      Logout
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link to="/login"
+                    className="text-[13px] font-medium text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                    Log in
+                  </Link>
+                  <Link to="/register"
+                    className="text-[13px] font-semibold bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition">
+                    Get started →
+                  </Link>
+                </>
+              )}
+            </div>
 
-          {/* Mobile toggle */}
-          <button className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-50" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+            {/* Mobile hamburger */}
+            <button
+              className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu">
+              <span className={`absolute transition-all duration-300 ${menuOpen ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'}`}>
+                <X size={22} />
+              </span>
+              <span className={`absolute transition-all duration-300 ${menuOpen ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`}>
+                <Menu size={22} />
+              </span>
+            </button>
+          </div>
         </div>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`lg:hidden fixed inset-0 z-40 transition-all duration-300 ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMenuOpen(false)}>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="lg:hidden border-t border-gray-100 bg-white px-4 pb-5 pt-3">
-          <nav className="flex flex-col gap-0.5 mb-4">
-            {navItems.map(([to, label, end]) => (
+      {/* Mobile Slide-down Panel */}
+      <div className={`lg:hidden fixed left-0 right-0 top-16 z-40 transition-all duration-300 ease-in-out ${
+        menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+      }`}>
+        <div className="mx-3 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+
+          {/* User strip (if logged in) */}
+          {user && (
+            <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-700 to-green-600">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0">
+                {userInitial}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-sm leading-tight truncate">{user.name}</p>
+                <p className="text-green-200 text-xs capitalize">{user.role?.replace('-', ' ')}</p>
+              </div>
+              <Link to={getDashboardLink(user.role)}
+                className="flex items-center gap-1 bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/30 shrink-0">
+                <LayoutDashboard size={12} /> Dashboard
+              </Link>
+            </div>
+          )}
+
+          {/* Nav links */}
+          <nav className="p-3 space-y-0.5">
+            {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}
                 className={({ isActive }) =>
-                  `px-3 py-2.5 rounded-lg text-sm font-medium ${isActive ? 'text-green-700 bg-green-50' : 'text-gray-700 hover:bg-gray-50'}`
-                }
-              >
-                {label}
+                  `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${
+                    isActive
+                      ? 'text-green-700 bg-green-50'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`
+                }>
+                <Icon size={17} className="shrink-0 opacity-60" />
+                <span className="flex-1">{label}</span>
+                <ChevronRight size={14} className="text-gray-300" />
               </NavLink>
             ))}
           </nav>
-          <div className="border-t border-gray-100 pt-3 flex flex-col gap-2">
+
+          {/* Auth footer */}
+          <div className="px-3 pb-3 border-t border-gray-100 pt-2">
             {user ? (
-              <>
-                {user.role === 'admin' && <Link to="/admin" className="text-sm font-medium text-green-700 px-3 py-2">Admin Dashboard</Link>}
-                <button onClick={handleLogout} className="text-left text-sm text-gray-600 px-3 py-2">Logout</button>
-              </>
+              <button onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition">
+                <LogOut size={17} />
+                Log out
+              </button>
             ) : (
-              <>
-                <Link to="/login" className="text-sm text-gray-700 px-3 py-2.5 rounded-lg hover:bg-gray-50">Log in</Link>
-                <Link to="/register" className="text-sm font-semibold bg-green-700 text-white px-4 py-2.5 rounded-lg text-center hover:bg-green-800">
-                  Get started →
+              <div className="space-y-2 pt-1">
+                <Link to="/login"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-green-300 hover:text-green-700 transition">
+                  <User size={16} /> Log in
                 </Link>
-              </>
+                <Link to="/register"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-green-700 text-white rounded-xl text-sm font-bold hover:bg-green-800 transition shadow-lg shadow-green-900/20">
+                  Create Free Account →
+                </Link>
+              </div>
             )}
           </div>
         </div>
-      )}
-    </header>
+      </div>
+    </>
   );
 }

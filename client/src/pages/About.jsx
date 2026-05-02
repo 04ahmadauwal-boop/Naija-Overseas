@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Target, Eye, Users, Globe, School, CheckCircle, ArrowRight, BookOpen, Plane } from 'lucide-react';
 
 const STATS = [
@@ -9,8 +9,8 @@ const STATS = [
 ];
 
 const VALUES = [
-  { icon: Target, title: 'Our Mission', color: 'bg-green-100 text-green-700', desc: 'To simplify school discovery and international university admissions for every student and family across West Africa — removing information barriers and levelling the playing field.' },
-  { icon: Eye, title: 'Our Vision', color: 'bg-blue-100 text-blue-700', desc: 'A future where every Nigerian and West African student can access quality education — locally and internationally — without barriers, without confusion, without unnecessary cost.' },
+  { icon: Target, title: 'Our Mission', color: 'bg-green-100 text-green-700', desc: 'To simplify school discovery and international university admissions for every student and family across West Africa â€” removing information barriers and levelling the playing field.' },
+  { icon: Eye, title: 'Our Vision', color: 'bg-blue-100 text-blue-700', desc: 'A future where every Nigerian and West African student can access quality education â€” locally and internationally â€” without barriers, without confusion, without unnecessary cost.' },
   { icon: Users, title: 'Our People', color: 'bg-purple-100 text-purple-700', desc: 'A passionate team of education enthusiasts, tech professionals, and international admissions experts, united by a belief that the right school can change a life.' },
 ];
 
@@ -22,7 +22,7 @@ const MILESTONES = [
 ];
 
 const SERVICES = [
-  { icon: School, title: 'Smart School Comparison', desc: 'Our intelligent tool lets parents and students evaluate schools side by side — fees, facilities, curriculum, and location — before making a decision.', link: '/', label: 'Compare Schools' },
+  { icon: School, title: 'Smart School Comparison', desc: 'Our intelligent tool lets parents and students evaluate schools side by side â€” fees, facilities, curriculum, and location â€” before making a decision.', link: '/', label: 'Compare Schools' },
   { icon: Plane, title: 'Study Abroad Placement', desc: 'End-to-end support: university selection, application strategy, personal statement coaching, and visa guidance for top universities worldwide.', link: '/study-abroad', label: 'Learn More' },
   { icon: Globe, title: 'School Listing Platform', desc: 'School owners list their institutions, reach a wider audience, and manage their online presence easily through our verified listing process.', link: '/list-your-school', label: 'List Your School' },
 ];
@@ -35,17 +35,17 @@ const TEAM = [
 ];
 
 const COUNTRIES = [
-  { flag: '🇳🇬', name: 'Nigeria' },
-  { flag: '🇬🇭', name: 'Ghana' },
-  { flag: '🇬🇲', name: 'The Gambia' },
-  { flag: '🇨🇲', name: 'Cameroon' },
+  { flag: 'ðŸ‡³ðŸ‡¬', name: 'Nigeria' },
+  { flag: 'ðŸ‡¬ðŸ‡­', name: 'Ghana' },
+  { flag: 'ðŸ‡¬ðŸ‡²', name: 'The Gambia' },
+  { flag: 'ðŸ‡¨ðŸ‡²', name: 'Cameroon' },
 ];
 
 export default function About() {
   return (
     <div>
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
+      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative min-h-110 flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80')" }} />
@@ -54,16 +54,16 @@ export default function About() {
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
             <Globe size={12} /> West Africa's Education Platform
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-5 tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white mb-5 tracking-tight leading-tight">
             Transforming Education<br />Access in West Africa
           </h1>
           <p className="text-green-200 text-lg max-w-2xl mx-auto leading-relaxed">
-            We&apos;re on a mission to make quality education accessible for every student — from finding the right school in Nigeria to landing a spot at a top international university.
+            We&apos;re on a mission to make quality education accessible for every student â€” from finding the right school in Nigeria to landing a spot at a top international university.
           </p>
         </div>
       </section>
 
-      {/* ── STATS BAR (overlapping hero) ──────────────────────── */}
+      {/* â”€â”€ STATS BAR (overlapping hero) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="max-w-5xl mx-auto px-4">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 -mt-12 relative z-10 p-6 grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-gray-100">
           {STATS.map(({ n, label, icon: Icon }) => (
@@ -78,7 +78,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── OUR STORY ─────────────────────────────────────────── */}
+      {/* â”€â”€ OUR STORY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="max-w-7xl mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-14 items-center">
           <div>
@@ -86,13 +86,13 @@ export default function About() {
             <h2 className="text-3xl font-extrabold text-gray-900 mb-5">Built by educators, for families</h2>
             <div className="space-y-4 text-gray-500 leading-relaxed text-sm">
               <p>
-                Naija &amp; Overseas was born out of a frustration we heard from parents everywhere: finding the right school in Nigeria required weeks of research, phone calls, and site visits — with no guarantee the information was accurate or up to date.
+                Naija &amp; Overseas was born out of a frustration we heard from parents everywhere: finding the right school in Nigeria required weeks of research, phone calls, and site visits â€” with no guarantee the information was accurate or up to date.
               </p>
               <p>
-                We set out to build something different. A platform where parents could search, compare, and make confident decisions about their children's education — all in one place, completely free.
+                We set out to build something different. A platform where parents could search, compare, and make confident decisions about their children's education â€” all in one place, completely free.
               </p>
               <p>
-                As we grew, we heard a second challenge: Nigerian students wanting to study abroad but not knowing where to start, who to trust, or how to navigate the complex admissions process. So we built a study abroad service too — with real counsellors who care.
+                As we grew, we heard a second challenge: Nigerian students wanting to study abroad but not knowing where to start, who to trust, or how to navigate the complex admissions process. So we built a study abroad service too â€” with real counsellors who care.
               </p>
               <p>
                 Today, Naija &amp; Overseas serves families across Nigeria, Ghana, The Gambia, and Cameroon. We&apos;re just getting started.
@@ -122,7 +122,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── VALUES ────────────────────────────────────────────── */}
+      {/* â”€â”€ VALUES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -143,7 +143,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── SERVICES ──────────────────────────────────────────── */}
+      {/* â”€â”€ SERVICES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-extrabold text-gray-900">What We Do</h2>
@@ -166,7 +166,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── TEAM ──────────────────────────────────────────────── */}
+      {/* â”€â”€ TEAM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -187,7 +187,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── COUNTRIES BAR ─────────────────────────────────────── */}
+      {/* â”€â”€ COUNTRIES BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="bg-white border-y border-gray-100 py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <p className="text-center text-xs text-gray-400 font-semibold uppercase tracking-wider mb-5">Currently serving</p>
@@ -203,8 +203,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="bg-green-900 text-white py-20 px-4">
+      {/* â”€â”€ CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="bg-green-900 text-white py-10 md:py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-extrabold mb-3">Ready to Get Started?</h2>
           <p className="text-green-200 mb-8 max-w-xl mx-auto">
@@ -212,7 +212,7 @@ export default function About() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link to="/" className="bg-white text-green-900 font-bold px-8 py-4 rounded-xl hover:bg-green-50 transition">
-              Compare Schools →
+              Compare Schools â†’
             </Link>
             <Link to="/study-abroad" className="border border-white/40 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition">
               Study Abroad
@@ -223,3 +223,4 @@ export default function About() {
     </div>
   );
 }
+

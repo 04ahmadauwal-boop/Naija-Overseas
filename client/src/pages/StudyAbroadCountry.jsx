@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import {
   Globe, BookOpen, FileText, CheckCircle, ArrowRight, ArrowLeft,
@@ -7,7 +7,7 @@ import {
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
-/* ─── HELPERS ────────────────────────────────────────────────── */
+/* â”€â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function FlagImg({ code, w = 40, className = '' }) {
   return (
@@ -19,7 +19,7 @@ function FlagImg({ code, w = 40, className = '' }) {
   );
 }
 
-/* ─── COUNTRY DATA ───────────────────────────────────────────── */
+/* â”€â”€â”€ COUNTRY DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const COUNTRY_DATA = {
   'united-kingdom': {
@@ -28,32 +28,32 @@ const COUNTRY_DATA = {
     accent: 'from-blue-950/90 via-blue-900/70 to-blue-950/40',
     tagline: 'World-Class Education, Centuries of Excellence',
     intro: 'The United Kingdom is home to some of the world\'s most prestigious universities, including Oxford and Cambridge, which have shaped global leaders, Nobel laureates, and industry pioneers for over 800 years. A UK degree is globally recognised and respected by employers across every industry and continent. With 3-year undergraduate degrees and a 2-year post-study work visa, the UK remains one of the most practical international study destinations for Nigerian students.',
-    quickStats: [['130+', 'Universities'], ['£10k–£25k', 'Tuition/Year'], ['3–4 Weeks', 'Visa Processing'], ['2 Years', 'Post-Study Visa']],
+    quickStats: [['130+', 'Universities'], ['Â£10kâ€“Â£25k', 'Tuition/Year'], ['3â€“4 Weeks', 'Visa Processing'], ['2 Years', 'Post-Study Visa']],
     whyStudyHere: [
       { icon: Award, title: 'Global Top 10 Universities', desc: 'Oxford, Cambridge, Imperial, UCL and LSE consistently rank in the global top 20, offering degrees that open doors to every career worldwide.' },
       { icon: Clock, title: 'Shorter Degree Duration', desc: '3-year undergraduate and 1-year postgraduate degrees mean less time in study and lower total costs compared to the US or Australia.' },
       { icon: Shield, title: 'Post-Study Work Visa', desc: 'The Graduate Route Visa allows you to work in the UK for 2 years (3 for PhDs) after graduation with no job offer required.' },
       { icon: Users, title: 'Multicultural Environment', desc: 'Over 600,000 international students study in the UK annually, creating a rich, diverse, and welcoming campus environment.' },
       { icon: TrendingUp, title: 'Strong Alumni Network', desc: 'UK university alumni networks span every continent and industry, providing unparalleled career connections globally.' },
-      { icon: MapPin, title: 'London Access', desc: 'Many top UK universities are in London — the world\'s leading financial, cultural, and technology hub — giving students unmatched internship access.' },
+      { icon: MapPin, title: 'London Access', desc: 'Many top UK universities are in London â€” the world\'s leading financial, cultural, and technology hub â€” giving students unmatched internship access.' },
     ],
     topUniversities: [
-      { name: 'University of Oxford', rank: '#1 UK / Top 5 World', location: 'Oxford', type: 'Research University', programs: ['Medicine', 'Law', 'PPE', 'Engineering', 'Computer Science'], tuition: '£28,000–£45,000/yr' },
-      { name: 'University of Cambridge', rank: '#2 UK / Top 5 World', location: 'Cambridge', type: 'Research University', programs: ['Natural Sciences', 'Mathematics', 'Law', 'Architecture', 'Medicine'], tuition: '£25,000–£45,000/yr' },
-      { name: 'Imperial College London', rank: '#3 UK / Top 10 World', location: 'London', type: 'STEM University', programs: ['Engineering', 'Medicine', 'Business', 'Computer Science', 'Chemistry'], tuition: '£32,000–£45,000/yr' },
-      { name: 'University College London', rank: 'Top 15 World', location: 'London', type: 'Research University', programs: ['Architecture', 'Laws', 'Medical Sciences', 'Social Sciences', 'Engineering'], tuition: '£22,000–£35,000/yr' },
-      { name: 'London School of Economics', rank: 'Top 5 Social Sciences', location: 'London', type: 'Social Sciences', programs: ['Economics', 'Finance', 'Law', 'Political Science', 'Management'], tuition: '£20,000–£28,000/yr' },
-      { name: 'University of Manchester', rank: 'Top 30 World', location: 'Manchester', type: 'Russell Group', programs: ['Business', 'Engineering', 'Medicine', 'Science', 'Arts'], tuition: '£18,000–£26,000/yr' },
+      { name: 'University of Oxford', rank: '#1 UK / Top 5 World', location: 'Oxford', type: 'Research University', programs: ['Medicine', 'Law', 'PPE', 'Engineering', 'Computer Science'], tuition: 'Â£28,000â€“Â£45,000/yr' },
+      { name: 'University of Cambridge', rank: '#2 UK / Top 5 World', location: 'Cambridge', type: 'Research University', programs: ['Natural Sciences', 'Mathematics', 'Law', 'Architecture', 'Medicine'], tuition: 'Â£25,000â€“Â£45,000/yr' },
+      { name: 'Imperial College London', rank: '#3 UK / Top 10 World', location: 'London', type: 'STEM University', programs: ['Engineering', 'Medicine', 'Business', 'Computer Science', 'Chemistry'], tuition: 'Â£32,000â€“Â£45,000/yr' },
+      { name: 'University College London', rank: 'Top 15 World', location: 'London', type: 'Research University', programs: ['Architecture', 'Laws', 'Medical Sciences', 'Social Sciences', 'Engineering'], tuition: 'Â£22,000â€“Â£35,000/yr' },
+      { name: 'London School of Economics', rank: 'Top 5 Social Sciences', location: 'London', type: 'Social Sciences', programs: ['Economics', 'Finance', 'Law', 'Political Science', 'Management'], tuition: 'Â£20,000â€“Â£28,000/yr' },
+      { name: 'University of Manchester', rank: 'Top 30 World', location: 'Manchester', type: 'Russell Group', programs: ['Business', 'Engineering', 'Medicine', 'Science', 'Arts'], tuition: 'Â£18,000â€“Â£26,000/yr' },
     ],
     visa: {
       name: 'UK Student Visa',
       processingTime: '3 weeks (standard)',
       workRights: '20 hours/week during term',
-      postStudy: 'Graduate Route Visa — 2 years (3 for PhD)',
-      requirements: ['Confirmed CAS reference from your university', 'Proof of funds: £1,334/month (London) or £1,023/month (elsewhere)', 'IELTS 5.5–7.0+ depending on course', 'IHS (Immigration Health Surcharge) payment', 'Valid passport (6 months+ remaining)', 'Biometric Residence Permit on arrival'],
+      postStudy: 'Graduate Route Visa â€” 2 years (3 for PhD)',
+      requirements: ['Confirmed CAS reference from your university', 'Proof of funds: Â£1,334/month (London) or Â£1,023/month (elsewhere)', 'IELTS 5.5â€“7.0+ depending on course', 'IHS (Immigration Health Surcharge) payment', 'Valid passport (6 months+ remaining)', 'Biometric Residence Permit on arrival'],
     },
-    costs: { tuition: '£10,000 – £25,000 per year', accommodation: '£500 – £900/month', food: '£150 – £250/month', transport: '£80 – £150/month', totalEstimate: '£18,000 – £35,000/year' },
-    requirements: ['WAEC/NECO with minimum B/C grades in relevant subjects', 'IELTS 6.0–7.0 overall (or equivalent)', 'Personal Statement (500–600 words)', 'Two academic references', 'UCAS application (UG) or direct application (PG)', 'Proof of financial capability', 'Academic transcripts and certificates'],
+    costs: { tuition: 'Â£10,000 â€“ Â£25,000 per year', accommodation: 'Â£500 â€“ Â£900/month', food: 'Â£150 â€“ Â£250/month', transport: 'Â£80 â€“ Â£150/month', totalEstimate: 'Â£18,000 â€“ Â£35,000/year' },
+    requirements: ['WAEC/NECO with minimum B/C grades in relevant subjects', 'IELTS 6.0â€“7.0 overall (or equivalent)', 'Personal Statement (500â€“600 words)', 'Two academic references', 'UCAS application (UG) or direct application (PG)', 'Proof of financial capability', 'Academic transcripts and certificates'],
     intakes: 'September (main) and January (limited)',
     popularCourses: ['Medicine', 'Law', 'Computer Science', 'Business & Finance', 'Engineering', 'Architecture', 'Nursing', 'MBA', 'Data Science', 'Public Health'],
     testimonials: [
@@ -68,31 +68,31 @@ const COUNTRY_DATA = {
     accent: 'from-red-950/90 via-red-900/70 to-red-950/40',
     tagline: 'Quality Education with Permanent Residency Pathway',
     intro: 'Canada is a global leader in higher education, innovation, and quality of life. With world-class universities, affordable tuition compared to the US and UK, and one of the clearest pathways to Permanent Residency through the Post-Graduate Work Permit (PGWP), Canada is the top choice for Nigerian students looking to build a long-term future abroad. Over 400,000 study permits are issued annually.',
-    quickStats: [['100+', 'Universities'], ['CAD 15k–35k', 'Tuition/Year'], ['4–8 Weeks', 'Visa Processing'], ['Up to 3 Years', 'Post-Study PGWP']],
+    quickStats: [['100+', 'Universities'], ['CAD 15kâ€“35k', 'Tuition/Year'], ['4â€“8 Weeks', 'Visa Processing'], ['Up to 3 Years', 'Post-Study PGWP']],
     whyStudyHere: [
       { icon: Award, title: 'World-Class Universities', desc: 'University of Toronto, UBC, McGill, and McMaster rank in the global top 100, recognised by employers worldwide.' },
       { icon: Shield, title: 'Clear PR Pathway', desc: 'Canada offers one of the most transparent Permanent Residency pathways via the Canadian Experience Class (CEC) and Provincial Nominee Programs (PNP).' },
-      { icon: Clock, title: 'Up to 3-Year PGWP', desc: 'The Post-Graduate Work Permit allows you to work full-time in Canada for up to 3 years after graduation — building Canadian experience toward PR.' },
-      { icon: TrendingUp, title: 'Affordable vs US & UK', desc: 'Canadian tuition is typically 30–40% cheaper than equivalent US or UK programs, with a lower cost of living outside major cities.' },
+      { icon: Clock, title: 'Up to 3-Year PGWP', desc: 'The Post-Graduate Work Permit allows you to work full-time in Canada for up to 3 years after graduation â€” building Canadian experience toward PR.' },
+      { icon: TrendingUp, title: 'Affordable vs US & UK', desc: 'Canadian tuition is typically 30â€“40% cheaper than equivalent US or UK programs, with a lower cost of living outside major cities.' },
       { icon: Users, title: 'Welcoming Immigration Policy', desc: 'Canada actively welcomes international students and graduates. Strong Nigerian diaspora communities exist across Toronto, Calgary, and Vancouver.' },
-      { icon: MapPin, title: 'Safe, Multicultural Society', desc: 'Canada consistently ranks as one of the safest, most inclusive countries in the world — ideal for Nigerian students and families.' },
+      { icon: MapPin, title: 'Safe, Multicultural Society', desc: 'Canada consistently ranks as one of the safest, most inclusive countries in the world â€” ideal for Nigerian students and families.' },
     ],
     topUniversities: [
-      { name: 'University of Toronto', rank: '#21 World', location: 'Toronto, Ontario', type: 'Research University', programs: ['Medicine', 'Computer Science', 'Engineering', 'Business', 'Law'], tuition: 'CAD 30,000–55,000/yr' },
-      { name: 'University of British Columbia', rank: '#34 World', location: 'Vancouver, BC', type: 'Research University', programs: ['Forestry', 'Medicine', 'Computer Science', 'Arts', 'Science'], tuition: 'CAD 28,000–45,000/yr' },
-      { name: 'McGill University', rank: '#37 World', location: 'Montreal, Quebec', type: 'Research University', programs: ['Medicine', 'Law', 'Engineering', 'Management', 'Science'], tuition: 'CAD 17,000–40,000/yr' },
-      { name: 'McMaster University', rank: 'Top 100 World', location: 'Hamilton, Ontario', type: 'Medical/Science Focus', programs: ['Medicine', 'Engineering', 'Business', 'Social Sciences'], tuition: 'CAD 28,000–38,000/yr' },
-      { name: 'University of Waterloo', rank: 'Top Tech School Canada', location: 'Waterloo, Ontario', type: 'STEM University', programs: ['Computer Science', 'Engineering', 'Mathematics', 'Accounting'], tuition: 'CAD 30,000–52,000/yr' },
-      { name: 'York University', rank: 'Top 500 World', location: 'Toronto, Ontario', type: 'Comprehensive University', programs: ['Business', 'Law', 'Arts', 'Science', 'Education'], tuition: 'CAD 25,000–32,000/yr' },
+      { name: 'University of Toronto', rank: '#21 World', location: 'Toronto, Ontario', type: 'Research University', programs: ['Medicine', 'Computer Science', 'Engineering', 'Business', 'Law'], tuition: 'CAD 30,000â€“55,000/yr' },
+      { name: 'University of British Columbia', rank: '#34 World', location: 'Vancouver, BC', type: 'Research University', programs: ['Forestry', 'Medicine', 'Computer Science', 'Arts', 'Science'], tuition: 'CAD 28,000â€“45,000/yr' },
+      { name: 'McGill University', rank: '#37 World', location: 'Montreal, Quebec', type: 'Research University', programs: ['Medicine', 'Law', 'Engineering', 'Management', 'Science'], tuition: 'CAD 17,000â€“40,000/yr' },
+      { name: 'McMaster University', rank: 'Top 100 World', location: 'Hamilton, Ontario', type: 'Medical/Science Focus', programs: ['Medicine', 'Engineering', 'Business', 'Social Sciences'], tuition: 'CAD 28,000â€“38,000/yr' },
+      { name: 'University of Waterloo', rank: 'Top Tech School Canada', location: 'Waterloo, Ontario', type: 'STEM University', programs: ['Computer Science', 'Engineering', 'Mathematics', 'Accounting'], tuition: 'CAD 30,000â€“52,000/yr' },
+      { name: 'York University', rank: 'Top 500 World', location: 'Toronto, Ontario', type: 'Comprehensive University', programs: ['Business', 'Law', 'Arts', 'Science', 'Education'], tuition: 'CAD 25,000â€“32,000/yr' },
     ],
     visa: {
       name: 'Canadian Study Permit',
-      processingTime: '4–8 weeks (varies by season)',
+      processingTime: '4â€“8 weeks (varies by season)',
       workRights: '20 hours/week off-campus, full-time during breaks',
-      postStudy: 'PGWP — up to 3 years based on program length',
+      postStudy: 'PGWP â€” up to 3 years based on program length',
       requirements: ['Letter of Acceptance from a Designated Learning Institution (DLI)', 'Proof of funds: CAD 10,000+ for living expenses', 'IELTS 6.0+ or equivalent English test', 'Biometrics enrollment at nearest Canadian visa office', 'Medical examination (if applicable)', 'Police clearance certificate'],
     },
-    costs: { tuition: 'CAD 15,000 – 35,000 per year', accommodation: 'CAD 700 – 1,400/month', food: 'CAD 300 – 500/month', transport: 'CAD 80 – 150/month', totalEstimate: 'CAD 25,000 – 55,000/year' },
+    costs: { tuition: 'CAD 15,000 â€“ 35,000 per year', accommodation: 'CAD 700 â€“ 1,400/month', food: 'CAD 300 â€“ 500/month', transport: 'CAD 80 â€“ 150/month', totalEstimate: 'CAD 25,000 â€“ 55,000/year' },
     requirements: ['WAEC/NECO with minimum 5 credits including English and Maths', 'IELTS Academic 6.0+ overall (or TOEFL 80+)', 'Statement of Purpose (SOP)', 'Two academic or professional references', 'Academic transcripts', 'GRE/GMAT (for some graduate programs)'],
     intakes: 'January, May, and September (September is main intake)',
     popularCourses: ['Computer Science', 'Engineering', 'Business', 'Medicine', 'Nursing', 'Data Science', 'MBA', 'Public Health', 'Finance', 'Law'],
@@ -108,9 +108,9 @@ const COUNTRY_DATA = {
     accent: 'from-indigo-950/90 via-indigo-900/70 to-indigo-950/40',
     tagline: "Home to the World's Most Prestigious Universities",
     intro: 'The United States hosts more top-ranked universities than any other country in the world. From Ivy League institutions to state universities with world-leading research facilities, the US offers unmatched academic excellence, strong alumni networks, and life-changing scholarship opportunities. Billions in financial aid are awarded annually to international students, making the US accessible beyond its headline tuition costs.',
-    quickStats: [['4,000+', 'Universities'], ['USD 20k–55k', 'Tuition/Year'], ['3–5 Months', 'Visa Processing'], ['OPT/CPT', 'Work Authorization']],
+    quickStats: [['4,000+', 'Universities'], ['USD 20kâ€“55k', 'Tuition/Year'], ['3â€“5 Months', 'Visa Processing'], ['OPT/CPT', 'Work Authorization']],
     whyStudyHere: [
-      { icon: Award, title: "World's Best Universities", desc: 'Harvard, MIT, Stanford, Yale — the US dominates global university rankings with more top-100 institutions than any other country.' },
+      { icon: Award, title: "World's Best Universities", desc: 'Harvard, MIT, Stanford, Yale â€” the US dominates global university rankings with more top-100 institutions than any other country.' },
       { icon: TrendingUp, title: 'Scholarship Opportunities', desc: 'US universities offer billions in scholarships, grants, and assistantships annually. Many Nigerian students receive partial to full funding.' },
       { icon: Shield, title: 'OPT Work Authorization', desc: 'Optional Practical Training (OPT) allows STEM graduates to work for up to 3 years in the US after graduation.' },
       { icon: BookOpen, title: 'Flexible Education System', desc: 'The US credit system allows you to change majors, take diverse courses, and tailor your degree to your interests.' },
@@ -118,21 +118,21 @@ const COUNTRY_DATA = {
       { icon: GraduationCap, title: 'Research & Innovation Hub', desc: 'US universities receive over $50 billion in research funding annually, giving students access to cutting-edge labs and research opportunities.' },
     ],
     topUniversities: [
-      { name: 'Harvard University', rank: '#3 World', location: 'Cambridge, Massachusetts', type: 'Ivy League', programs: ['Medicine', 'Law', 'Business (MBA)', 'Government', 'Computer Science'], tuition: 'USD 54,000–58,000/yr' },
-      { name: 'Massachusetts Institute of Technology', rank: '#1 World', location: 'Cambridge, Massachusetts', type: 'STEM Powerhouse', programs: ['Engineering', 'Computer Science', 'Physics', 'Architecture', 'Management'], tuition: 'USD 57,000–60,000/yr' },
-      { name: 'Stanford University', rank: '#5 World', location: 'Stanford, California', type: 'Research University', programs: ['Computer Science', 'Engineering', 'Business', 'Medicine', 'Social Sciences'], tuition: 'USD 57,000–62,000/yr' },
-      { name: 'Yale University', rank: 'Top 20 World', location: 'New Haven, Connecticut', type: 'Ivy League', programs: ['Law', 'Drama', 'Medicine', 'Social Sciences', 'Architecture'], tuition: 'USD 59,000–63,000/yr' },
-      { name: 'Columbia University', rank: 'Top 25 World', location: 'New York City', type: 'Ivy League', programs: ['Journalism', 'Business', 'Engineering', 'Law', 'Architecture'], tuition: 'USD 61,000–65,000/yr' },
-      { name: 'University of Michigan', rank: 'Top 30 World (Public)', location: 'Ann Arbor, Michigan', type: 'Public Research University', programs: ['Business', 'Engineering', 'Medicine', 'Law', 'Social Work'], tuition: 'USD 31,000–54,000/yr' },
+      { name: 'Harvard University', rank: '#3 World', location: 'Cambridge, Massachusetts', type: 'Ivy League', programs: ['Medicine', 'Law', 'Business (MBA)', 'Government', 'Computer Science'], tuition: 'USD 54,000â€“58,000/yr' },
+      { name: 'Massachusetts Institute of Technology', rank: '#1 World', location: 'Cambridge, Massachusetts', type: 'STEM Powerhouse', programs: ['Engineering', 'Computer Science', 'Physics', 'Architecture', 'Management'], tuition: 'USD 57,000â€“60,000/yr' },
+      { name: 'Stanford University', rank: '#5 World', location: 'Stanford, California', type: 'Research University', programs: ['Computer Science', 'Engineering', 'Business', 'Medicine', 'Social Sciences'], tuition: 'USD 57,000â€“62,000/yr' },
+      { name: 'Yale University', rank: 'Top 20 World', location: 'New Haven, Connecticut', type: 'Ivy League', programs: ['Law', 'Drama', 'Medicine', 'Social Sciences', 'Architecture'], tuition: 'USD 59,000â€“63,000/yr' },
+      { name: 'Columbia University', rank: 'Top 25 World', location: 'New York City', type: 'Ivy League', programs: ['Journalism', 'Business', 'Engineering', 'Law', 'Architecture'], tuition: 'USD 61,000â€“65,000/yr' },
+      { name: 'University of Michigan', rank: 'Top 30 World (Public)', location: 'Ann Arbor, Michigan', type: 'Public Research University', programs: ['Business', 'Engineering', 'Medicine', 'Law', 'Social Work'], tuition: 'USD 31,000â€“54,000/yr' },
     ],
     visa: {
       name: 'F-1 Student Visa',
-      processingTime: '3–5 months (apply early)',
+      processingTime: '3â€“5 months (apply early)',
       workRights: 'On-campus 20 hrs/week; OPT after graduation',
       postStudy: 'OPT: 12 months (3 years for STEM graduates)',
-      requirements: ['I-20 form from your SEVIS-registered university', 'DS-160 visa application form', 'SEVIS fee payment (USD 350)', 'US embassy visa interview', 'Proof of financial support (USD 40,000–70,000/year)', 'TOEFL 80+ or IELTS 6.5+', 'Academic transcripts and SAT/GRE/GMAT (program dependent)'],
+      requirements: ['I-20 form from your SEVIS-registered university', 'DS-160 visa application form', 'SEVIS fee payment (USD 350)', 'US embassy visa interview', 'Proof of financial support (USD 40,000â€“70,000/year)', 'TOEFL 80+ or IELTS 6.5+', 'Academic transcripts and SAT/GRE/GMAT (program dependent)'],
     },
-    costs: { tuition: 'USD 20,000 – 55,000 per year', accommodation: 'USD 800 – 1,800/month', food: 'USD 300 – 600/month', transport: 'USD 100 – 300/month', totalEstimate: 'USD 35,000 – 75,000/year' },
+    costs: { tuition: 'USD 20,000 â€“ 55,000 per year', accommodation: 'USD 800 â€“ 1,800/month', food: 'USD 300 â€“ 600/month', transport: 'USD 100 â€“ 300/month', totalEstimate: 'USD 35,000 â€“ 75,000/year' },
     requirements: ['WAEC/NECO with minimum 5 credits', 'SAT scores (UG): 1200+ recommended', 'GRE/GMAT (for graduate programs)', 'TOEFL 80+ or IELTS 6.5+', 'Statement of Purpose / Personal Essay', 'Three letters of recommendation', 'Academic transcripts'],
     intakes: 'August/September (Fall) and January (Spring)',
     popularCourses: ['Computer Science', 'Engineering', 'Business (MBA)', 'Medicine', 'Data Science', 'Finance', 'Law', 'Architecture', 'Public Health', 'Film & Media'],
@@ -147,32 +147,32 @@ const COUNTRY_DATA = {
     heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=1920&q=80',
     accent: 'from-yellow-950/90 via-yellow-900/70 to-yellow-950/40',
     tagline: 'World-Class Education with Post-Study Work Rights',
-    intro: 'Australia is the third most popular destination for international students, offering exceptional education quality, a relaxed lifestyle, stunning natural landscapes, and generous post-study work rights. With 8 world-class research universities (the Group of Eight) and 40+ institutions, Australia offers globally recognised programs in medicine, engineering, business, and the sciences — alongside one of the highest minimum wages in the world.',
-    quickStats: [['43+', 'Universities'], ['AUD 20k–45k', 'Tuition/Year'], ['4–6 Weeks', 'Visa Processing'], ['2–4 Years', 'Post-Study Visa']],
+    intro: 'Australia is the third most popular destination for international students, offering exceptional education quality, a relaxed lifestyle, stunning natural landscapes, and generous post-study work rights. With 8 world-class research universities (the Group of Eight) and 40+ institutions, Australia offers globally recognised programs in medicine, engineering, business, and the sciences â€” alongside one of the highest minimum wages in the world.',
+    quickStats: [['43+', 'Universities'], ['AUD 20kâ€“45k', 'Tuition/Year'], ['4â€“6 Weeks', 'Visa Processing'], ['2â€“4 Years', 'Post-Study Visa']],
     whyStudyHere: [
-      { icon: Award, title: 'Group of Eight Universities', desc: "Australia's Go8 — including Melbourne, ANU, and Sydney — are globally ranked and renowned for research excellence." },
-      { icon: Shield, title: 'Generous Post-Study Visas', desc: 'Temporary Graduate Visa (subclass 485) allows 2–4 years of work in Australia after graduation, depending on your qualification level.' },
+      { icon: Award, title: 'Group of Eight Universities', desc: "Australia's Go8 â€” including Melbourne, ANU, and Sydney â€” are globally ranked and renowned for research excellence." },
+      { icon: Shield, title: 'Generous Post-Study Visas', desc: 'Temporary Graduate Visa (subclass 485) allows 2â€“4 years of work in Australia after graduation, depending on your qualification level.' },
       { icon: Users, title: 'Welcoming Culture', desc: 'Australia is one of the safest, most multicultural countries in the world. Over 700,000 international students study there annually.' },
       { icon: TrendingUp, title: 'High Graduate Salaries', desc: 'Australia has one of the highest minimum wages globally. Students can work 48 hours/fortnight while studying and full-time during holidays.' },
       { icon: MapPin, title: 'Quality of Life', desc: 'Australian cities consistently rank in the global top 10 for quality of life. Sydney, Melbourne, and Brisbane offer a fantastic student lifestyle.' },
-      { icon: Clock, title: 'Fast Visa Processing', desc: 'Australian student visas are typically processed within 4–6 weeks, with a high approval rate for genuine students.' },
+      { icon: Clock, title: 'Fast Visa Processing', desc: 'Australian student visas are typically processed within 4â€“6 weeks, with a high approval rate for genuine students.' },
     ],
     topUniversities: [
-      { name: 'University of Melbourne', rank: '#33 World', location: 'Melbourne, Victoria', type: 'Research University', programs: ['Medicine', 'Law', 'Engineering', 'Business', 'Science'], tuition: 'AUD 35,000–48,000/yr' },
-      { name: 'Australian National University', rank: '#34 World', location: 'Canberra, ACT', type: 'Research University', programs: ['Politics & IR', 'Science', 'Law', 'Economics', 'Engineering'], tuition: 'AUD 35,000–45,000/yr' },
-      { name: 'University of Sydney', rank: '#41 World', location: 'Sydney, NSW', type: 'Sandstone University', programs: ['Medicine', 'Law', 'Business', 'Architecture', 'Arts'], tuition: 'AUD 38,000–50,000/yr' },
-      { name: 'University of Queensland', rank: 'Top 60 World', location: 'Brisbane, QLD', type: 'Research University', programs: ['Medicine', 'Mining Engineering', 'Business', 'Science', 'Law'], tuition: 'AUD 32,000–44,000/yr' },
-      { name: 'Monash University', rank: 'Top 60 World', location: 'Melbourne, Victoria', type: 'Research University', programs: ['Medicine', 'Engineering', 'Business', 'Pharmacy', 'Education'], tuition: 'AUD 30,000–45,000/yr' },
-      { name: 'UNSW Sydney', rank: 'Top 70 World', location: 'Sydney, NSW', type: 'STEM Focus', programs: ['Engineering', 'Medicine', 'Business', 'Law', 'Science'], tuition: 'AUD 35,000–48,000/yr' },
+      { name: 'University of Melbourne', rank: '#33 World', location: 'Melbourne, Victoria', type: 'Research University', programs: ['Medicine', 'Law', 'Engineering', 'Business', 'Science'], tuition: 'AUD 35,000â€“48,000/yr' },
+      { name: 'Australian National University', rank: '#34 World', location: 'Canberra, ACT', type: 'Research University', programs: ['Politics & IR', 'Science', 'Law', 'Economics', 'Engineering'], tuition: 'AUD 35,000â€“45,000/yr' },
+      { name: 'University of Sydney', rank: '#41 World', location: 'Sydney, NSW', type: 'Sandstone University', programs: ['Medicine', 'Law', 'Business', 'Architecture', 'Arts'], tuition: 'AUD 38,000â€“50,000/yr' },
+      { name: 'University of Queensland', rank: 'Top 60 World', location: 'Brisbane, QLD', type: 'Research University', programs: ['Medicine', 'Mining Engineering', 'Business', 'Science', 'Law'], tuition: 'AUD 32,000â€“44,000/yr' },
+      { name: 'Monash University', rank: 'Top 60 World', location: 'Melbourne, Victoria', type: 'Research University', programs: ['Medicine', 'Engineering', 'Business', 'Pharmacy', 'Education'], tuition: 'AUD 30,000â€“45,000/yr' },
+      { name: 'UNSW Sydney', rank: 'Top 70 World', location: 'Sydney, NSW', type: 'STEM Focus', programs: ['Engineering', 'Medicine', 'Business', 'Law', 'Science'], tuition: 'AUD 35,000â€“48,000/yr' },
     ],
     visa: {
       name: 'Student Visa (Subclass 500)',
-      processingTime: '4–6 weeks',
+      processingTime: '4â€“6 weeks',
       workRights: '48 hours/fortnight during study, unlimited during breaks',
-      postStudy: 'Temporary Graduate Visa — 2–4 years',
-      requirements: ['Confirmation of Enrolment (CoE) from your institution', 'Genuine Temporary Entrant (GTE) statement', 'IELTS 5.5–7.0+ depending on course', 'Proof of funds: AUD 21,041/year', 'Overseas Student Health Cover (OSHC)', 'Police clearance & character assessment'],
+      postStudy: 'Temporary Graduate Visa â€” 2â€“4 years',
+      requirements: ['Confirmation of Enrolment (CoE) from your institution', 'Genuine Temporary Entrant (GTE) statement', 'IELTS 5.5â€“7.0+ depending on course', 'Proof of funds: AUD 21,041/year', 'Overseas Student Health Cover (OSHC)', 'Police clearance & character assessment'],
     },
-    costs: { tuition: 'AUD 20,000 – 45,000 per year', accommodation: 'AUD 700 – 1,500/month', food: 'AUD 400 – 700/month', transport: 'AUD 100 – 200/month', totalEstimate: 'AUD 35,000 – 60,000/year' },
+    costs: { tuition: 'AUD 20,000 â€“ 45,000 per year', accommodation: 'AUD 700 â€“ 1,500/month', food: 'AUD 400 â€“ 700/month', transport: 'AUD 100 â€“ 200/month', totalEstimate: 'AUD 35,000 â€“ 60,000/year' },
     requirements: ['WAEC/NECO minimum 5 credits including English and Maths', 'IELTS Academic 6.0+ overall', 'Personal Statement', 'Academic transcripts and certificates', 'Work experience (for postgraduate)', 'Reference letters (2)'],
     intakes: 'February (main) and July (second intake)',
     popularCourses: ['Nursing', 'Medicine', 'Engineering', 'Business', 'Computer Science', 'MBA', 'Accounting', 'Architecture', 'Data Science', 'Education'],
@@ -187,37 +187,37 @@ const COUNTRY_DATA = {
     heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1920&q=80',
     accent: 'from-gray-950/90 via-gray-900/70 to-gray-950/40',
     tagline: 'Tuition-Free World-Class Education in the Heart of Europe',
-    intro: 'Germany offers one of the world\'s most remarkable study opportunities: public universities that charge little or no tuition fees for international students. With world-class engineering, science, and business schools — and as the economic powerhouse of Europe — Germany offers exceptional career opportunities alongside affordable education. Most German public universities charge only a semester contribution of €100–€350, covering transport and administration.',
-    quickStats: [['380+', 'Universities'], ['€0–€3,000', 'Public Tuition/Year'], ['6–12 Weeks', 'Visa Processing'], ['18 Months', 'Job-Seeker Visa']],
+    intro: 'Germany offers one of the world\'s most remarkable study opportunities: public universities that charge little or no tuition fees for international students. With world-class engineering, science, and business schools â€” and as the economic powerhouse of Europe â€” Germany offers exceptional career opportunities alongside affordable education. Most German public universities charge only a semester contribution of â‚¬100â€“â‚¬350, covering transport and administration.',
+    quickStats: [['380+', 'Universities'], ['â‚¬0â€“â‚¬3,000', 'Public Tuition/Year'], ['6â€“12 Weeks', 'Visa Processing'], ['18 Months', 'Job-Seeker Visa']],
     whyStudyHere: [
-      { icon: Award, title: 'Tuition-Free Education', desc: 'Most German public universities charge no tuition for international students — only a semester contribution of €100–€350 covering transport and admin.' },
+      { icon: Award, title: 'Tuition-Free Education', desc: 'Most German public universities charge no tuition for international students â€” only a semester contribution of â‚¬100â€“â‚¬350 covering transport and admin.' },
       { icon: TrendingUp, title: 'Engineering & Tech Hub', desc: 'Germany is home to BMW, Mercedes, Bosch, and SAP. Its engineering and technology programs are globally unmatched with direct industry connections.' },
-      { icon: Shield, title: '18-Month Job Seeker Visa', desc: 'After graduation, you get an 18-month visa to find work in Germany — with access to the entire EU job market and some of Europe\'s highest salaries.' },
+      { icon: Shield, title: '18-Month Job Seeker Visa', desc: 'After graduation, you get an 18-month visa to find work in Germany â€” with access to the entire EU job market and some of Europe\'s highest salaries.' },
       { icon: Globe, title: 'English-Medium Programs', desc: 'Over 1,500 master\'s programs in Germany are taught entirely in English, making it accessible without German language skills.' },
       { icon: Users, title: 'Central European Location', desc: 'Germany borders 9 countries. Studying there gives you access to travel, internships, and networks across the entire European Union.' },
       { icon: MapPin, title: 'Affordable Living', desc: 'Despite being Western Europe\'s largest economy, Germany has a surprisingly affordable cost of living, especially outside Munich and Frankfurt.' },
     ],
     topUniversities: [
-      { name: 'TU Munich', rank: '#37 World', location: 'Munich, Bavaria', type: 'Technical University', programs: ['Engineering', 'Computer Science', 'Natural Sciences', 'Medicine', 'Management'], tuition: '€0 (public university)' },
-      { name: 'LMU Munich', rank: '#54 World', location: 'Munich, Bavaria', type: 'Research University', programs: ['Medicine', 'Law', 'Business', 'Physics', 'Psychology'], tuition: '€0 (public university)' },
-      { name: 'Heidelberg University', rank: '#65 World', location: 'Heidelberg', type: 'Research University', programs: ['Medicine', 'Natural Sciences', 'Humanities', 'Law', 'Social Sciences'], tuition: '€0 (public university)' },
-      { name: 'RWTH Aachen', rank: 'Top Engineering EU', location: 'Aachen, NRW', type: 'Technical University', programs: ['Engineering', 'Computer Science', 'Natural Sciences', 'Business', 'Medicine'], tuition: '€0 (public university)' },
-      { name: 'Freie Universität Berlin', rank: 'Top 100 World', location: 'Berlin', type: 'Research University', programs: ['Social Sciences', 'Natural Sciences', 'Law', 'Humanities', 'Medicine'], tuition: '€0 (public university)' },
-      { name: 'ESMT Berlin', rank: 'Top European Business School', location: 'Berlin', type: 'Business School', programs: ['MBA', 'Executive MBA', 'Management', 'Finance', 'Leadership'], tuition: '€25,000–€40,000/yr (private)' },
+      { name: 'TU Munich', rank: '#37 World', location: 'Munich, Bavaria', type: 'Technical University', programs: ['Engineering', 'Computer Science', 'Natural Sciences', 'Medicine', 'Management'], tuition: 'â‚¬0 (public university)' },
+      { name: 'LMU Munich', rank: '#54 World', location: 'Munich, Bavaria', type: 'Research University', programs: ['Medicine', 'Law', 'Business', 'Physics', 'Psychology'], tuition: 'â‚¬0 (public university)' },
+      { name: 'Heidelberg University', rank: '#65 World', location: 'Heidelberg', type: 'Research University', programs: ['Medicine', 'Natural Sciences', 'Humanities', 'Law', 'Social Sciences'], tuition: 'â‚¬0 (public university)' },
+      { name: 'RWTH Aachen', rank: 'Top Engineering EU', location: 'Aachen, NRW', type: 'Technical University', programs: ['Engineering', 'Computer Science', 'Natural Sciences', 'Business', 'Medicine'], tuition: 'â‚¬0 (public university)' },
+      { name: 'Freie UniversitÃ¤t Berlin', rank: 'Top 100 World', location: 'Berlin', type: 'Research University', programs: ['Social Sciences', 'Natural Sciences', 'Law', 'Humanities', 'Medicine'], tuition: 'â‚¬0 (public university)' },
+      { name: 'ESMT Berlin', rank: 'Top European Business School', location: 'Berlin', type: 'Business School', programs: ['MBA', 'Executive MBA', 'Management', 'Finance', 'Leadership'], tuition: 'â‚¬25,000â€“â‚¬40,000/yr (private)' },
     ],
     visa: {
       name: 'German Student Visa (Type D)',
-      processingTime: '6–12 weeks',
+      processingTime: '6â€“12 weeks',
       workRights: '120 full days or 240 half days per year',
       postStudy: '18-month Job Seeker Visa to find work in Germany/EU',
-      requirements: ['University admission letter or blocked account confirmation', 'Blocked account (Sperrkonto): minimum €11,208/year', 'German health insurance or international coverage', 'IELTS 6.0+ or German B1/B2 (program dependent)', 'APS certificate (for Nigerian qualifications)', 'Motivation letter and CV', 'Police clearance certificate'],
+      requirements: ['University admission letter or blocked account confirmation', 'Blocked account (Sperrkonto): minimum â‚¬11,208/year', 'German health insurance or international coverage', 'IELTS 6.0+ or German B1/B2 (program dependent)', 'APS certificate (for Nigerian qualifications)', 'Motivation letter and CV', 'Police clearance certificate'],
     },
-    costs: { tuition: '€0 – €1,500/year (public)', accommodation: '€300 – €700/month', food: '€200 – €350/month', transport: 'Included in semester ticket', totalEstimate: '€8,000 – €15,000/year' },
-    requirements: ['WAEC/NECO with university entrance qualification (min B in core subjects)', 'IELTS 6.0+ or German B2 (for German-taught programs)', 'APS Certificate (Academic Evaluation Centre for Nigerian qualifications)', 'Motivation letter and CV/Resume', 'Blocked account (Sperrkonto) with €11,208'],
+    costs: { tuition: 'â‚¬0 â€“ â‚¬1,500/year (public)', accommodation: 'â‚¬300 â€“ â‚¬700/month', food: 'â‚¬200 â€“ â‚¬350/month', transport: 'Included in semester ticket', totalEstimate: 'â‚¬8,000 â€“ â‚¬15,000/year' },
+    requirements: ['WAEC/NECO with university entrance qualification (min B in core subjects)', 'IELTS 6.0+ or German B2 (for German-taught programs)', 'APS Certificate (Academic Evaluation Centre for Nigerian qualifications)', 'Motivation letter and CV/Resume', 'Blocked account (Sperrkonto) with â‚¬11,208'],
     intakes: 'Winter Semester (October) and Summer Semester (April)',
     popularCourses: ['Mechanical Engineering', 'Computer Science', 'Electrical Engineering', 'MBA', 'Data Science', 'Chemical Engineering', 'Architecture', 'Economics', 'Medicine', 'Physics'],
     testimonials: [
-      { name: 'Ibrahim Musa', uni: 'TU Munich', course: 'MEng Mechanical Engineering', text: "Germany wasn't even on my radar until they suggested it. Tuition-free at one of the world's best engineering schools — I would never have found this path without them.", init: 'IM', col: 'bg-gray-700' },
+      { name: 'Ibrahim Musa', uni: 'TU Munich', course: 'MEng Mechanical Engineering', text: "Germany wasn't even on my radar until they suggested it. Tuition-free at one of the world's best engineering schools â€” I would never have found this path without them.", init: 'IM', col: 'bg-gray-700' },
       { name: 'Bola Okafor', uni: 'RWTH Aachen', course: 'MSc Computer Science', text: 'Zero tuition, excellent education, and an 18-month job seeker visa. I\'m now working at a top German tech company. Best decision I ever made.', init: 'BO', col: 'bg-blue-700' },
     ],
   },
@@ -227,37 +227,37 @@ const COUNTRY_DATA = {
     heroImage: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=1920&q=80',
     accent: 'from-green-950/90 via-green-900/70 to-green-950/40',
     tagline: 'English-Speaking EU Gateway with 2-Year Stay-Back Permission',
-    intro: 'Ireland is a hidden gem for international students — an English-speaking country within the European Union, home to Google, Meta, Apple, and Amazon European HQs, with world-class universities and a generous 2-year stay-back permission after graduation. Ireland offers an exceptional balance of academic quality, tech career opportunity, and quality of life, all in a welcoming, English-speaking environment.',
-    quickStats: [['30+', 'Universities & Colleges'], ['€10k–€25k', 'Tuition/Year'], ['6–8 Weeks', 'Visa Processing'], ['2 Years', 'Graduate Stay-Back']],
+    intro: 'Ireland is a hidden gem for international students â€” an English-speaking country within the European Union, home to Google, Meta, Apple, and Amazon European HQs, with world-class universities and a generous 2-year stay-back permission after graduation. Ireland offers an exceptional balance of academic quality, tech career opportunity, and quality of life, all in a welcoming, English-speaking environment.',
+    quickStats: [['30+', 'Universities & Colleges'], ['â‚¬10kâ€“â‚¬25k', 'Tuition/Year'], ['6â€“8 Weeks', 'Visa Processing'], ['2 Years', 'Graduate Stay-Back']],
     whyStudyHere: [
-      { icon: Globe, title: 'English-Speaking EU Country', desc: 'Ireland is the only English-speaking country in the EU after Brexit — ideal for students who want EU access without a language barrier.' },
-      { icon: TrendingUp, title: 'Tech Industry Hub', desc: 'Google, Meta, Apple, Amazon, Microsoft — virtually every global tech giant has its European HQ in Dublin, creating massive job opportunities.' },
+      { icon: Globe, title: 'English-Speaking EU Country', desc: 'Ireland is the only English-speaking country in the EU after Brexit â€” ideal for students who want EU access without a language barrier.' },
+      { icon: TrendingUp, title: 'Tech Industry Hub', desc: 'Google, Meta, Apple, Amazon, Microsoft â€” virtually every global tech giant has its European HQ in Dublin, creating massive job opportunities.' },
       { icon: Shield, title: '2-Year Stay-Back Permission', desc: "After completing a degree of 1+ years, international students get a 2-year permission to live and work in Ireland with no job offer required." },
       { icon: Award, title: 'Quality University System', desc: 'Trinity College Dublin and University College Dublin rank globally. Ireland produces world-class graduates in STEM, business, and humanities.' },
       { icon: Users, title: 'Welcoming Community', desc: 'Ireland has a warm, welcoming culture with a growing African community. It\'s consistently rated as one of the most friendly countries for international students.' },
       { icon: MapPin, title: 'Gateway to Europe', desc: "Ireland's EU membership means your Irish degree opens doors across 27 EU member states and the entire European job market." },
     ],
     topUniversities: [
-      { name: 'Trinity College Dublin', rank: 'Top 100 World', location: 'Dublin', type: 'Research University', programs: ['Computer Science', 'Medicine', 'Law', 'Business', 'Engineering'], tuition: '€15,000–€25,000/yr' },
-      { name: 'University College Dublin', rank: 'Top 200 World', location: 'Dublin', type: 'Research University', programs: ['Business', 'Engineering', 'Medicine', 'Architecture', 'Science'], tuition: '€14,000–€22,000/yr' },
-      { name: 'NUI Galway', rank: 'Top 250 World', location: 'Galway', type: 'Research University', programs: ['Engineering', 'Medicine', 'Business', 'Arts', 'Science'], tuition: '€12,000–€20,000/yr' },
-      { name: 'University College Cork', rank: 'Top 300 World', location: 'Cork', type: 'Research University', programs: ['Pharmacy', 'Medicine', 'Business', 'Law', 'Science'], tuition: '€12,000–€19,000/yr' },
-      { name: 'Dublin City University', rank: 'Young University Top 50', location: 'Dublin', type: 'Modern University', programs: ['Communications', 'Computing', 'Business', 'Engineering', 'Science'], tuition: '€12,000–€18,000/yr' },
-      { name: 'Maynooth University', rank: 'Top Young Universities', location: 'Maynooth, Co. Kildare', type: 'Liberal Arts University', programs: ['Mathematics', 'Computer Science', 'Humanities', 'Business', 'Social Sciences'], tuition: '€11,000–€17,000/yr' },
+      { name: 'Trinity College Dublin', rank: 'Top 100 World', location: 'Dublin', type: 'Research University', programs: ['Computer Science', 'Medicine', 'Law', 'Business', 'Engineering'], tuition: 'â‚¬15,000â€“â‚¬25,000/yr' },
+      { name: 'University College Dublin', rank: 'Top 200 World', location: 'Dublin', type: 'Research University', programs: ['Business', 'Engineering', 'Medicine', 'Architecture', 'Science'], tuition: 'â‚¬14,000â€“â‚¬22,000/yr' },
+      { name: 'NUI Galway', rank: 'Top 250 World', location: 'Galway', type: 'Research University', programs: ['Engineering', 'Medicine', 'Business', 'Arts', 'Science'], tuition: 'â‚¬12,000â€“â‚¬20,000/yr' },
+      { name: 'University College Cork', rank: 'Top 300 World', location: 'Cork', type: 'Research University', programs: ['Pharmacy', 'Medicine', 'Business', 'Law', 'Science'], tuition: 'â‚¬12,000â€“â‚¬19,000/yr' },
+      { name: 'Dublin City University', rank: 'Young University Top 50', location: 'Dublin', type: 'Modern University', programs: ['Communications', 'Computing', 'Business', 'Engineering', 'Science'], tuition: 'â‚¬12,000â€“â‚¬18,000/yr' },
+      { name: 'Maynooth University', rank: 'Top Young Universities', location: 'Maynooth, Co. Kildare', type: 'Liberal Arts University', programs: ['Mathematics', 'Computer Science', 'Humanities', 'Business', 'Social Sciences'], tuition: 'â‚¬11,000â€“â‚¬17,000/yr' },
     ],
     visa: {
       name: 'Irish Study Visa (Type D)',
-      processingTime: '6–8 weeks',
+      processingTime: '6â€“8 weeks',
       workRights: '20 hours/week during term, 40 hours/week during holidays',
       postStudy: '2-year stay permission (Third Level Graduate Programme)',
-      requirements: ['Letter of acceptance from an Irish higher education institution', 'Proof of financial means: €7,000/year minimum', 'Private health insurance', 'Evidence of pre-paid accommodation', 'IELTS 5.5+ or equivalent', 'Bank statements for last 6 months'],
+      requirements: ['Letter of acceptance from an Irish higher education institution', 'Proof of financial means: â‚¬7,000/year minimum', 'Private health insurance', 'Evidence of pre-paid accommodation', 'IELTS 5.5+ or equivalent', 'Bank statements for last 6 months'],
     },
-    costs: { tuition: '€10,000 – €25,000 per year', accommodation: '€600 – €1,400/month', food: '€200 – €400/month', transport: '€100 – €150/month', totalEstimate: '€20,000 – €35,000/year' },
-    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 5.5–6.5 depending on course', 'Statement of Purpose', 'Academic transcripts', 'Reference letters (1–2)', 'CV/Resume (for postgraduate)'],
+    costs: { tuition: 'â‚¬10,000 â€“ â‚¬25,000 per year', accommodation: 'â‚¬600 â€“ â‚¬1,400/month', food: 'â‚¬200 â€“ â‚¬400/month', transport: 'â‚¬100 â€“ â‚¬150/month', totalEstimate: 'â‚¬20,000 â€“ â‚¬35,000/year' },
+    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 5.5â€“6.5 depending on course', 'Statement of Purpose', 'Academic transcripts', 'Reference letters (1â€“2)', 'CV/Resume (for postgraduate)'],
     intakes: 'September (main) and January (limited courses)',
     popularCourses: ['Computer Science', 'Data Analytics', 'Business', 'MBA', 'Nursing', 'Finance', 'Engineering', 'Media & Communications', 'Social Work', 'Architecture'],
     testimonials: [
-      { name: 'Emeka Eze', uni: 'NUI Galway', course: 'MSc Data Analytics', text: 'Ireland was a great choice — affordable, English-speaking, EU access. Their counsellor gave me three options fitting my budget. Got into my first choice!', init: 'EE', col: 'bg-green-700' },
+      { name: 'Emeka Eze', uni: 'NUI Galway', course: 'MSc Data Analytics', text: 'Ireland was a great choice â€” affordable, English-speaking, EU access. Their counsellor gave me three options fitting my budget. Got into my first choice!', init: 'EE', col: 'bg-green-700' },
       { name: 'Yinka Adeleke', uni: 'Trinity College Dublin', course: 'MSc Computer Science', text: 'Working at Google Dublin 6 months after graduation on my stay-back visa. The 2-year permission is the best thing about Ireland for tech graduates.', init: 'YA', col: 'bg-blue-700' },
     ],
   },
@@ -267,33 +267,33 @@ const COUNTRY_DATA = {
     heroImage: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?auto=format&fit=crop&w=1920&q=80',
     accent: 'from-orange-950/90 via-orange-900/70 to-orange-950/40',
     tagline: '2,200+ English Programs in the Heart of Europe',
-    intro: 'The Netherlands offers over 2,200 programs taught entirely in English — more than any other non-English-speaking country in the world. With world-class universities, a highly international student community, and excellent quality of life in Amsterdam, Rotterdam, and Delft, the Netherlands delivers a full European education experience with outstanding career prospects across the EU.',
-    quickStats: [['50+', 'Universities'], ['€8k–€20k', 'Tuition/Year'], ['4–8 Weeks', 'Visa Processing'], ['1 Year', 'Orientation Permit']],
+    intro: 'The Netherlands offers over 2,200 programs taught entirely in English â€” more than any other non-English-speaking country in the world. With world-class universities, a highly international student community, and excellent quality of life in Amsterdam, Rotterdam, and Delft, the Netherlands delivers a full European education experience with outstanding career prospects across the EU.',
+    quickStats: [['50+', 'Universities'], ['â‚¬8kâ€“â‚¬20k', 'Tuition/Year'], ['4â€“8 Weeks', 'Visa Processing'], ['1 Year', 'Orientation Permit']],
     whyStudyHere: [
       { icon: Globe, title: '2,200+ English Programs', desc: 'More English-medium programs than any non-English-speaking country. No Dutch language required for most master\'s degrees.' },
       { icon: TrendingUp, title: 'EU Job Market Access', desc: 'Netherlands-based companies include Philips, Shell, Unilever, and KPMG. Your Dutch degree gives EU-wide career access.' },
-      { icon: Shield, title: '1-Year Orientation Permit', desc: "After graduation, you get a 1-year permit to stay and find work in the Netherlands — no job offer needed upfront." },
+      { icon: Shield, title: '1-Year Orientation Permit', desc: "After graduation, you get a 1-year permit to stay and find work in the Netherlands â€” no job offer needed upfront." },
       { icon: Award, title: 'World-Class Universities', desc: 'University of Amsterdam, Delft, and Erasmus Rotterdam consistently rank in the global top 200, known for research and innovation.' },
-      { icon: Users, title: 'Most International Campus', desc: 'Over 100,000 international students study in the Netherlands — one of the most diverse student communities in Europe.' },
+      { icon: Users, title: 'Most International Campus', desc: 'Over 100,000 international students study in the Netherlands â€” one of the most diverse student communities in Europe.' },
       { icon: MapPin, title: 'Heart of Europe', desc: 'Amsterdam is 2 hours from London and 4 from Paris by train. The Netherlands is the perfect base for exploring Western Europe.' },
     ],
     topUniversities: [
-      { name: 'University of Amsterdam', rank: 'Top 60 World', location: 'Amsterdam', type: 'Research University', programs: ['Social Sciences', 'Business', 'Law', 'Natural Sciences', 'Humanities'], tuition: '€10,000–€18,000/yr' },
-      { name: 'Delft University of Technology', rank: 'Top Engineering EU', location: 'Delft', type: 'Technical University', programs: ['Engineering', 'Architecture', 'Computer Science', 'Applied Mathematics', 'Industrial Design'], tuition: '€14,000–€20,000/yr' },
-      { name: 'Erasmus University Rotterdam', rank: 'Top Business EU', location: 'Rotterdam', type: 'Business/Research', programs: ['Business', 'Economics', 'Law', 'Medicine', 'Social Sciences'], tuition: '€9,000–€18,000/yr' },
-      { name: 'Utrecht University', rank: 'Top 100 World', location: 'Utrecht', type: 'Research University', programs: ['Science', 'Humanities', 'Law', 'Medicine', 'Social Sciences'], tuition: '€9,000–€17,000/yr' },
-      { name: 'Leiden University', rank: 'Top 150 World', location: 'Leiden', type: 'Research University', programs: ['Law', 'Social Sciences', 'Arts', 'Natural Sciences', 'Medicine'], tuition: '€9,000–€16,000/yr' },
-      { name: 'Wageningen University', rank: 'Top Agricultural World', location: 'Wageningen', type: 'Research University', programs: ['Agriculture', 'Life Sciences', 'Environmental Sciences', 'Food Technology', 'Biotechnology'], tuition: '€11,000–€16,000/yr' },
+      { name: 'University of Amsterdam', rank: 'Top 60 World', location: 'Amsterdam', type: 'Research University', programs: ['Social Sciences', 'Business', 'Law', 'Natural Sciences', 'Humanities'], tuition: 'â‚¬10,000â€“â‚¬18,000/yr' },
+      { name: 'Delft University of Technology', rank: 'Top Engineering EU', location: 'Delft', type: 'Technical University', programs: ['Engineering', 'Architecture', 'Computer Science', 'Applied Mathematics', 'Industrial Design'], tuition: 'â‚¬14,000â€“â‚¬20,000/yr' },
+      { name: 'Erasmus University Rotterdam', rank: 'Top Business EU', location: 'Rotterdam', type: 'Business/Research', programs: ['Business', 'Economics', 'Law', 'Medicine', 'Social Sciences'], tuition: 'â‚¬9,000â€“â‚¬18,000/yr' },
+      { name: 'Utrecht University', rank: 'Top 100 World', location: 'Utrecht', type: 'Research University', programs: ['Science', 'Humanities', 'Law', 'Medicine', 'Social Sciences'], tuition: 'â‚¬9,000â€“â‚¬17,000/yr' },
+      { name: 'Leiden University', rank: 'Top 150 World', location: 'Leiden', type: 'Research University', programs: ['Law', 'Social Sciences', 'Arts', 'Natural Sciences', 'Medicine'], tuition: 'â‚¬9,000â€“â‚¬16,000/yr' },
+      { name: 'Wageningen University', rank: 'Top Agricultural World', location: 'Wageningen', type: 'Research University', programs: ['Agriculture', 'Life Sciences', 'Environmental Sciences', 'Food Technology', 'Biotechnology'], tuition: 'â‚¬11,000â€“â‚¬16,000/yr' },
     ],
     visa: {
       name: 'MVV Visa + Residence Permit',
-      processingTime: '4–8 weeks',
+      processingTime: '4â€“8 weeks',
       workRights: '16 hours/week during study',
       postStudy: '1-year Orientation Year Permit (Zoekjaar)',
-      requirements: ['Admission letter from an accredited Dutch university', 'Proof of funds: €900–€1,000/month', 'Health insurance', 'Accommodation confirmation', 'TB test (for Nigerian nationals)', 'Clean criminal record'],
+      requirements: ['Admission letter from an accredited Dutch university', 'Proof of funds: â‚¬900â€“â‚¬1,000/month', 'Health insurance', 'Accommodation confirmation', 'TB test (for Nigerian nationals)', 'Clean criminal record'],
     },
-    costs: { tuition: '€8,000 – €20,000 per year', accommodation: '€500 – €1,200/month', food: '€200 – €400/month', transport: '€100 – €150/month', totalEstimate: '€15,000 – €30,000/year' },
-    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 6.0–6.5+', 'Motivation letter', 'Academic transcripts', 'CV/Resume', 'References (1–2)'],
+    costs: { tuition: 'â‚¬8,000 â€“ â‚¬20,000 per year', accommodation: 'â‚¬500 â€“ â‚¬1,200/month', food: 'â‚¬200 â€“ â‚¬400/month', transport: 'â‚¬100 â€“ â‚¬150/month', totalEstimate: 'â‚¬15,000 â€“ â‚¬30,000/year' },
+    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 6.0â€“6.5+', 'Motivation letter', 'Academic transcripts', 'CV/Resume', 'References (1â€“2)'],
     intakes: 'September (main) and February (some programs)',
     popularCourses: ['Business', 'Data Science', 'Engineering', 'Computer Science', 'Economics', 'International Law', 'Architecture', 'MBA', 'Finance', 'Social Sciences'],
     testimonials: [
@@ -305,34 +305,34 @@ const COUNTRY_DATA = {
     country: 'New Zealand', code: 'nz',
     heroImage: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1920&q=80',
     accent: 'from-teal-950/90 via-teal-900/70 to-teal-950/40',
-    tagline: 'Safe, Welcoming & Beautiful — Study in Paradise',
-    intro: 'New Zealand is the perfect destination for students seeking world-class education in a safe, stunning natural environment. With 8 universities, a relaxed and welcoming culture, and post-study work rights of 1–3 years, New Zealand offers a fantastic balance of academic excellence and quality of life. Auckland consistently ranks among the world\'s most liveable cities, and the country is globally recognised for its warmth toward international students.',
-    quickStats: [['8', 'Universities'], ['NZD 22k–40k', 'Tuition/Year'], ['4–8 Weeks', 'Visa Processing'], ['1–3 Years', 'Post-Study Visa']],
+    tagline: 'Safe, Welcoming & Beautiful â€” Study in Paradise',
+    intro: 'New Zealand is the perfect destination for students seeking world-class education in a safe, stunning natural environment. With 8 universities, a relaxed and welcoming culture, and post-study work rights of 1â€“3 years, New Zealand offers a fantastic balance of academic excellence and quality of life. Auckland consistently ranks among the world\'s most liveable cities, and the country is globally recognised for its warmth toward international students.',
+    quickStats: [['8', 'Universities'], ['NZD 22kâ€“40k', 'Tuition/Year'], ['4â€“8 Weeks', 'Visa Processing'], ['1â€“3 Years', 'Post-Study Visa']],
     whyStudyHere: [
       { icon: Award, title: 'Quality Education System', desc: 'New Zealand has 8 universities, all government-funded and quality-assured. Auckland ranks in the global top 100.' },
-      { icon: Shield, title: 'Post-Study Work Visa', desc: 'Graduates receive 1–3 years of post-study work rights depending on qualification level, allowing career building in New Zealand.' },
+      { icon: Shield, title: 'Post-Study Work Visa', desc: 'Graduates receive 1â€“3 years of post-study work rights depending on qualification level, allowing career building in New Zealand.' },
       { icon: Users, title: 'Safe & Welcoming', desc: "New Zealand is one of the world's safest countries, known for its friendly, inclusive culture and low crime rates." },
-      { icon: MapPin, title: 'Stunning Environment', desc: "Study amidst world-famous landscapes — from Auckland's harbours to Queenstown's mountains, fiords, and national parks." },
+      { icon: MapPin, title: 'Stunning Environment', desc: "Study amidst world-famous landscapes â€” from Auckland's harbours to Queenstown's mountains, fiords, and national parks." },
       { icon: TrendingUp, title: 'Work While Studying', desc: 'International students can work 20 hours/week during semester and full-time during scheduled breaks to fund living costs.' },
-      { icon: Globe, title: 'Unique Program Strengths', desc: 'NZ is globally recognised for agriculture, viticulture, marine biology, and environmental science — unique programs hard to find elsewhere.' },
+      { icon: Globe, title: 'Unique Program Strengths', desc: 'NZ is globally recognised for agriculture, viticulture, marine biology, and environmental science â€” unique programs hard to find elsewhere.' },
     ],
     topUniversities: [
-      { name: 'University of Auckland', rank: 'Top 100 World', location: 'Auckland', type: 'Research University', programs: ['Engineering', 'Medicine', 'Business', 'Law', 'Arts'], tuition: 'NZD 30,000–45,000/yr' },
-      { name: 'University of Otago', rank: 'Top 200 World', location: 'Dunedin', type: 'Research University', programs: ['Medicine', 'Dentistry', 'Pharmacy', 'Science', 'Commerce'], tuition: 'NZD 28,000–40,000/yr' },
-      { name: 'Victoria University of Wellington', rank: 'Top 250 World', location: 'Wellington', type: 'Research University', programs: ['Law', 'Business', 'Architecture', 'Science', 'Music'], tuition: 'NZD 25,000–38,000/yr' },
-      { name: 'University of Canterbury', rank: 'Top 300 World', location: 'Christchurch', type: 'Research University', programs: ['Engineering', 'Science', 'Arts', 'Commerce', 'Education'], tuition: 'NZD 24,000–35,000/yr' },
-      { name: 'Massey University', rank: 'Top 500 World', location: 'Palmerston North / Auckland', type: 'Applied University', programs: ['Agriculture', 'Business', 'Design', 'Aviation', 'Veterinary Science'], tuition: 'NZD 22,000–32,000/yr' },
-      { name: 'Auckland University of Technology', rank: 'Young University Top 100', location: 'Auckland', type: 'Modern University', programs: ['Business', 'Engineering', 'Communications', 'Health Sciences', 'Computer Science'], tuition: 'NZD 22,000–32,000/yr' },
+      { name: 'University of Auckland', rank: 'Top 100 World', location: 'Auckland', type: 'Research University', programs: ['Engineering', 'Medicine', 'Business', 'Law', 'Arts'], tuition: 'NZD 30,000â€“45,000/yr' },
+      { name: 'University of Otago', rank: 'Top 200 World', location: 'Dunedin', type: 'Research University', programs: ['Medicine', 'Dentistry', 'Pharmacy', 'Science', 'Commerce'], tuition: 'NZD 28,000â€“40,000/yr' },
+      { name: 'Victoria University of Wellington', rank: 'Top 250 World', location: 'Wellington', type: 'Research University', programs: ['Law', 'Business', 'Architecture', 'Science', 'Music'], tuition: 'NZD 25,000â€“38,000/yr' },
+      { name: 'University of Canterbury', rank: 'Top 300 World', location: 'Christchurch', type: 'Research University', programs: ['Engineering', 'Science', 'Arts', 'Commerce', 'Education'], tuition: 'NZD 24,000â€“35,000/yr' },
+      { name: 'Massey University', rank: 'Top 500 World', location: 'Palmerston North / Auckland', type: 'Applied University', programs: ['Agriculture', 'Business', 'Design', 'Aviation', 'Veterinary Science'], tuition: 'NZD 22,000â€“32,000/yr' },
+      { name: 'Auckland University of Technology', rank: 'Young University Top 100', location: 'Auckland', type: 'Modern University', programs: ['Business', 'Engineering', 'Communications', 'Health Sciences', 'Computer Science'], tuition: 'NZD 22,000â€“32,000/yr' },
     ],
     visa: {
       name: 'New Zealand Student Visa',
-      processingTime: '4–8 weeks',
+      processingTime: '4â€“8 weeks',
       workRights: '20 hours/week during study, full-time during breaks',
-      postStudy: 'Post-Study Work Visa: 1–3 years',
+      postStudy: 'Post-Study Work Visa: 1â€“3 years',
       requirements: ['Offer of place from a New Zealand institution', 'Proof of funds: NZD 15,000/year for living costs', 'Return ticket evidence', 'Health and character requirements', 'Medical and chest X-ray (some nationalities)', 'IELTS 5.5+'],
     },
-    costs: { tuition: 'NZD 22,000 – 40,000 per year', accommodation: 'NZD 700 – 1,400/month', food: 'NZD 300 – 500/month', transport: 'NZD 100 – 200/month', totalEstimate: 'NZD 35,000 – 60,000/year' },
-    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 5.5–6.5+', 'Statement of Purpose', 'Academic transcripts', 'References'],
+    costs: { tuition: 'NZD 22,000 â€“ 40,000 per year', accommodation: 'NZD 700 â€“ 1,400/month', food: 'NZD 300 â€“ 500/month', transport: 'NZD 100 â€“ 200/month', totalEstimate: 'NZD 35,000 â€“ 60,000/year' },
+    requirements: ['WAEC/NECO minimum 5 credits', 'IELTS Academic 5.5â€“6.5+', 'Statement of Purpose', 'Academic transcripts', 'References'],
     intakes: 'February and July',
     popularCourses: ['Engineering', 'Business', 'Medicine', 'Computer Science', 'Agriculture', 'Tourism', 'Nursing', 'Architecture', 'Film & Media', 'MBA'],
     testimonials: [
@@ -341,7 +341,7 @@ const COUNTRY_DATA = {
   },
 };
 
-/* ─── MAIN COMPONENT ────────────────────────────────────────── */
+/* â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export default function StudyAbroadCountry() {
   const { countrySlug } = useParams();
@@ -377,7 +377,7 @@ export default function StudyAbroadCountry() {
   return (
     <div>
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
+      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative min-h-[75vh] flex flex-col justify-end overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('${data.heroImage}')` }} />
@@ -402,7 +402,7 @@ export default function StudyAbroadCountry() {
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 leading-tight">
               Study in <span className="text-green-400">{data.country}</span>
             </h1>
             <p className="text-white/80 text-lg md:text-xl mb-8 max-w-2xl leading-relaxed">{data.tagline}</p>
@@ -420,7 +420,7 @@ export default function StudyAbroadCountry() {
             <div className="flex flex-wrap gap-3">
               <button onClick={() => setShowForm(true)}
                 className="flex items-center gap-2 bg-green-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-700 transition shadow-lg">
-                Apply Now — Free Consultation <ArrowRight size={16} />
+                Apply Now â€” Free Consultation <ArrowRight size={16} />
               </button>
               <Link to="/study-abroad"
                 className="flex items-center gap-2 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl hover:bg-white/10 transition">
@@ -431,7 +431,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── INTRO ────────────────────────────────────────────── */}
+      {/* â”€â”€ INTRO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="inline-block bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
@@ -444,7 +444,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── WHY STUDY HERE ───────────────────────────────────── */}
+      {/* â”€â”€ WHY STUDY HERE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
@@ -469,7 +469,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── TOP UNIVERSITIES ─────────────────────────────────── */}
+      {/* â”€â”€ TOP UNIVERSITIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
@@ -526,7 +526,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── VISA GUIDE ───────────────────────────────────────── */}
+      {/* â”€â”€ VISA GUIDE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
@@ -585,7 +585,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── COSTS ────────────────────────────────────────────── */}
+      {/* â”€â”€ COSTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
@@ -626,7 +626,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── REQUIREMENTS + COURSES ───────────────────────────── */}
+      {/* â”€â”€ REQUIREMENTS + COURSES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
@@ -673,7 +673,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────── */}
+      {/* â”€â”€ TESTIMONIALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {data.testimonials?.length > 0 && (
         <section className="py-16 px-4 bg-white">
           <div className="max-w-5xl mx-auto">
@@ -700,7 +700,7 @@ export default function StudyAbroadCountry() {
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{name}</p>
-                      <p className="text-gray-400 text-xs">{course} — {uni}</p>
+                      <p className="text-gray-400 text-xs">{course} â€” {uni}</p>
                     </div>
                   </div>
                 </div>
@@ -710,8 +710,8 @@ export default function StudyAbroadCountry() {
         </section>
       )}
 
-      {/* ── CTA BANNER ───────────────────────────────────────── */}
-      <section className="bg-green-900 text-white py-20 px-4">
+      {/* â”€â”€ CTA BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="bg-green-900 text-white py-10 md:py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-5 flex justify-center"><FlagImg code={data.code} w={80} className="h-14 rounded-md shadow-lg" /></div>
           <h2 className="text-3xl font-extrabold mb-3">Ready to Study in {data.country}?</h2>
@@ -722,7 +722,7 @@ export default function StudyAbroadCountry() {
           <div className="flex flex-wrap gap-4 justify-center">
             <button onClick={() => setShowForm(true)}
               className="bg-white text-green-900 font-bold px-8 py-4 rounded-xl hover:bg-green-50 transition">
-              Book Free Consultation →
+              Book Free Consultation â†’
             </button>
             <Link to="/study-abroad"
               className="border border-white/40 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition flex items-center gap-2">
@@ -732,7 +732,7 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── APPLICATION MODAL ────────────────────────────────── */}
+      {/* â”€â”€ APPLICATION MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -743,7 +743,7 @@ export default function StudyAbroadCountry() {
               </div>
               <button onClick={() => setShowForm(false)}
                 className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition text-gray-600 text-xl font-bold">
-                ×
+                Ã—
               </button>
             </div>
 
@@ -830,3 +830,4 @@ export default function StudyAbroadCountry() {
     </div>
   );
 }
+
