@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Globe, BookOpen, Plane, FileText, CheckCircle, Star,
@@ -9,7 +9,7 @@ import {
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
-/* â”€â”€â”€ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── DATA ──────────────────────────────────────────────────── */
 
 function FlagImg({ code, w = 40, className = '' }) {
   return (
@@ -90,9 +90,9 @@ const DESTINATIONS = [
 ];
 
 const SERVICES = [
-  { icon: BookOpen, title: 'University Selection', color: 'bg-green-100 text-green-700', desc: 'Personalised shortlisting of 5â€“10 universities based on your academic profile, budget, and career goals. We split between realistic and aspirational choices.' },
+  { icon: BookOpen, title: 'University Selection', color: 'bg-green-100 text-green-700', desc: 'Personalised shortlisting of 5–10 universities based on your academic profile, budget, and career goals. We split between realistic and aspirational choices.' },
   { icon: FileText, title: 'Application Writing', color: 'bg-blue-100 text-blue-700', desc: 'Expert personal statement writing and review. We help craft compelling narratives that highlight your strengths and align with each university\'s expectations.' },
-  { icon: Award, title: 'Scholarship Search', color: 'bg-yellow-100 text-yellow-700', desc: 'We identify scholarships, bursaries, and funding options you qualify for. We have helped students secure over â‚¦500M in scholarship funding.' },
+  { icon: Award, title: 'Scholarship Search', color: 'bg-yellow-100 text-yellow-700', desc: 'We identify scholarships, bursaries, and funding options you qualify for. We have helped students secure over ₦500M in scholarship funding.' },
   { icon: Shield, title: 'Visa Assistance', color: 'bg-purple-100 text-purple-700', desc: 'Full student visa consultation, document checklist, mock visa interview coaching, and embassy appointment support for all destination countries.' },
   { icon: Plane, title: 'Pre-Departure Support', color: 'bg-orange-100 text-orange-700', desc: 'Pre-departure orientation briefing covering accommodation, banking, transport, healthcare, and cultural adjustment tips for your destination country.' },
   { icon: Heart, title: 'Ongoing Support', color: 'bg-red-100 text-red-700', desc: 'We don\'t disappear after your visa approval. Our team provides ongoing support even after you arrive on campus, including semester check-ins.' },
@@ -100,9 +100,9 @@ const SERVICES = [
 
 const BENEFITS = [
   { icon: Globe, title: 'Globally Recognised Degree', desc: 'A degree from an international university opens doors worldwide. Employers across Africa, Europe and North America recognise and value international qualifications.' },
-  { icon: TrendingUp, title: 'Career Advancement', desc: 'International graduates earn significantly more. Studies show international degrees command 30â€“60% higher salaries in Nigeria compared to local qualifications.' },
+  { icon: TrendingUp, title: 'Career Advancement', desc: 'International graduates earn significantly more. Studies show international degrees command 30–60% higher salaries in Nigeria compared to local qualifications.' },
   { icon: Users, title: 'Global Network', desc: 'Build friendships and professional connections with students from 150+ countries. Your alumni network becomes a lifelong career asset.' },
-  { icon: Zap, title: 'Personal Growth', desc: 'Living and studying abroad builds independence, cultural intelligence, and resilience â€” qualities employers actively seek in candidates.' },
+  { icon: Zap, title: 'Personal Growth', desc: 'Living and studying abroad builds independence, cultural intelligence, and resilience — qualities employers actively seek in candidates.' },
   { icon: BookOpen, title: 'Research Opportunities', desc: 'Access world-class research facilities, laboratories, and cutting-edge academic resources that may not be available in local institutions.' },
   { icon: MapPin, title: 'Cultural Immersion', desc: 'Experience life in a new country, learn new languages, explore new places, and return home with a broader worldview and life perspective.' },
 ];
@@ -111,18 +111,18 @@ const WHY_US = [
   { icon: Award, title: '95% Visa Success Rate', desc: 'Our thorough preparation and document review means 95 of every 100 students we work with get their student visa approved first attempt.' },
   { icon: Users, title: '2,000+ Students Placed', desc: 'Since 2022, we have successfully placed over 2,000 Nigerian students in universities across 8 countries worldwide.' },
   { icon: GraduationCap, title: '50+ Partner Universities', desc: 'Our direct relationships with universities means faster processing times, special consideration, and in some cases, exclusive scholarship access.' },
-  { icon: Shield, title: 'End-to-End Service', desc: 'From first consultation to your first day on campus â€” we handle every single step so you never feel alone in the process.' },
+  { icon: Shield, title: 'End-to-End Service', desc: 'From first consultation to your first day on campus — we handle every single step so you never feel alone in the process.' },
   { icon: Clock, title: '48-Hour Response Guarantee', desc: 'Every enquiry receives a personalised response from a senior counsellor within 48 hours. No automated replies, no waiting weeks.' },
-  { icon: Heart, title: 'Nigerian-Focused Guidance', desc: 'Our team understands the unique challenges Nigerian students face â€” from credential evaluation to IELTS waivers â€” and knows exactly how to navigate them.' },
+  { icon: Heart, title: 'Nigerian-Focused Guidance', desc: 'Our team understands the unique challenges Nigerian students face — from credential evaluation to IELTS waivers — and knows exactly how to navigate them.' },
 ];
 
 const TESTIMONIALS = [
   { name: 'Chukwuemeka Obi', dest: 'University of Toronto, Canada', course: 'MSc Computer Science', text: 'I tried applying alone twice and got rejected both times. Naija & Overseas identified exactly what was wrong with my applications, fixed my personal statement, and I got admitted with a partial scholarship. I start in September.', init: 'CO', col: 'bg-blue-700', rating: 5 },
   { name: 'Fatima Al-Hassan', dest: "King's College London, UK", course: 'LLM International Law', text: 'My visa was approved first attempt, which shocked everyone who told me getting a UK visa was hard. Their document checklist and interview coaching made all the difference. Now studying my Masters.', init: 'FA', col: 'bg-green-700', rating: 5 },
   { name: 'Adaeze Nwosu', dest: 'University of Melbourne, Australia', course: 'MBA', text: 'What impressed me most was how they found scholarships I had no idea existed. I got a partial scholarship worth AUD 8,000. Their knowledge of Australian admissions is exceptional.', init: 'AN', col: 'bg-purple-700', rating: 5 },
-  { name: 'Ibrahim Musa', dest: 'TU Munich, Germany', course: 'MEng Mechanical Engineering', text: 'Germany was not even on my radar until they suggested it. Tuition-free at one of the world\'s best engineering schools â€” I would never have found this path without their guidance.', init: 'IM', col: 'bg-orange-600', rating: 5 },
+  { name: 'Ibrahim Musa', dest: 'TU Munich, Germany', course: 'MEng Mechanical Engineering', text: 'Germany was not even on my radar until they suggested it. Tuition-free at one of the world\'s best engineering schools — I would never have found this path without their guidance.', init: 'IM', col: 'bg-orange-600', rating: 5 },
   { name: 'Sade Ogundimu', dest: 'University of British Columbia', course: 'BSc Nursing', text: 'The team helped me navigate credential recognition, IELTS waiver eligibility, and the complex UBC application process. They responded to every WhatsApp message promptly. Highly professional.', init: 'SO', col: 'bg-teal-700', rating: 5 },
-  { name: 'Emeka Eze', dest: 'NUI Galway, Ireland', course: 'MSc Data Analytics', text: 'Ireland was a great choice â€” affordable, English-speaking, and inside the EU. Their counsellor gave me three options that fit my budget. I got into my first choice. Amazing service.', init: 'EE', col: 'bg-red-700', rating: 5 },
+  { name: 'Emeka Eze', dest: 'NUI Galway, Ireland', course: 'MSc Data Analytics', text: 'Ireland was a great choice — affordable, English-speaking, and inside the EU. Their counsellor gave me three options that fit my budget. I got into my first choice. Amazing service.', init: 'EE', col: 'bg-red-700', rating: 5 },
 ];
 
 const AFFILIATIONS = [
@@ -143,16 +143,16 @@ const AFFILIATIONS = [
 const FAQS = [
   { q: 'What are the requirements to study abroad?', a: 'Requirements vary by country and university but typically include: a completed secondary/tertiary qualification, English proficiency (IELTS or equivalent), a personal statement, referee letters, and financial proof. We assess your exact requirements during a free consultation.' },
   { q: 'Do I need IELTS to study abroad?', a: 'Many universities and countries now accept IELTS alternatives or offer waivers for students who studied in English-medium institutions. We will advise you on whether you need IELTS or qualify for an exemption based on your profile.' },
-  { q: 'How much does it cost to study abroad?', a: 'Costs vary widely. UK tuition: Â£10,000â€“Â£25,000/year. Canada: CAD 15,000â€“35,000/year. Germany: often free or â‚¬500/semester. We help you identify affordable options and scholarships to reduce costs significantly.' },
-  { q: 'How long does the application process take?', a: 'Typically 4â€“8 weeks from initial consultation to submitting applications. Visa processing adds 2â€“8 weeks depending on the country. We recommend starting at least 6 months before your intended intake.' },
+  { q: 'How much does it cost to study abroad?', a: 'Costs vary widely. UK tuition: £10,000–£25,000/year. Canada: CAD 15,000–35,000/year. Germany: often free or €500/semester. We help you identify affordable options and scholarships to reduce costs significantly.' },
+  { q: 'How long does the application process take?', a: 'Typically 4–8 weeks from initial consultation to submitting applications. Visa processing adds 2–8 weeks depending on the country. We recommend starting at least 6 months before your intended intake.' },
   { q: 'Can I work while studying abroad?', a: 'Yes. Most countries allow international students to work part-time: UK (20 hrs/week), Canada (20 hrs/week), USA (on-campus work), Australia (48 hrs/fortnight). We brief you on work regulations for your destination.' },
-  { q: 'What is a post-study work visa?', a: 'After completing your degree, many countries allow you to stay and work. UK: Graduate Visa (2 years), Canada: PGWP (up to 3 years), Australia: 2â€“4 years, Ireland: 2 years. This is one of the biggest advantages of studying abroad.' },
+  { q: 'What is a post-study work visa?', a: 'After completing your degree, many countries allow you to stay and work. UK: Graduate Visa (2 years), Canada: PGWP (up to 3 years), Australia: 2–4 years, Ireland: 2 years. This is one of the biggest advantages of studying abroad.' },
 ];
 
 const PROCESS_STEPS = [
   { icon: FileText, title: 'Free Consultation', desc: 'Submit your profile for a free assessment. A senior counsellor will review your qualifications and contact you within 48 hours with personalised advice.', time: 'Day 1', badge: '01' },
-  { icon: BookOpen, title: 'University Shortlisting', desc: 'We prepare a personalised list of 5â€“10 universities that match your academic profile, budget, career goals, and location preferences.', time: '24â€“48 hrs', badge: '02' },
-  { icon: Globe, title: 'Application & Documents', desc: 'We help you write a compelling personal statement, prepare all required documents, and submit strong applications to your chosen universities.', time: '2â€“4 weeks', badge: '03' },
+  { icon: BookOpen, title: 'University Shortlisting', desc: 'We prepare a personalised list of 5–10 universities that match your academic profile, budget, career goals, and location preferences.', time: '24–48 hrs', badge: '02' },
+  { icon: Globe, title: 'Application & Documents', desc: 'We help you write a compelling personal statement, prepare all required documents, and submit strong applications to your chosen universities.', time: '2–4 weeks', badge: '03' },
   { icon: Plane, title: 'Visa & Departure', desc: 'Once you receive your offer letter, we guide you through the visa application, pre-departure briefing, and provide support throughout your first semester.', time: 'Ongoing', badge: '04' },
 ];
 
@@ -170,7 +170,7 @@ function FAQItem({ q, a }) {
   );
 }
 
-/* â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── MAIN COMPONENT ────────────────────────────────────────── */
 
 export default function StudyAbroad() {
   const [slide, setSlide] = useState(0);
@@ -237,9 +237,9 @@ export default function StudyAbroad() {
   return (
     <div className="overflow-x-hidden">
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 1 â€” HERO SLIDER
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 1 — HERO SLIDER
+      ══════════════════════════════════════════════════════════ */}
       <section
         className="relative min-h-screen flex flex-col overflow-hidden"
         onMouseEnter={() => setPaused(true)}
@@ -251,8 +251,8 @@ export default function StudyAbroad() {
             className={`absolute inset-0 transition-opacity duration-1000 ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               style={{ backgroundImage: `url('${s.bg}')` }} />
-            <div className={`absolute inset-0 bg-gradient-to-r ${s.accent} to-black/30`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+            <div className={`absolute inset-0 bg-linear-to-r ${s.accent} to-black/30`} />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
           </div>
         ))}
 
@@ -381,9 +381,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 2 â€” STATS STRIP
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 2 — STATS STRIP
+      ══════════════════════════════════════════════════════════ */}
       <section className="bg-green-900 text-white">
         <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 divide-x divide-green-800">
           {[
@@ -400,9 +400,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 3 â€” ABOUT OUR SERVICE
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 3 — ABOUT OUR SERVICE
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
@@ -417,7 +417,7 @@ export default function StudyAbroad() {
                 Naija &amp; Overseas is West Africa's leading educational consultancy, helping Nigerian students achieve their dream of studying at world-class universities across the United Kingdom, Canada, United States, Australia, Germany, Ireland, Netherlands, and New Zealand.
               </p>
               <p>
-                Since our founding, we have placed over <strong className="text-gray-800">2,000 students</strong> in top international universities, with a <strong className="text-gray-800">95% visa success rate</strong> â€” the highest among Nigerian consultancies. Our team of certified admissions counsellors has direct relationships with over 50 partner universities worldwide.
+                Since our founding, we have placed over <strong className="text-gray-800">2,000 students</strong> in top international universities, with a <strong className="text-gray-800">95% visa success rate</strong> — the highest among Nigerian consultancies. Our team of certified admissions counsellors has direct relationships with over 50 partner universities worldwide.
               </p>
               <p>
                 We believe that every talented Nigerian student deserves access to the best education the world has to offer. Our job is to remove every obstacle standing between you and your dream university.
@@ -459,9 +459,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 4 â€” CHOOSE YOUR DREAM DESTINATION
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 4 — CHOOSE YOUR DREAM DESTINATION
+      ══════════════════════════════════════════════════════════ */}
       <section id="destinations" className="py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -477,7 +477,7 @@ export default function StudyAbroad() {
                 <div className="relative overflow-hidden" style={{ paddingBottom: '66%' }}>
                   <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
                     style={{ backgroundImage: `url('${image}')` }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5 group-hover:from-black/90 transition-all duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-black/5 group-hover:from-black/90 transition-all duration-300" />
 
                   {/* Top row */}
                   <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
@@ -502,9 +502,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 5 â€” SERVICES WE OFFER
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 5 — SERVICES WE OFFER
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -534,9 +534,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 6 â€” BENEFITS OF STUDYING ABROAD
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 6 — BENEFITS OF STUDYING ABROAD
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-gray-950 text-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -559,9 +559,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 7 â€” WHY CHOOSE US
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 7 — WHY CHOOSE US
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
@@ -609,16 +609,16 @@ export default function StudyAbroad() {
               </div>
               <button onClick={() => setShowForm(true)}
                 className="w-full mt-8 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl text-sm transition">
-                Join Our Success Stories â†’
+                Join Our Success Stories →
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 8 â€” APPLICATION PROCESS
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 8 — APPLICATION PROCESS
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-green-50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -655,9 +655,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 9 â€” SUCCESS STORIES
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 9 — SUCCESS STORIES
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -691,9 +691,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 10 â€” INTERNATIONAL AFFILIATIONS
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 10 — INTERNATIONAL AFFILIATIONS
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -725,9 +725,9 @@ export default function StudyAbroad() {
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 11 â€” FAQ
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 11 — FAQ
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
@@ -741,15 +741,15 @@ export default function StudyAbroad() {
           <p className="text-center text-sm text-gray-500 mt-6">
             Still have questions?{' '}
             <button onClick={() => setShowForm(true)} className="text-green-700 font-bold hover:underline">
-              Talk to a counsellor â†’
+              Talk to a counsellor →
             </button>
           </p>
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECTION 12 â€” CONTACT + FINAL CTA
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════════
+          SECTION 12 — CONTACT + FINAL CTA
+      ══════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 bg-green-900 text-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
@@ -774,20 +774,20 @@ export default function StudyAbroad() {
           </div>
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center">
             <GraduationCap size={36} className="text-green-400 mx-auto mb-4" />
-            <h3 className="text-xl font-extrabold text-white mb-2">Get Started Today â€” It&apos;s Free</h3>
+            <h3 className="text-xl font-extrabold text-white mb-2">Get Started Today — It&apos;s Free</h3>
             <p className="text-green-300 text-sm mb-6">No payment, no commitment. Just expert advice tailored to your goals.</p>
             <button onClick={() => setShowForm(true)}
               className="w-full bg-yellow-400 text-green-900 font-extrabold py-4 rounded-xl hover:bg-yellow-300 transition text-base shadow-lg">
-              Start Free Application â†’
+              Start Free Application →
             </button>
             <p className="text-green-500 text-xs mt-3">Response within 48 hours guaranteed.</p>
           </div>
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      {/* ══════════════════════════════════════════════════════════
           APPLICATION MODAL
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      ══════════════════════════════════════════════════════════ */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-lg my-auto shadow-2xl overflow-hidden">
@@ -875,7 +875,7 @@ export default function StudyAbroad() {
                     className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
                     {loading
                       ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
-                      : 'Submit Application â†’'}
+                      : 'Submit Application →'}
                   </button>
                 </div>
               </form>
@@ -886,4 +886,3 @@ export default function StudyAbroad() {
     </div>
   );
 }
-

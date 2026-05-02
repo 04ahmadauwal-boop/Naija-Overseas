@@ -54,7 +54,7 @@ export default function Navbar() {
     <>
       <header className={`bg-white sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-lg border-b border-gray-100' : 'border-b border-gray-100'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 md:h-[68px]">
+          <div className="flex items-center justify-between h-16 md:h-17">
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -143,7 +143,7 @@ export default function Navbar() {
 
           {/* User strip (if logged in) */}
           {user && (
-            <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-700 to-green-600">
+            <div className="flex items-center gap-3 px-5 py-4 bg-linear-to-r from-green-700 to-green-600">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0">
                 {userInitial}
               </div>

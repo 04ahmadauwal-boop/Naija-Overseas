@@ -92,7 +92,7 @@ function StatCard({ label, value, sub, icon: Icon, color, link }) {
         </div>
         <TrendingUp size={14} className="text-gray-300 group-hover:text-green-400 transition" />
       </div>
-      <div className="text-3xl font-extrabold text-gray-900 mb-0.5">{value ?? '—'}</div>
+      <div className="text-3xl font-extrabold text-gray-900 mb-0.5">{value || '—'}</div>
       <div className="text-sm font-semibold text-gray-700">{label}</div>
       <div className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${s.badge}`}>{sub}</div>
     </Link>

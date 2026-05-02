@@ -14,7 +14,7 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
     }`}>
       {/* Image — clicks through to detail page */}
-      <Link to={href} className="block relative w-full h-40 bg-gradient-to-br from-green-50 to-green-100 overflow-hidden">
+      <Link to={href} className="block relative w-full h-40 bg-linear-to-br from-green-50 to-green-100 overflow-hidden">
         {school.images?.[0] ? (
           <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (

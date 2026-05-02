@@ -574,7 +574,7 @@ function OverviewTab({
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-2xl p-6 text-white">
+      <div className="bg-linear-to-r from-green-700 to-green-600 rounded-2xl p-6 text-white">
         <p className="text-green-200 text-sm mb-1">Welcome back</p>
         <h2 className="text-2xl font-extrabold mb-1">Hello, {firstName}!</h2>
         <p className="text-green-100 text-sm">Find the perfect school for your child.</p>
@@ -817,7 +817,7 @@ function FindSchoolCard({ school, isSaved, toggleSaveSchool, isCompareSelected, 
     <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all ${
       isCompareSelected ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-100 hover:border-gray-200 hover:shadow-md'
     }`}>
-      <div className="relative h-36 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center overflow-hidden">
+      <div className="relative h-36 bg-linear-to-br from-green-50 to-green-100 flex items-center justify-center overflow-hidden">
         {school.images?.[0] ? (
           <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover" />
         ) : (

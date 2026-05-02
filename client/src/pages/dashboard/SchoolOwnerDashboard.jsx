@@ -108,7 +108,7 @@ function StatusBadge({ status }) {
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab({ school, setActiveTab }) {
-  const achievements = school?.achievements ?? MOCK_ACHIEVEMENTS;
+  const achievements = school?.achievements ? school.achievements : MOCK_ACHIEVEMENTS;
 
   const recentActivity = [
     { icon: MessageCircle, color: 'bg-blue-100 text-blue-700', text: 'New enquiry from a parent in Lagos', time: '2 hours ago' },
@@ -263,7 +263,7 @@ function MySchoolTab({ school, setActiveTab }) {
     <div className="space-y-5">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {/* School Header */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-8">
+        <div className="bg-linear-to-r from-gray-900 to-gray-800 px-6 py-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
@@ -348,17 +348,17 @@ function MySchoolTab({ school, setActiveTab }) {
 
 function EditListingTab({ school, onSaved }) {
   const [form, setForm] = useState({
-    name: school?.name ?? '',
-    type: school?.type ?? 'private',
-    level: school?.level ?? 'secondary',
-    state: school?.state ?? '',
-    city: school?.city ?? '',
-    address: school?.address ?? '',
-    curriculum: school?.curriculum ?? [],
-    fees: { tuition: school?.fees?.tuition ?? '', boarding: school?.fees?.boarding ?? '' },
-    description: school?.description ?? '',
-    contact: { phone: school?.contact?.phone ?? '', email: school?.contact?.email ?? '', website: school?.contact?.website ?? '' },
-    facilities: school?.facilities ?? [],
+    name: school?.name || '',
+    type: school?.type || 'private',
+    level: school?.level || 'secondary',
+    state: school?.state || '',
+    city: school?.city || '',
+    address: school?.address || '',
+    curriculum: school?.curriculum || [],
+    fees: { tuition: school?.fees?.tuition || '', boarding: school?.fees?.boarding || '' },
+    description: school?.description || '',
+    contact: { phone: school?.contact?.phone || '', email: school?.contact?.email || '', website: school?.contact?.website || '' },
+    facilities: school?.facilities || [],
   });
   const [saving, setSaving] = useState(false);
 
@@ -700,7 +700,7 @@ function AchievementsTab({ school }) {
 // ─── Gallery Tab ──────────────────────────────────────────────────────────────
 
 function GalleryTab({ school }) {
-  const [images, setImages] = useState(school?.images ?? []);
+  const [images, setImages] = useState(school?.images || []);
   const [urlInput, setUrlInput] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -880,11 +880,11 @@ export default function SchoolOwnerDashboard() {
     const fetchSchool = async () => {
       try {
         const { data } = await api.get('/schools/admin/all');
-        const schools = data.schools ?? data ?? [];
+        const schools = data.schools || [];
         const found = schools.find(
           (s) => s.owner?._id === user?._id || s.owner === user?._id
         );
-        setSchool(found ?? null);
+        setSchool(found || null);
       } catch {
         setSchool(null);
       } finally {

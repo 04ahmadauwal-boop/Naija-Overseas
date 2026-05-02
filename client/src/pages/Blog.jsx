@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Search, ArrowRight, Calendar, User } from 'lucide-react';
 import api from '../utils/api';
@@ -63,7 +63,7 @@ export default function Blog() {
   return (
     <div>
 
-      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative min-h-90 flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1920&q=80')" }} />
@@ -96,7 +96,7 @@ export default function Blog() {
         </div>
       </section>
 
-      {/* â”€â”€ CATEGORY TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── CATEGORY TABS ────────────────────────────────────── */}
       <div className="border-b border-gray-200 bg-white sticky top-16 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto py-3 scrollbar-hide">
           {CATEGORIES.map((cat) => (
@@ -111,7 +111,7 @@ export default function Blog() {
         </div>
       </div>
 
-      {/* â”€â”€ POSTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── POSTS ────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
@@ -215,7 +215,7 @@ export default function Blog() {
         )}
       </section>
 
-      {/* â”€â”€ NEWSLETTER CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── NEWSLETTER CTA ───────────────────────────────────── */}
       <section className="bg-green-900 text-white py-8 md:py-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-extrabold mb-2">Get education tips in your inbox</h2>
@@ -224,7 +224,7 @@ export default function Blog() {
             <input type="email" placeholder="Enter your email address"
               className="flex-1 px-4 py-3.5 rounded-xl bg-green-800 border border-green-700 text-white placeholder-green-500 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
             <button className="bg-white text-green-900 font-bold px-6 py-3.5 rounded-xl hover:bg-green-50 transition text-sm whitespace-nowrap">
-              Subscribe â†’
+              Subscribe →
             </button>
           </div>
           <p className="text-green-600 text-xs mt-3">No spam. Unsubscribe anytime.</p>
@@ -233,4 +233,3 @@ export default function Blog() {
     </div>
   );
 }
-

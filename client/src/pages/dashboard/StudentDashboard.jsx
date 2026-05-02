@@ -251,7 +251,7 @@ function OverviewTab({ user, setActiveTab }) {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-green-800 via-green-700 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
+      <div className="bg-linear-to-r from-green-800 via-green-700 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-black/10 rounded-full translate-y-1/2" />
         <div className="relative z-10">
@@ -594,7 +594,7 @@ function ConsultationsTab() {
             {upcoming.map((c) => (
               <div
                 key={c.id}
-                className="bg-white rounded-2xl border-l-4 border-green-500 shadow-sm border border-gray-100 p-5"
+                className="bg-white rounded-2xl border-l-4 border-green-500 shadow-sm p-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
@@ -694,7 +694,7 @@ function DocumentsTab() {
         </div>
         <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-green-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500"
+            className="bg-linear-to-r from-green-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -1006,7 +1006,7 @@ export default function StudentDashboard() {
           </div>
           <div>
             <p className="font-extrabold text-white text-sm leading-tight">My Dashboard</p>
-            <p className="text-gray-400 text-xs truncate max-w-[120px]">
+            <p className="text-gray-400 text-xs truncate max-w-30">
               {user?.name || 'Student'}
             </p>
           </div>
