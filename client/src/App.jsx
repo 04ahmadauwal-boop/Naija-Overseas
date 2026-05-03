@@ -22,6 +22,7 @@ import ManageBookings from './pages/admin/ManageBookings';
 import ManageApplications from './pages/admin/ManageApplications';
 import ManageBlog from './pages/admin/ManageBlog';
 import ManageMessages from './pages/admin/ManageMessages';
+import ManageUsers from './pages/admin/ManageUsers';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
 import ParentDashboard from './pages/dashboard/ParentDashboard';
 import SchoolOwnerDashboard from './pages/dashboard/SchoolOwnerDashboard';
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/admin/applications" element={<AdminRoute><ManageApplications /></AdminRoute>} />
           <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
           <Route path="/admin/messages" element={<AdminRoute><ManageMessages /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><ManageUsers /></AdminRoute>} />
 
           <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />

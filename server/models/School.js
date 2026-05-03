@@ -22,6 +22,17 @@ const schoolSchema = new mongoose.Schema(
     facilities: [{ type: String }],
     images: [{ type: String }],
     description: { type: String },
+    achievements: [
+      {
+        id: { type: String },
+        title: { type: String },
+        category: { type: String },
+        year: { type: String },
+        description: { type: String },
+      },
+    ],
+    profileViews: { type: Number, default: 0 },
+    enquiryCount: { type: Number, default: 0 },
     contact: {
       phone: { type: String },
       email: { type: String },

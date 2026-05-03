@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, School, CalendarCheck, Globe,
   FileText, MessageSquare, ExternalLink, GraduationCap,
-  TrendingUp, Clock, Plus
+  TrendingUp, Clock, Plus, Users
 } from 'lucide-react';
 import api from '../../utils/api';
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/admin/schools', icon: School, label: 'Schools' },
   { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
   { to: '/admin/applications', icon: Globe, label: 'Study Abroad' },
+  { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/blog', icon: FileText, label: 'Blog Posts' },
   { to: '/admin/messages', icon: MessageSquare, label: 'Messages' },
 ];
@@ -106,11 +107,12 @@ export function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [schools, bookings, applications, messages] = await Promise.all([
+        const [schools, bookings, applications, messages, users] = await Promise.all([
           api.get('/schools/admin/all'),
           api.get('/bookings'),
           api.get('/study-abroad'),
           api.get('/contact'),
+          api.get('/users'),
         ]);
         setStats({
           totalSchools: schools.data.schools.length,
@@ -120,6 +122,7 @@ export function Dashboard() {
           pendingBookings: bookings.data.bookings.filter((b) => b.status === 'pending').length,
           totalApplications: applications.data.applications.length,
           unreadMessages: messages.data.messages.filter((m) => !m.isRead).length,
+          totalUsers: users.data.total,
         });
       } catch {
         setStats({});
@@ -136,6 +139,7 @@ export function Dashboard() {
     { label: 'Bookings', value: stats.totalBookings, sub: `${stats.pendingBookings} pending`, icon: CalendarCheck, color: 'blue', link: '/admin/bookings' },
     { label: 'Study Abroad Apps', value: stats.totalApplications, sub: 'total submissions', icon: Globe, color: 'purple', link: '/admin/applications' },
     { label: 'Unread Messages', value: stats.unreadMessages, sub: 'require response', icon: MessageSquare, color: 'red', link: '/admin/messages' },
+    { label: 'Registered Users', value: stats.totalUsers, sub: 'students, parents & owners', icon: Users, color: 'blue', link: '/admin/users' },
   ] : [];
 
   return (

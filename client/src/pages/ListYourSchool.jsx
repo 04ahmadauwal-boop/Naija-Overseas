@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   CheckCircle, ChevronRight, ChevronLeft, School,
-  MapPin, DollarSign, Phone, Upload, Star, Clock, Users
+  MapPin, DollarSign, Phone, Upload, Star, Clock, Users,
+  Camera, X as XIcon
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -36,6 +37,7 @@ const INITIAL = {
   state: '', city: '', address: '', description: '',
   fees: { tuition: '', boarding: '' },
   curriculum: [], facilities: [],
+  images: [],
   contact: { phone: '', email: '', website: '' },
   ownerEmail: '', ownerName: '',
 };
@@ -52,11 +54,32 @@ export default function ListYourSchool() {
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef(null);
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white transition';
 
   const toggleArr = (key, val) =>
     setForm((f) => ({ ...f, [key]: f[key].includes(val) ? f[key].filter((x) => x !== val) : [...f[key], val] }));
+
+  const handleImageUpload = async (file) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast.error('File too large — max 10 MB'); return; }
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const { data } = await api.post('/schools/upload-image', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setForm((f) => ({ ...f, images: [...f.images, data.imageUrl] }));
+      toast.success('Photo uploaded!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!form.contact.phone && !form.contact.email) {
@@ -298,6 +321,45 @@ export default function ListYourSchool() {
                   ))}
                 </div>
               </div>
+
+              {/* School Photos */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">School Photos (optional)</label>
+                <p className="text-xs text-gray-400 mb-3">Upload photos of your school campus, classrooms, or facilities. These will appear on your listing card.</p>
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploadingImage}
+                  className="inline-flex items-center gap-2 border border-dashed border-green-400 text-green-700 bg-green-50 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-100 transition disabled:opacity-60">
+                  {uploadingImage ? (
+                    <><span className="w-4 h-4 border-2 border-green-400/40 border-t-green-600 rounded-full animate-spin" /> Uploading…</>
+                  ) : (
+                    <><Camera size={15} /> Upload Photo</>
+                  )}
+                </button>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ''; }}
+                />
+                {form.images.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4">
+                    {form.images.map((url, i) => (
+                      <div key={i} className="relative group aspect-video rounded-xl overflow-hidden bg-gray-100">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setForm((f) => ({ ...f, images: f.images.filter((_, j) => j !== i) }))}
+                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                          <XIcon size={11} className="text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -361,6 +423,7 @@ export default function ListYourSchool() {
                   <div><span className="text-gray-400">State:</span> <span className="font-medium text-gray-800">{form.state || '—'}</span></div>
                   <div><span className="text-gray-400">Tuition:</span> <span className="font-medium text-gray-800">{form.fees.tuition ? `₦${Number(form.fees.tuition).toLocaleString()}` : '—'}</span></div>
                   <div><span className="text-gray-400">Curriculum:</span> <span className="font-medium text-gray-800">{form.curriculum.join(', ') || '—'}</span></div>
+                  <div><span className="text-gray-400">Photos:</span> <span className="font-medium text-gray-800">{form.images.length} uploaded</span></div>
                 </div>
               </div>
 

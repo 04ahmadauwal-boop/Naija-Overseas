@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const slugify = require('slugify');
 const mongoose = require('mongoose');
 const School = require('../models/School');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
+const cloudinary = require('../utils/cloudinary');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // GET /api/schools — public list with filters
 router.get('/', async (req, res) => {
@@ -32,6 +36,32 @@ router.get('/', async (req, res) => {
       .limit(Number(limit));
 
     res.json({ schools, total, page: Number(page), pages: Math.ceil(total / limit) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/schools/my — school owner sees their own school(s)
+router.get('/my', protect, async (req, res) => {
+  try {
+    const schools = await School.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    res.json({ schools });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/schools/upload-image — upload a school image (used during listing form)
+router.post('/upload-image', optionalAuth, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file provided' });
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataUri = `data:${req.file.mimetype};base64,${b64}`;
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: 'naija-overseas/schools/uploads',
+      resource_type: 'image',
+    });
+    res.json({ imageUrl: result.secure_url });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -129,6 +159,56 @@ router.patch('/:id/feature', protect, isAdmin, async (req, res) => {
     school.isFeatured = !school.isFeatured;
     await school.save();
     res.json({ school });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/schools/:id/view — increment profile views (public)
+router.post('/:id/view', async (req, res) => {
+  try {
+    await School.findByIdAndUpdate(req.params.id, { $inc: { profileViews: 1 } });
+    res.json({ ok: true });
+  } catch {
+    res.json({ ok: false });
+  }
+});
+
+// POST /api/schools/:id/gallery/upload — owner uploads image to gallery
+router.post('/:id/gallery/upload', protect, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file provided' });
+    const school = await School.findById(req.params.id);
+    if (!school) return res.status(404).json({ message: 'School not found' });
+    if (school.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataUri = `data:${req.file.mimetype};base64,${b64}`;
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: `naija-overseas/schools/${req.params.id}`,
+      resource_type: 'image',
+    });
+    school.images.push(result.secure_url);
+    await school.save();
+    res.json({ imageUrl: result.secure_url, images: school.images });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE /api/schools/:id/gallery — owner removes an image from gallery
+router.delete('/:id/gallery', protect, async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    const school = await School.findById(req.params.id);
+    if (!school) return res.status(404).json({ message: 'School not found' });
+    if (school.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    school.images = school.images.filter((img) => img !== imageUrl);
+    await school.save();
+    res.json({ images: school.images });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

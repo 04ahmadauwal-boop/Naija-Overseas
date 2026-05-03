@@ -25,6 +25,17 @@ router.post('/', optionalAuth, async (req, res) => {
   }
 });
 
+// GET /api/study-abroad/my — logged-in user's own applications
+router.get('/my', protect, async (req, res) => {
+  try {
+    const applications = await StudyAbroadApplication.find({ user: req.user._id })
+      .sort({ createdAt: -1 });
+    res.json({ applications });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/study-abroad — admin
 router.get('/', protect, isAdmin, async (req, res) => {
   try {

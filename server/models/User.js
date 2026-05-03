@@ -16,6 +16,24 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    dateOfBirth: { type: Date },
+    gender: { type: String, enum: ['male', 'female', 'prefer-not-to-say'] },
+    stateOfOrigin: { type: String },
+    lga: { type: String },
+    address: { type: String },
+    nextOfKin: {
+      name: { type: String },
+      relationship: { type: String },
+      phone: { type: String },
+    },
+    documents: [
+      {
+        name: { type: String, required: true },
+        fileUrl: { type: String, required: true },
+        publicId: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

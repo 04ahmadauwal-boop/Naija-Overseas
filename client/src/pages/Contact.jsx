@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, MessageSquare, Clock, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageSquare, Clock, Send, CheckCircle, Zap, Lock, Globe } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -180,9 +180,11 @@ export default function Contact() {
             { icon: 'âš¡', title: 'Fast Response', desc: 'We reply to all messages within 24 hours on weekdays.' },
             { icon: 'ðŸ”’', title: 'Private & Secure', desc: 'Your information is never shared with third parties.' },
             { icon: 'ðŸŒ', title: 'Multi-Country', desc: 'We support enquiries from Nigeria, Ghana, Gambia & Cameroon.' },
-          ].map(({ icon, title, desc }) => (
+          ].map(({ icon: Icon, title, desc, color }) => (
             <div key={title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              <div className="text-3xl mb-3">{icon}</div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${color}`}>
+              <Icon size={22} />
+            </div>
               <h4 className="font-bold text-gray-900 mb-1">{title}</h4>
               <p className="text-gray-500 text-sm">{desc}</p>
             </div>

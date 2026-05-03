@@ -32,12 +32,6 @@ const ACHIEVEMENT_CATEGORIES = [
   'Academic Excellence', 'Sports', 'Arts', 'Industry Recognition', 'Rankings',
 ];
 
-const MOCK_ACHIEVEMENTS = [
-  { id: '1', title: 'WAEC Best School Award 2024', category: 'Academic Excellence', year: '2024', description: '1st in Lagos State WAEC Results' },
-  { id: '2', title: 'Best Private Secondary School', category: 'Industry Recognition', year: '2023', description: 'Education Excellence Awards, Southwest Nigeria' },
-  { id: '3', title: 'National Science Olympiad Winner', category: 'Academic Excellence', year: '2024', description: '3 students in national top 10' },
-];
-
 const CATEGORY_COLORS = {
   'Academic Excellence': 'bg-blue-100 text-blue-700',
   'Sports': 'bg-green-100 text-green-700',
@@ -107,14 +101,89 @@ function StatusBadge({ status }) {
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-function OverviewTab({ school, setActiveTab }) {
-  const achievements = school?.achievements ? school.achievements : MOCK_ACHIEVEMENTS;
+function timeAgo(date) {
+  if (!date) return null;
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins || 1} minute${mins !== 1 ? 's' : ''} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days} day${days !== 1 ? 's' : ''} ago`;
+  return new Date(date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+}
 
-  const recentActivity = [
-    { icon: MessageCircle, color: 'bg-blue-100 text-blue-700', text: 'New enquiry from a parent in Lagos', time: '2 hours ago' },
-    { icon: Eye, color: 'bg-purple-100 text-purple-700', text: 'Your profile was viewed 12 times today', time: '5 hours ago' },
-    { icon: Star, color: 'bg-yellow-100 text-yellow-700', text: 'New review submitted on your listing', time: 'Yesterday' },
-  ];
+function deriveRecentActivity(school) {
+  if (!school) return [];
+  const items = [];
+
+  if (school.createdAt) {
+    items.push({
+      icon: School,
+      color: 'bg-green-100 text-green-700',
+      text: `${school.name} was submitted for listing on the platform`,
+      time: timeAgo(school.createdAt),
+      ts: new Date(school.createdAt).getTime(),
+    });
+  }
+
+  if (school.status === 'approved' && school.updatedAt) {
+    items.push({
+      icon: CheckCircle,
+      color: 'bg-emerald-100 text-emerald-700',
+      text: `Your listing for ${school.name} was approved and is now live`,
+      time: timeAgo(school.updatedAt),
+      ts: new Date(school.updatedAt).getTime(),
+    });
+  }
+
+  if (school.achievements?.length > 0) {
+    const latest = [...school.achievements].sort((a, b) => (b.year || 0) - (a.year || 0))[0];
+    items.push({
+      icon: Trophy,
+      color: 'bg-yellow-100 text-yellow-700',
+      text: `Achievement added: "${latest.title}" (${latest.year || 'N/A'})`,
+      time: latest.year ? `Year ${latest.year}` : 'Recently',
+      ts: latest.year ? new Date(String(latest.year), 0).getTime() : Date.now() - 86400000,
+    });
+  }
+
+  if (school.images?.length > 0) {
+    items.push({
+      icon: Camera,
+      color: 'bg-purple-100 text-purple-700',
+      text: `${school.images.length} photo${school.images.length !== 1 ? 's' : ''} in your school gallery`,
+      time: 'Gallery',
+      ts: Date.now() - 3600000,
+    });
+  }
+
+  if (school.profileViews > 0) {
+    items.push({
+      icon: Eye,
+      color: 'bg-blue-100 text-blue-700',
+      text: `Your profile has been viewed ${school.profileViews} time${school.profileViews !== 1 ? 's' : ''} in total`,
+      time: 'All time',
+      ts: Date.now() - 7200000,
+    });
+  }
+
+  if (school.enquiryCount > 0) {
+    items.push({
+      icon: MessageCircle,
+      color: 'bg-indigo-100 text-indigo-700',
+      text: `${school.enquiryCount} parent enquir${school.enquiryCount !== 1 ? 'ies' : 'y'} received on your listing`,
+      time: 'All time',
+      ts: Date.now() - 10800000,
+    });
+  }
+
+  return items.sort((a, b) => b.ts - a.ts).slice(0, 5);
+}
+
+function OverviewTab({ school, setActiveTab }) {
+  const achievements = school?.achievements || [];
+  const recentActivity = deriveRecentActivity(school);
 
   return (
     <div className="space-y-6">
@@ -130,7 +199,7 @@ function OverviewTab({ school, setActiveTab }) {
           </div>
           <Link to="/list-your-school"
             className="inline-flex items-center gap-2 bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-800 transition whitespace-nowrap">
-            <Plus size={15} /> Add Your School
+            <Plus size={15} /> List Your School
           </Link>
         </div>
       ) : school.status === 'pending' ? (
@@ -172,8 +241,8 @@ function OverviewTab({ school, setActiveTab }) {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Profile Views', value: '234', sub: 'All time', icon: Eye, color: 'bg-blue-100 text-blue-700' },
-          { label: 'Enquiries This Month', value: '18', sub: 'May 2026', icon: MessageCircle, color: 'bg-green-100 text-green-700' },
+          { label: 'Profile Views', value: String(school?.profileViews || 0), sub: 'All time', icon: Eye, color: 'bg-blue-100 text-blue-700' },
+          { label: 'Enquiries', value: String(school?.enquiryCount || 0), sub: 'All time', icon: MessageCircle, color: 'bg-green-100 text-green-700' },
           { label: 'Total Achievements', value: String(achievements.length), sub: 'Listed awards', icon: Trophy, color: 'bg-yellow-100 text-yellow-700' },
         ].map(({ label, value, sub, icon: Icon, color }) => (
           <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -225,7 +294,9 @@ function OverviewTab({ school, setActiveTab }) {
           <Clock size={15} className="text-gray-300" />
         </div>
         <div className="space-y-1">
-          {recentActivity.map(({ icon: Icon, color, text, time }, i) => (
+          {recentActivity.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">No activity yet. List your school to get started.</p>
+          ) : recentActivity.map(({ icon: Icon, color, text, time }, i) => (
             <div key={i} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
                 <Icon size={14} />
@@ -562,41 +633,41 @@ function EditListingTab({ school, onSaved }) {
 // ─── Achievements Tab ─────────────────────────────────────────────────────────
 
 function AchievementsTab({ school }) {
-  const [achievements, setAchievements] = useState(
-    school?.achievements?.length ? school.achievements : MOCK_ACHIEVEMENTS
-  );
+  const [achievements, setAchievements] = useState(school?.achievements || []);
   const [form, setForm] = useState({ title: '', category: 'Academic Excellence', year: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  const handleAdd = () => {
-    if (!form.title.trim() || !form.year.trim()) {
-      toast.error('Title and year are required');
-      return;
-    }
-    const newAch = { ...form, id: Date.now().toString() };
-    setAchievements((prev) => [newAch, ...prev]);
-    setForm({ title: '', category: 'Academic Excellence', year: '', description: '' });
-    setShowForm(false);
-    toast.success('Achievement added');
-  };
-
-  const handleDelete = (id) => {
-    setAchievements((prev) => prev.filter((a) => a.id !== id));
-    toast.success('Achievement removed');
-  };
-
-  const handleSave = async () => {
+  const persistAchievements = async (updated) => {
     if (!school?._id) { toast.error('No school found'); return; }
     setSaving(true);
     try {
-      await api.put(`/schools/${school._id}`, { achievements });
+      await api.put(`/schools/${school._id}`, { achievements: updated });
       toast.success('Achievements saved!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save achievements');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAdd = async () => {
+    if (!form.title.trim() || !form.year.trim()) {
+      toast.error('Title and year are required');
+      return;
+    }
+    const newAch = { ...form, id: Date.now().toString() };
+    const updated = [newAch, ...achievements];
+    setAchievements(updated);
+    setForm({ title: '', category: 'Academic Excellence', year: '', description: '' });
+    setShowForm(false);
+    await persistAchievements(updated);
+  };
+
+  const handleDelete = async (id) => {
+    const updated = achievements.filter((a) => a.id !== id);
+    setAchievements(updated);
+    await persistAchievements(updated);
   };
 
   return (
@@ -607,19 +678,10 @@ function AchievementsTab({ school }) {
           <h2 className="text-lg font-bold text-gray-900">Achievements</h2>
           <p className="text-sm text-gray-500 mt-0.5">{achievements.length} achievement{achievements.length !== 1 ? 's' : ''} listed</p>
         </div>
-        <div className="flex items-center gap-3">
-          {school?._id && (
-            <button onClick={handleSave} disabled={saving}
-              className="inline-flex items-center gap-2 border border-gray-200 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-50 transition disabled:opacity-60">
-              {saving ? <span className="w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" /> : <Save size={14} />}
-              Save
-            </button>
-          )}
-          <button onClick={() => setShowForm((v) => !v)}
-            className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-green-800 transition">
-            <Plus size={15} /> Add Achievement
-          </button>
-        </div>
+        <button onClick={() => setShowForm((v) => !v)}
+          className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-green-800 transition">
+          <Plus size={15} /> Add Achievement
+        </button>
       </div>
 
       {/* Add Form */}
@@ -656,9 +718,12 @@ function AchievementsTab({ school }) {
                 className="text-sm font-medium text-gray-600 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition">
                 Cancel
               </button>
-              <button onClick={handleAdd}
-                className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-green-800 transition">
-                <Plus size={14} /> Add Achievement
+              <button onClick={handleAdd} disabled={saving}
+                className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
+                {saving
+                  ? <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving...</>
+                  : <><Plus size={14} /> Add Achievement</>
+                }
               </button>
             </div>
           </div>
@@ -685,8 +750,8 @@ function AchievementsTab({ school }) {
                 <h3 className="font-bold text-gray-900 text-sm">{ach.title}</h3>
                 {ach.description && <p className="text-gray-500 text-xs mt-1 leading-relaxed">{ach.description}</p>}
               </div>
-              <button onClick={() => handleDelete(ach.id)}
-                className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center shrink-0 transition">
+              <button onClick={() => handleDelete(ach.id)} disabled={saving}
+                className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center shrink-0 transition disabled:opacity-50">
                 <Trash2 size={14} className="text-red-500" />
               </button>
             </div>
@@ -703,31 +768,58 @@ function GalleryTab({ school }) {
   const [images, setImages] = useState(school?.images || []);
   const [urlInput, setUrlInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleAdd = () => {
-    const trimmed = urlInput.trim();
-    if (!trimmed) { toast.error('Please enter an image URL'); return; }
-    if (images.includes(trimmed)) { toast.error('Image already added'); return; }
-    setImages((prev) => [...prev, trimmed]);
-    setUrlInput('');
-    toast.success('Image added');
-  };
-
-  const handleDelete = (url) => {
-    setImages((prev) => prev.filter((img) => img !== url));
-    toast.success('Image removed');
-  };
-
-  const handleSave = async () => {
+  const persistImages = async (updated) => {
     if (!school?._id) { toast.error('No school found'); return; }
     setSaving(true);
     try {
-      await api.put(`/schools/${school._id}`, { images });
-      toast.success('Gallery saved!');
+      await api.put(`/schools/${school._id}`, { images: updated });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save gallery');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAddUrl = async () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) { toast.error('Please enter an image URL'); return; }
+    if (images.includes(trimmed)) { toast.error('Image already added'); return; }
+    const updated = [...images, trimmed];
+    setImages(updated);
+    setUrlInput('');
+    await persistImages(updated);
+    toast.success('Image added');
+  };
+
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast.error('File too large — max 10 MB'); return; }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      const { data } = await api.post(`/schools/${school._id}/gallery/upload`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setImages(data.images);
+      toast.success('Photo uploaded!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (url) => {
+    const updated = images.filter((img) => img !== url);
+    setImages(updated);
+    try {
+      await api.delete(`/schools/${school._id}/gallery`, { data: { imageUrl: url } });
+    } catch {
+      await persistImages(updated);
     }
   };
 
@@ -739,28 +831,54 @@ function GalleryTab({ school }) {
           <h2 className="text-lg font-bold text-gray-900">Gallery</h2>
           <p className="text-sm text-gray-500 mt-0.5">{images.length} photo{images.length !== 1 ? 's' : ''}</p>
         </div>
-        {school?._id && (
-          <button onClick={handleSave} disabled={saving}
-            className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
-            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-            Save Gallery
-          </button>
+        {(saving || uploading) && (
+          <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+            <span className="w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
+            {uploading ? 'Uploading...' : 'Saving...'}
+          </div>
         )}
       </div>
 
-      {/* Add Photo */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <p className="text-sm font-bold text-gray-900 mb-3">Add Photo</p>
-        <div className="flex gap-3">
-          <input value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            className={inp + ' flex-1'} placeholder="Paste image URL (e.g. https://...)" />
-          <button onClick={handleAdd}
-            className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-green-800 transition whitespace-nowrap">
-            <Plus size={14} /> Add
+      {/* Add Photo — two methods */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+        <p className="text-sm font-bold text-gray-900">Add Photo</p>
+
+        {/* Upload from device */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Upload from Device</p>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || !school?._id}
+            className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
+            {uploading ? (
+              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Uploading…</>
+            ) : (
+              <><Camera size={15} /> Choose Photo</>
+            )}
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ''; }}
+          />
+          <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WEBP · Max 10 MB</p>
         </div>
-        <p className="text-xs text-gray-400 mt-2">Paste a direct image URL. Recommended size: 1200×800px.</p>
+
+        {/* Or paste URL */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Or Paste URL</p>
+          <div className="flex gap-3">
+            <input value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddUrl()}
+              className={inp + ' flex-1'} placeholder="https://example.com/school-photo.jpg" />
+            <button onClick={handleAddUrl} disabled={saving}
+              className="inline-flex items-center gap-2 bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-gray-900 transition whitespace-nowrap disabled:opacity-60">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Image Grid */}
@@ -768,7 +886,7 @@ function GalleryTab({ school }) {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
           <Camera size={32} className="text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 text-sm mb-1">No photos yet</p>
-          <p className="text-gray-400 text-xs">Add photos of your school to attract more parents</p>
+          <p className="text-gray-400 text-xs">Upload photos of your school to attract more parents</p>
           <div className="grid grid-cols-3 gap-3 mt-6 max-w-xs mx-auto">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-square bg-gray-100 rounded-xl animate-pulse" />
@@ -783,8 +901,8 @@ function GalleryTab({ school }) {
                 className="w-full h-full object-cover transition group-hover:scale-105"
                 onError={(e) => { e.target.style.display = 'none'; }} />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                <button onClick={() => handleDelete(url)}
-                  className="opacity-0 group-hover:opacity-100 transition w-9 h-9 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                <button onClick={() => handleDelete(url)} disabled={saving}
+                  className="opacity-0 group-hover:opacity-100 transition w-9 h-9 bg-red-500 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50">
                   <Trash2 size={15} className="text-white" />
                 </button>
               </div>
@@ -798,18 +916,21 @@ function GalleryTab({ school }) {
 
 // ─── Analytics Tab ────────────────────────────────────────────────────────────
 
-function AnalyticsTab() {
-  const maxViews = Math.max(...WEEKLY_DATA.map((d) => d.views));
+function AnalyticsTab({ school }) {
+  const totalViews = school?.profileViews || 0;
+  const totalEnquiries = school?.enquiryCount || 0;
+  const conversionRate = totalViews > 0 ? ((totalEnquiries / totalViews) * 100).toFixed(1) + '%' : '—';
+  const maxViews = Math.max(...WEEKLY_DATA.map((d) => d.views), 1);
 
   return (
     <div className="space-y-5">
       {/* Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Views', value: '234', icon: Eye, color: 'bg-blue-100 text-blue-700', sub: 'All time' },
-          { label: 'This Month', value: '45', icon: TrendingUp, color: 'bg-green-100 text-green-700', sub: 'May 2026' },
-          { label: 'Enquiries', value: '18', icon: MessageCircle, color: 'bg-purple-100 text-purple-700', sub: 'This month' },
-          { label: 'Conversion Rate', value: '7.7%', icon: Users, color: 'bg-yellow-100 text-yellow-700', sub: 'Views to enquiries' },
+          { label: 'Total Views', value: String(totalViews), icon: Eye, color: 'bg-blue-100 text-blue-700', sub: 'All time' },
+          { label: 'Achievements', value: String(school?.achievements?.length || 0), icon: TrendingUp, color: 'bg-green-100 text-green-700', sub: 'Listed awards' },
+          { label: 'Enquiries', value: String(totalEnquiries), icon: MessageCircle, color: 'bg-purple-100 text-purple-700', sub: 'All time' },
+          { label: 'Conversion Rate', value: conversionRate, icon: Users, color: 'bg-yellow-100 text-yellow-700', sub: 'Views to enquiries' },
         ].map(({ label, value, icon: Icon, color, sub }) => (
           <div key={label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color} mb-3`}>
@@ -879,12 +1000,11 @@ export default function SchoolOwnerDashboard() {
   useEffect(() => {
     const fetchSchool = async () => {
       try {
-        const { data } = await api.get('/schools/admin/all');
+        // GET /api/schools/my returns only schools owned by the logged-in user
+        const { data } = await api.get('/schools/my');
         const schools = data.schools || [];
-        const found = schools.find(
-          (s) => s.owner?._id === user?._id || s.owner === user?._id
-        );
-        setSchool(found || null);
+        // Take the first school — an owner typically has one listing
+        setSchool(schools[0] || null);
       } catch {
         setSchool(null);
       } finally {
@@ -1057,7 +1177,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'edit' && <EditListingTab school={school} onSaved={(updated) => setSchool((s) => ({ ...s, ...updated }))} />}
               {activeTab === 'achievements' && <AchievementsTab school={school} />}
               {activeTab === 'gallery' && <GalleryTab school={school} />}
-              {activeTab === 'analytics' && <AnalyticsTab />}
+              {activeTab === 'analytics' && <AnalyticsTab school={school} />}
             </>
           )}
         </div>

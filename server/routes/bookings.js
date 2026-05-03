@@ -33,6 +33,33 @@ router.post('/', optionalAuth, async (req, res) => {
   }
 });
 
+// GET /api/bookings/my — logged-in user's own bookings
+router.get('/my', protect, async (req, res) => {
+  try {
+    const { service } = req.query;
+    const filter = { user: req.user._id };
+    if (service) filter.service = service;
+    const bookings = await Booking.find(filter).sort({ createdAt: -1 });
+    res.json({ bookings });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PATCH /api/bookings/:id/cancel — user cancels their own booking
+router.patch('/:id/cancel', protect, async (req, res) => {
+  try {
+    const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id });
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (booking.status === 'cancelled') return res.status(400).json({ message: 'Already cancelled' });
+    booking.status = 'cancelled';
+    await booking.save();
+    res.json({ booking });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/bookings — admin
 router.get('/', protect, isAdmin, async (req, res) => {
   try {
@@ -45,12 +72,15 @@ router.get('/', protect, isAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/bookings/:id/status — admin updates status
+// PATCH /api/bookings/:id/status — admin updates status and/or call link
 router.patch('/:id/status', protect, isAdmin, async (req, res) => {
   try {
+    const updates = {};
+    if (req.body.status !== undefined) updates.status = req.body.status;
+    if (req.body.callLink !== undefined) updates.callLink = req.body.callLink;
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { status: req.body.status },
+      updates,
       { new: true }
     );
     if (!booking) return res.status(404).json({ message: 'Booking not found' });

@@ -35,10 +35,10 @@ const TEAM = [
 ];
 
 const COUNTRIES = [
-  { flag: 'ðŸ‡³ðŸ‡¬', name: 'Nigeria' },
-  { flag: 'ðŸ‡¬ðŸ‡­', name: 'Ghana' },
-  { flag: 'ðŸ‡¬ðŸ‡²', name: 'The Gambia' },
-  { flag: 'ðŸ‡¨ðŸ‡²', name: 'Cameroon' },
+  { code: 'ng', name: 'Nigeria' },
+  { code: 'gh', name: 'Ghana' },
+  { code: 'gm', name: 'The Gambia' },
+  { code: 'cm', name: 'Cameroon' },
 ];
 
 export default function About() {
@@ -192,9 +192,9 @@ export default function About() {
         <div className="max-w-4xl mx-auto">
           <p className="text-center text-xs text-gray-400 font-semibold uppercase tracking-wider mb-5">Currently serving</p>
           <div className="flex flex-wrap justify-center gap-6">
-            {COUNTRIES.map(({ flag, name }) => (
+            {COUNTRIES.map(({ code, name }) => (
               <div key={name} className="flex items-center gap-2.5 bg-gray-50 border border-gray-100 px-5 py-3 rounded-full">
-                <span className="text-2xl">{flag}</span>
+                <img src={`https://flagcdn.com/w40/${code}.png`} alt={name} className="w-6 h-auto rounded-sm" />
                 <span className="font-semibold text-gray-700 text-sm">{name}</span>
                 <CheckCircle size={14} className="text-green-500" />
               </div>

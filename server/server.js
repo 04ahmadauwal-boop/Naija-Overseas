@@ -27,6 +27,7 @@ app.use('/api/study-abroad', require('./routes/studyAbroad'));
 app.use('/api/blog', require('./routes/blog'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/users', require('./routes/users'));
 
 app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
 

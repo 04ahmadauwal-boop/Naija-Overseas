@@ -26,6 +26,8 @@ export default function SchoolDetail() {
       try {
         const { data } = await api.get(`/schools/${identifier}`);
         setSchool(data.school);
+        // track profile view
+        api.post(`/schools/${data.school._id}/view`).catch(() => {});
       } catch {
         toast.error('School not found');
         navigate('/');

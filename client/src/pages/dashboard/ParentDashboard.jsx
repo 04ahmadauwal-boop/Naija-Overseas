@@ -26,22 +26,6 @@ const MOCK_SAVED = [
   { _id: '2', name: 'Kings College', state: 'Lagos', city: 'Lagos Island', type: 'federal', fees: { tuition: 50000 }, curriculum: 'WAEC' },
 ];
 
-const MOCK_VISITS = [
-  {
-    _id: 'v1',
-    notes: 'Greenfield International School',
-    date: '2026-05-15',
-    time: '10:00 AM',
-    status: 'confirmed',
-  },
-  {
-    _id: 'v2',
-    notes: 'Kings College',
-    date: '2026-05-20',
-    time: '2:00 PM',
-    status: 'pending',
-  },
-];
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -172,19 +156,22 @@ export default function ParentDashboard() {
   }, [children]);
 
   // Fetch visits
+  const fetchVisits = useCallback(async () => {
+    setVisitsLoading(true);
+    try {
+      const { data } = await api.get('/bookings/my', { params: { service: 'school-visit' } });
+      setVisits(data.bookings || []);
+    } catch {
+      setVisits([]);
+    } finally {
+      setVisitsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab !== 'visits') return;
-    setVisitsLoading(true);
-    api.get('/bookings', { params: { service: 'school-visit' } })
-      .then(({ data }) => {
-        const filtered = (data.bookings || []).filter(
-          (b) => b.service === 'school-visit' || b.serviceType === 'school-visit'
-        );
-        setVisits(filtered.length ? filtered : MOCK_VISITS);
-      })
-      .catch(() => setVisits(MOCK_VISITS))
-      .finally(() => setVisitsLoading(false));
-  }, [activeTab]);
+    fetchVisits();
+  }, [activeTab, fetchVisits]);
 
   // Fetch schools (Find Schools tab)
   const fetchSchools = useCallback(async () => {
@@ -252,12 +239,11 @@ export default function ParentDashboard() {
 
   const handleCancelVisit = async (visitId) => {
     try {
-      await api.patch(`/bookings/${visitId}`, { status: 'cancelled' });
+      await api.patch(`/bookings/${visitId}/cancel`);
       setVisits((prev) => prev.map((v) => v._id === visitId ? { ...v, status: 'cancelled' } : v));
       toast.success('Visit cancelled');
     } catch {
-      setVisits((prev) => prev.map((v) => v._id === visitId ? { ...v, status: 'cancelled' } : v));
-      toast.success('Visit cancelled');
+      toast.error('Failed to cancel visit. Please try again.');
     }
   };
 
@@ -463,7 +449,7 @@ export default function ParentDashboard() {
             <OverviewTab
               firstName={firstName}
               savedSchools={savedSchools}
-              visits={MOCK_VISITS}
+              visits={visits}
               quickState={quickState}
               setQuickState={setQuickState}
               quickType={quickType}
@@ -519,6 +505,8 @@ export default function ParentDashboard() {
               visits={visits}
               loading={visitsLoading}
               onCancel={handleCancelVisit}
+              user={user}
+              onBookingCreated={fetchVisits}
             />
           )}
           {activeTab === 'children' && (
@@ -664,8 +652,8 @@ function OverviewTab({
                 <CalendarCheck size={16} className="text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 truncate">{visit.notes || 'School Visit'}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{visit.date} · {visit.time}</p>
+                <p className="font-semibold text-sm text-gray-900 truncate">{visit.name || visit.notes || 'School Visit'}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{visit.date} · {visit.timeSlot || visit.time}</p>
               </div>
               <StatusBadge status={visit.status} />
             </div>
@@ -1061,7 +1049,37 @@ function CompareTab({ selectedForCompare, setSelectedForCompare, handleCompareNa
 }
 
 // ─── Visits Tab ───────────────────────────────────────────────────────────────
-function VisitsTab({ visits, loading, onCancel }) {
+const EMPTY_BOOKING_FORM = { schoolName: '', date: '', timeSlot: '', notes: '' };
+
+function VisitsTab({ visits, loading, onCancel, user, onBookingCreated }) {
+  const [form, setForm] = useState(EMPTY_BOOKING_FORM);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleBookVisit = async (e) => {
+    e.preventDefault();
+    if (!form.schoolName.trim()) { toast.error('Please enter a school name'); return; }
+    if (!form.date) { toast.error('Please select a preferred date'); return; }
+    if (!form.timeSlot) { toast.error('Please select a time slot'); return; }
+    setSubmitting(true);
+    try {
+      await api.post('/bookings', {
+        name: user?.name || '',
+        email: user?.email || '',
+        service: 'school-visit',
+        date: form.date,
+        timeSlot: form.timeSlot,
+        notes: form.schoolName + (form.notes ? ` — ${form.notes}` : ''),
+      });
+      toast.success('Visit booked successfully!');
+      setForm(EMPTY_BOOKING_FORM);
+      onBookingCreated();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to book visit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-2xl">
       <div className="flex items-center justify-between">
@@ -1071,6 +1089,68 @@ function VisitsTab({ visits, loading, onCancel }) {
         </span>
       </div>
 
+      {/* Book a Visit Form */}
+      <div className="bg-white rounded-2xl shadow-sm border border-green-200 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Plus size={16} className="text-green-700" />
+          <h3 className="font-bold text-gray-900 text-sm">Book a School Visit</h3>
+        </div>
+        <form onSubmit={handleBookVisit} className="space-y-3">
+          <input
+            type="text"
+            value={form.schoolName}
+            onChange={(e) => setForm((p) => ({ ...p, schoolName: e.target.value }))}
+            placeholder="School name *"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <div className="relative">
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <select
+                value={form.timeSlot}
+                onChange={(e) => setForm((p) => ({ ...p, timeSlot: e.target.value }))}
+                className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-8"
+              >
+                <option value="">Time slot *</option>
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+              </select>
+            </div>
+          </div>
+          <textarea
+            value={form.notes}
+            onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            placeholder="Additional notes (optional)"
+            rows={3}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 bg-green-700 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {submitting ? (
+              <>
+                <Clock size={15} className="animate-spin" /> Booking...
+              </>
+            ) : (
+              <>
+                <CalendarCheck size={15} /> Book Visit
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Bookings List */}
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -1081,7 +1161,7 @@ function VisitsTab({ visits, loading, onCancel }) {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
           <CalendarCheck size={40} className="mx-auto mb-3 text-gray-200" />
           <p className="font-semibold text-gray-700 mb-1">No visits scheduled</p>
-          <p className="text-sm text-gray-400">Book a school visit consultation from the Contact page.</p>
+          <p className="text-sm text-gray-400">Use the form above to book your first school visit.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -1094,17 +1174,22 @@ function VisitsTab({ visits, loading, onCancel }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-gray-900 text-sm">{visit.notes || 'School Visit'}</p>
+                  <p className="font-semibold text-gray-900 text-sm">{visit.name || visit.notes || 'School Visit'}</p>
                   <StatusBadge status={visit.status} />
                 </div>
                 <div className="flex flex-wrap gap-3 mt-2">
                   <span className="text-xs text-gray-500 flex items-center gap-1">
                     <CalendarCheck size={11} className="text-gray-400" /> {visit.date}
                   </span>
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
-                    <Clock size={11} className="text-gray-400" /> {visit.time}
-                  </span>
+                  {(visit.timeSlot || visit.time) && (
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      <Clock size={11} className="text-gray-400" /> {visit.timeSlot || visit.time}
+                    </span>
+                  )}
                 </div>
+                {visit.notes && visit.name && (
+                  <p className="text-xs text-gray-400 mt-1 truncate">{visit.notes}</p>
+                )}
                 {visit.status !== 'cancelled' && (
                   <button
                     onClick={() => onCancel(visit._id)}
