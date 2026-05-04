@@ -4,6 +4,7 @@ const multer = require('multer');
 const slugify = require('slugify');
 const mongoose = require('mongoose');
 const School = require('../models/School');
+const SuggestedSchool = require('../models/SuggestedSchool');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const cloudinary = require('../utils/cloudinary');
@@ -74,6 +75,16 @@ router.get('/admin/all', protect, isAdmin, async (req, res) => {
     const filter = status ? { status } : {};
     const schools = await School.find(filter).populate('owner', 'name email').sort({ createdAt: -1 });
     res.json({ schools });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/schools/suggestions — admin views submitted suggestions (must be before /:identifier)
+router.get('/suggestions', protect, isAdmin, async (req, res) => {
+  try {
+    const suggestions = await SuggestedSchool.find().sort({ createdAt: -1 });
+    res.json({ suggestions });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -219,6 +230,18 @@ router.delete('/:id', protect, isAdmin, async (req, res) => {
   try {
     await School.findByIdAndDelete(req.params.id);
     res.json({ message: 'School deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/schools/suggest — public, anyone can suggest a school
+router.post('/suggest', async (req, res) => {
+  try {
+    const { schoolName, state, type, website, reason, submittedBy, submittedEmail } = req.body;
+    if (!schoolName?.trim()) return res.status(400).json({ message: 'School name is required' });
+    const suggestion = await SuggestedSchool.create({ schoolName, state, type, website, reason, submittedBy, submittedEmail });
+    res.status(201).json({ suggestion, message: 'Thank you! Your suggestion has been received.' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

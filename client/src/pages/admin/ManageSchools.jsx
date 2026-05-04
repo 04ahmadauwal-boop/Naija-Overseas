@@ -58,7 +58,7 @@ export default function ManageSchools() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminNav />
-      <div className="flex-1 overflow-x-hidden">
+      <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Top bar */}
         <div className="bg-white border-b border-gray-100 px-8 py-5">

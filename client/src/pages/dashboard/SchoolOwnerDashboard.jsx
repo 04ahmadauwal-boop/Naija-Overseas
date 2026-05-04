@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, School, Edit3, Trophy, Image, BarChart2,
   Menu, X, Eye, MessageCircle, Star, Plus, Trash2, Save,
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, Globe, DollarSign,
-  Camera, TrendingUp, Users, Activity, BookOpen
+  Camera, TrendingUp, Users, Activity, BookOpen, LogOut
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -990,7 +990,8 @@ function AnalyticsTab({ school }) {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function SchoolOwnerDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [school, setSchool] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1067,12 +1068,16 @@ export default function SchoolOwnerDashboard() {
       </nav>
 
       {/* User Footer */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-gray-800 space-y-2">
         <div className="bg-gray-900 rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-0.5 font-medium">Logged in as</p>
           <p className="text-sm text-white font-semibold truncate">{user?.name || user?.email || 'School Owner'}</p>
           {user?.email && <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>}
         </div>
+        <button onClick={() => { logout(); navigate('/'); }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-all">
+          <LogOut size={17} /> Log out
+        </button>
       </div>
     </>
   );
@@ -1116,11 +1121,15 @@ export default function SchoolOwnerDashboard() {
                 </button>
               ))}
             </nav>
-            <div className="p-4 border-t border-gray-800">
+            <div className="p-4 border-t border-gray-800 space-y-2">
               <div className="bg-gray-900 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-0.5">Logged in as</p>
                 <p className="text-sm text-white font-semibold truncate">{user?.name || user?.email || 'School Owner'}</p>
               </div>
+              <button onClick={() => { logout(); navigate('/'); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-all">
+                <LogOut size={17} /> Log out
+              </button>
             </div>
           </aside>
         </div>

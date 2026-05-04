@@ -195,7 +195,9 @@ export default function SchoolDetail() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {school.facilities.map((f) => (
                     <div key={f} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-                      <span className="text-xl">{FACILITY_ICONS[f] || '✅'}</span>
+                      {FACILITY_ICONS[f]
+                        ? <span className="text-xl">{FACILITY_ICONS[f]}</span>
+                        : <CheckCircle size={18} className="text-green-600 shrink-0" />}
                       <span className="text-sm text-gray-700 font-medium">{f}</span>
                     </div>
                   ))}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, School, CalendarCheck, Globe,
   FileText, MessageSquare, ExternalLink, GraduationCap,
-  TrendingUp, Clock, Plus, Users
+  TrendingUp, Clock, Plus, Users, Menu, X, LogOut
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 
 const NAV_ITEMS = [
@@ -17,29 +18,10 @@ const NAV_ITEMS = [
   { to: '/admin/messages', icon: MessageSquare, label: 'Messages' },
 ];
 
-export function AdminNav() {
-  const { pathname } = useLocation();
-
-  const isActive = (to, exact) =>
-    exact ? pathname === to : pathname.startsWith(to);
-
+function AdminNavLinks({ isActive, onLogout }) {
   return (
-    <aside className="w-64 bg-gray-950 text-white min-h-screen flex flex-col shrink-0">
-      {/* Logo */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 bg-green-700 rounded-xl flex items-center justify-center shrink-0">
-            <GraduationCap size={18} className="text-white" />
-          </div>
-          <div>
-            <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
-            <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Admin Panel</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+    <>
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map(({ to, icon: Icon, label, exact }) => (
           <Link key={to} to={to}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
@@ -49,12 +31,9 @@ export function AdminNav() {
             }`}>
             <Icon size={17} />
             {label}
-            {isActive(to, exact) && (
-              <div className="ml-auto w-1.5 h-1.5 bg-green-400 rounded-full" />
-            )}
+            {isActive(to, exact) && <div className="ml-auto w-1.5 h-1.5 bg-green-400 rounded-full" />}
           </Link>
         ))}
-
         <div className="pt-4 mt-4 border-t border-gray-800">
           <Link to="/" target="_blank"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-white hover:bg-gray-800 transition-all">
@@ -62,15 +41,91 @@ export function AdminNav() {
           </Link>
         </div>
       </nav>
-
-      {/* Bottom */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-gray-800 space-y-2">
         <div className="bg-gray-900 rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-0.5 font-medium">Logged in as</p>
           <p className="text-sm text-white font-semibold">Administrator</p>
         </div>
+        <button onClick={onLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-all">
+          <LogOut size={17} /> Log out
+        </button>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function AdminNav() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isActive = (to, exact) =>
+    exact ? pathname === to : pathname.startsWith(to);
+
+  const handleLogout = () => { logout(); navigate('/'); };
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-gray-950 border-b border-gray-800 flex items-center gap-3 px-4">
+        <button onClick={() => setMobileOpen(true)}
+          className="w-9 h-9 rounded-xl bg-gray-800 flex items-center justify-center text-gray-300 hover:text-white transition">
+          <Menu size={18} />
+        </button>
+        <div className="flex items-center gap-2 flex-1">
+          <div className="w-7 h-7 bg-green-700 rounded-lg flex items-center justify-center shrink-0">
+            <GraduationCap size={14} className="text-white" />
+          </div>
+          <span className="font-bold text-white text-sm">Admin Panel</span>
+        </div>
+        <Link to="/" className="text-xs text-gray-400 hover:text-white transition font-medium">
+          ← Site
+        </Link>
+      </div>
+
+      {/* Mobile drawer overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute left-0 top-0 h-full w-64 bg-gray-950 text-white flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-700 rounded-xl flex items-center justify-center shrink-0">
+                  <GraduationCap size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-white text-xs leading-tight">Naija &amp; Overseas</p>
+                  <p className="text-gray-500 text-[10px]">Admin Panel</p>
+                </div>
+              </div>
+              <button onClick={() => setMobileOpen(false)}
+                className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:text-white transition">
+                <X size={16} />
+              </button>
+            </div>
+            <AdminNavLinks isActive={isActive} onLogout={handleLogout} />
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-gray-950 text-white min-h-screen flex-col shrink-0">
+        <div className="p-6 border-b border-gray-800">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 bg-green-700 rounded-xl flex items-center justify-center shrink-0">
+              <GraduationCap size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
+              <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Admin Panel</p>
+            </div>
+          </div>
+        </div>
+        <AdminNavLinks isActive={isActive} onLogout={handleLogout} />
+      </aside>
+    </>
   );
 }
 
@@ -145,7 +200,7 @@ export function Dashboard() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminNav />
-      <div className="flex-1 overflow-x-hidden">
+      <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Top bar */}
         <div className="bg-white border-b border-gray-100 px-8 py-5">

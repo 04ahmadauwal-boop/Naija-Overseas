@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, BookOpen, CheckCircle } from 'lucide-react';
+import { MapPin, BookOpen, CheckCircle, Eye } from 'lucide-react';
 
 export default function SchoolCard({ school, onCompare, isSelected }) {
   const formatFee = (amount) =>
@@ -53,13 +53,20 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
           ))}
         </div>
 
-        <div className="text-xs text-gray-500 pt-1 border-t border-gray-100">
-          <span className="font-semibold text-gray-700">{formatFee(school.fees?.tuition)}</span>
-          <span className="text-gray-400"> / year</span>
-          {school.fees?.boarding > 0 && (
-            <span className="ml-1.5 text-gray-400">· Boarding: {formatFee(school.fees.boarding)}</span>
+        <div className="text-xs text-gray-500 pt-1 border-t border-gray-100 flex items-center justify-between gap-2">
+          <div>
+            <span className="font-semibold text-gray-700">{formatFee(school.fees?.tuition)}</span>
+            <span className="text-gray-400"> / year</span>
+          </div>
+          {school.profileViews > 0 && (
+            <span className="flex items-center gap-1 text-gray-400 shrink-0">
+              <Eye size={10} /> {school.profileViews.toLocaleString()}
+            </span>
           )}
         </div>
+        {school.fees?.boarding > 0 && (
+          <div className="text-xs text-gray-400">Boarding: {formatFee(school.fees.boarding)}</div>
+        )}
 
         <button
           onClick={() => onCompare(school)}

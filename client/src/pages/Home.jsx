@@ -229,7 +229,7 @@ export default function Home() {
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative pt-10 pb-32 px-4 overflow-hidden min-h-160 flex items-center">
+      <section className="relative pt-10 pb-32 px-4 overflow-hidden min-h-170 flex items-center">
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -241,12 +241,12 @@ export default function Home() {
 
         <div className="relative w-full max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            {/* Badge */}
+            {/* Badge 
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               Trusted by 10,000+ families across West Africa
             </div>
-
+            */}
             <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.06] mb-6 drop-shadow-lg">
               Find the perfect<br />
               school for your child.<br />

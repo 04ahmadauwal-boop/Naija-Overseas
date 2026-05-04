@@ -42,7 +42,7 @@ export default function ManageMessages() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminNav />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-0">
 
         <div className="bg-white border-b border-gray-100 px-8 py-5 shrink-0">
           <div className="flex items-center justify-between mb-4">

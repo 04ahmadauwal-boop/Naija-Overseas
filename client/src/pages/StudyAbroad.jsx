@@ -258,16 +258,16 @@ export default function StudyAbroad() {
 
         {/* Content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="max-w-7xl mx-auto px-6 py-24 w-full grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-7xl mx-auto px-6 py-0 w-full grid lg:grid-cols-2 gap-12 items-center">
 
             {/* LEFT: Country info */}
             <div>
-              <div className="flex items-center gap-3 mb-6">
+              {/* <div className="flex items-center gap-3 mb-6">
                 <FlagImg code={current.code} w={80} className="h-12 rounded-md shadow-lg" />
                 <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                   <Globe size={12} /> Studying in {current.country}
                 </div>
-              </div>
+              </div> */}
 
               <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.06] mb-5 drop-shadow-lg">
                 Study in<br />
@@ -425,13 +425,13 @@ export default function StudyAbroad() {
             </div>
             <div className="grid grid-cols-2 gap-4 mt-8">
               {[
-                ['âœ…', 'British Council Registered'],
-                ['âœ…', 'ICEF Trained Agents'],
-                ['âœ…', 'Official Uni Partners'],
-                ['âœ…', 'CISI Certified Advisors'],
-              ].map(([icon, text]) => (
+                'British Council Registered',
+                'ICEF Trained Agents',
+                'Official Uni Partners',
+                'CISI Certified Advisors',
+              ].map((text) => (
                 <div key={text} className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                  <span>{icon}</span> {text}
+                  <CheckCircle size={16} className="text-green-600 shrink-0" /> {text}
                 </div>
               ))}
             </div>
