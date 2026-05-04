@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: School, end: true },
   { to: '/study-abroad', label: 'Study Abroad', icon: Globe, end: false },
-  { to: '/list-your-school', label: 'List Your School', icon: BookOpen, end: false },
+  { to: '/list-your-school', label: 'Add your school in 5 minutes', icon: BookOpen, end: false },
   { to: '/blog', label: 'Blog', icon: BookOpen, end: false },
   { to: '/about', label: 'About', icon: Info, end: false },
   { to: '/contact', label: 'Contact', icon: Mail, end: false },
