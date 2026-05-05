@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
@@ -136,15 +136,18 @@ function FAQItem({ q, a }) {
   );
 }
 
+const EMPTY_FILTERS = { search: '', state: '', type: '', level: '', curriculum: '', minFee: '', maxFee: '' };
+
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [schools, setSchools] = useState([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
-  const [filters, setFilters] = useState({ search: '', state: '', type: '', level: '', curriculum: '' });
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
   // Hero live-search dropdown
@@ -176,10 +179,17 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const fetchSchools = async (page = 1, overrideFilters) => {
+  const doFetch = async (page, f) => {
     setLoading(true);
     try {
-      const params = { page, limit: 8, ...(overrideFilters ? filters : {}) };
+      const params = { page, limit: 8 };
+      if (f.search) params.search = f.search;
+      if (f.state) params.state = f.state;
+      if (f.type) params.type = f.type;
+      if (f.level) params.level = f.level;
+      if (f.curriculum) params.curriculum = f.curriculum;
+      if (f.minFee) params.minFee = f.minFee;
+      if (f.maxFee) params.maxFee = f.maxFee;
       const { data } = await api.get('/schools', { params });
       setSchools(data.schools);
       setTotal(data.total);
@@ -192,23 +202,28 @@ export default function Home() {
     }
   };
 
+  const fetchSchools = (page = 1) => doFetch(page, filters);
+
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const { data } = await api.get('/schools', { params: { page: 1, limit: 8 } });
-        setSchools(data.schools);
-        setTotal(data.total);
-        setPages(data.pages);
-        setCurrentPage(1);
-      } catch {
-        toast.error('Failed to load schools');
-      } finally {
-        setLoading(false);
-      }
+    const sp = new URLSearchParams(location.search);
+    const urlFilters = {
+      search:     sp.get('search')     || '',
+      state:      sp.get('state')      || '',
+      type:       sp.get('type')       || '',
+      level:      sp.get('level')      || '',
+      curriculum: sp.get('curriculum') || '',
+      minFee:     sp.get('minFee')     || '',
+      maxFee:     sp.get('maxFee')     || '',
     };
-    load();
-  }, []);
+    const hasFilters = Object.values(urlFilters).some(v => v);
+    if (hasFilters) {
+      setFilters(urlFilters);
+      setShowFilters(true);
+      doFetch(1, urlFilters);
+    } else {
+      doFetch(1, EMPTY_FILTERS);
+    }
+  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCompare = (school) => {
     if (selected.find((s) => s._id === school._id)) {
@@ -279,7 +294,7 @@ export default function Home() {
                 )}
               </div>
               <button
-                onClick={() => { setFilters({ ...filters, search: heroQuery }); fetchSchools(1); setShowDropdown(false); }}
+                onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
                 className="bg-green-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap">
                 Search →
               </button>
@@ -321,7 +336,7 @@ export default function Home() {
                     ))}
                     <li>
                       <button
-                        onClick={() => { setFilters({ ...filters, search: heroQuery }); fetchSchools(1); setShowDropdown(false); }}
+                        onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
                         className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
                         View all results for "{heroQuery}" →
                       </button>
@@ -337,7 +352,7 @@ export default function Home() {
             <span className="text-white/50 text-xs">Popular:</span>
             {['Lagos Schools', 'Private Schools', 'IGCSE', 'Boarding Schools'].map((tag) => (
               <button key={tag}
-                onClick={() => { setHeroQuery(tag); setFilters({ ...filters, search: tag }); fetchSchools(1); }}
+                onClick={() => { const f = { ...filters, search: tag }; setHeroQuery(tag); setFilters(f); doFetch(1, f); }}
                 className="px-3.5 py-1.5 rounded-full border border-white/25 text-white/75 hover:border-white hover:text-white hover:bg-white/10 transition backdrop-blur-sm text-xs">
                 {tag}
               </button>
@@ -457,7 +472,7 @@ export default function Home() {
                 </select>
               </div>
               <div className="flex gap-3 mt-3">
-                <button onClick={() => { setFilters({ search: '', state: '', type: '', level: '', curriculum: '' }); fetchSchools(1); }}
+                <button onClick={() => { setFilters(EMPTY_FILTERS); doFetch(1, EMPTY_FILTERS); }}
                   className="text-sm text-gray-500 hover:text-red-600 transition px-1">Clear all</button>
                 <button onClick={() => fetchSchools(1)}
                   className="ml-auto text-sm bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800 transition font-medium">

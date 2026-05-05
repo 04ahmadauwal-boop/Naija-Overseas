@@ -3,11 +3,9 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Menu, X, GraduationCap, ChevronRight, LayoutDashboard,
-  BookOpen, Globe, School, Users, Info, Mail, LogOut, User,
-  Lightbulb, CheckCircle, Send
+  BookOpen, Globe, School, Users, Info, Mail, LogOut, User, Search
 } from 'lucide-react';
-import api from '../utils/api';
-import toast from 'react-hot-toast';
+import SuggestSchoolModal from './SuggestSchoolModal';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: School, end: true },
@@ -17,139 +15,6 @@ const NAV_ITEMS = [
   { to: '/about', label: 'About', icon: Info, end: false },
   { to: '/contact', label: 'Contact', icon: Mail, end: false },
 ];
-
-const NIGERIAN_STATES = [
-  'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
-  'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo',
-  'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos',
-  'Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers',
-  'Sokoto','Taraba','Yobe','Zamfara',
-];
-
-const SCHOOL_TYPES = ['Private', 'Public', 'Federal', 'International'];
-
-function SuggestModal({ onClose }) {
-  const [form, setForm] = useState({ schoolName: '', state: '', type: '', website: '', reason: '', submittedBy: '', submittedEmail: '' });
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-
-  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white transition';
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.schoolName.trim()) { toast.error('School name is required'); return; }
-    setLoading(true);
-    try {
-      await api.post('/schools/suggest', form);
-      setDone(true);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit suggestion');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-
-        {/* Header */}
-        <div className="bg-linear-to-r from-green-700 to-green-600 px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <Lightbulb size={20} className="text-white" />
-              </div>
-              <div>
-                <h2 className="font-extrabold text-white text-base">Suggest a School</h2>
-                <p className="text-green-200 text-xs">Know a school that should be listed?</p>
-              </div>
-            </div>
-            <button onClick={onClose} className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-white hover:bg-white/30 transition">
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="p-6">
-          {done ? (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-green-600" />
-              </div>
-              <h3 className="font-extrabold text-gray-900 text-lg mb-2">Thank you!</h3>
-              <p className="text-gray-500 text-sm mb-6">Your suggestion has been received. We'll review it and add the school to our platform soon.</p>
-              <button onClick={onClose}
-                className="bg-green-700 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:bg-green-800 transition">
-                Close
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">School Name <span className="text-red-500">*</span></label>
-                <input required value={form.schoolName}
-                  onChange={(e) => setForm({ ...form, schoolName: e.target.value })}
-                  className={inp} placeholder="e.g. Greenfield International School" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">State</label>
-                  <select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} className={inp}>
-                    <option value="">Select state</option>
-                    {NIGERIAN_STATES.map((s) => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Type</label>
-                  <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inp}>
-                    <option value="">Select type</option>
-                    {SCHOOL_TYPES.map((t) => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">School Website (optional)</label>
-                <input value={form.website}
-                  onChange={(e) => setForm({ ...form, website: e.target.value })}
-                  className={inp} placeholder="https://schoolwebsite.com" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Why do you recommend this school?</label>
-                <textarea value={form.reason}
-                  onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                  className={inp + ' resize-none'} rows={3}
-                  placeholder="Great facilities, excellent WAEC results..." />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Your Name</label>
-                  <input value={form.submittedBy}
-                    onChange={(e) => setForm({ ...form, submittedBy: e.target.value })}
-                    className={inp} placeholder="Optional" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Your Email</label>
-                  <input type="email" value={form.submittedEmail}
-                    onChange={(e) => setForm({ ...form, submittedEmail: e.target.value })}
-                    className={inp} placeholder="Optional" />
-                </div>
-              </div>
-              <button type="submit" disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-green-700 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-green-800 transition disabled:opacity-60">
-                {loading
-                  ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
-                  : <><Send size={15} /> Submit Suggestion</>}
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function getDashboardLink(role) {
   if (role === 'admin') return '/admin';
@@ -216,8 +81,8 @@ export default function Navbar() {
                 </NavLink>
               ))}
               <button onClick={() => setShowSuggest(true)}
-                className="flex items-center gap-1.5 ml-1 px-3 py-2 rounded-lg text-[13px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition">
-                <Lightbulb size={13} /> Suggest a School
+                className="flex items-center gap-1.5 ml-1 px-3 py-2 rounded-lg text-[13px] font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
+                <Search size={13} /> Find a School
               </button>
             </nav>
 
@@ -316,10 +181,10 @@ export default function Navbar() {
               </NavLink>
             ))}
             <button onClick={() => { setMenuOpen(false); setShowSuggest(true); }}
-              className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 transition">
-              <Lightbulb size={17} className="shrink-0" />
-              <span className="flex-1">Suggest a School</span>
-              <ChevronRight size={14} className="text-amber-400" />
+              className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 transition">
+              <Search size={17} className="shrink-0" />
+              <span className="flex-1">Find a School</span>
+              <ChevronRight size={14} className="text-green-400" />
             </button>
           </nav>
 
@@ -348,7 +213,7 @@ export default function Navbar() {
       </div>
 
       {/* Suggest a School Modal */}
-      {showSuggest && <SuggestModal onClose={() => setShowSuggest(false)} />}
+      {showSuggest && <SuggestSchoolModal onClose={() => setShowSuggest(false)} />}
     </>
   );
 }

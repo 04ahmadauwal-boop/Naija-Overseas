@@ -2,10 +2,53 @@ import { useState, useRef } from 'react';
 import {
   CheckCircle, ChevronRight, ChevronLeft, School,
   MapPin, DollarSign, Phone, Upload, Star, Clock, Users,
-  Camera, X as XIcon
+  Camera, X as XIcon, Zap, Gift, ShieldCheck, BarChart3,
+  SlidersHorizontal, Play
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+
+const SIX_REASONS = [
+  {
+    icon: Users,
+    color: 'bg-blue-50 text-blue-600',
+    title: 'Reach 10,000+ Active Parents',
+    desc: 'Every month, thousands of parents and students visit Naija & Overseas actively searching for the right school. Your listing puts you directly in front of them.',
+  },
+  {
+    icon: ShieldCheck,
+    color: 'bg-green-50 text-green-600',
+    title: 'Verified & Trusted Badge',
+    desc: 'Every school we publish is admin-reviewed and verified. That green checkmark tells parents your school is legitimate, credible, and worth their attention.',
+  },
+  {
+    icon: BarChart3,
+    color: 'bg-purple-50 text-purple-600',
+    title: 'Rich, Beautiful School Profile',
+    desc: 'Showcase your campus gallery, facilities, fees, curriculum, and achievements in a stunning dedicated profile page that parents can explore in depth.',
+  },
+  {
+    icon: Zap,
+    color: 'bg-yellow-50 text-yellow-600',
+    title: 'Go Live in 24–48 Hours',
+    desc: 'Fill out our simple 3-step form today. Our team reviews and approves most listings within one business day — so you start getting enquiries fast.',
+  },
+  {
+    icon: SlidersHorizontal,
+    color: 'bg-orange-50 text-orange-600',
+    title: 'Featured in Smart School Finder',
+    desc: 'Parents use our AI-powered school finder to filter by type, location, budget, and curriculum. Your school automatically appears when it matches their search.',
+  },
+  {
+    icon: Gift,
+    color: 'bg-red-50 text-red-600',
+    title: '100% Free — No Hidden Fees',
+    desc: 'Listing your school on Naija & Overseas is completely free. No monthly subscription, no listing fee, no hidden charges. Ever. Just create your profile and grow.',
+  },
+];
+
+// Replace with your actual YouTube video ID, e.g. 'dQw4w9WgXcQ'
+const TUTORIAL_VIDEO_ID = '';
 
 const STEPS = ['School Info', 'Fees & Facilities', 'Contact & Review'];
 
@@ -157,6 +200,110 @@ export default function ListYourSchool() {
           </div>
         </div>
       </div>
+
+      {/* ── 6 REASONS ───────────────────────────────────────── */}
+      <section className="py-14 px-4 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-2">Why list with us?</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
+              6 Reasons to Add Your School on Naija &amp; Overseas
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">
+              Join hundreds of schools already growing their admissions through Nigeria's most trusted school discovery platform.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {SIX_REASONS.map(({ icon: Icon, color, title, desc }, i) => (
+              <div key={title}
+                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md hover:border-gray-200 transition-all group">
+                <div className="flex items-start gap-4">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color} group-hover:scale-110 transition-transform`}>
+                    <Icon size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">0{i + 1}</span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-2 leading-snug">{title}</h3>
+                    <p className="text-gray-500 text-xs leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW TO ADD YOUR SCHOOL (VIDEO) ──────────────────── */}
+      <section className="py-14 px-4 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-2">Step-by-step guide</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
+              How to Add Your School in 5 Minutes
+            </h2>
+            <p className="text-gray-500 max-w-lg mx-auto text-sm">
+              Watch our quick tutorial and see exactly how easy it is to get your school listed and reaching parents today.
+            </p>
+          </div>
+
+          <div className="relative max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-gray-900"
+            style={{ aspectRatio: '16/9' }}>
+            {TUTORIAL_VIDEO_ID ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${TUTORIAL_VIDEO_ID}?rel=0&modestbranding=1`}
+                title="How to add your school on Naija and Overseas"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-linear-to-br from-green-900 via-green-800 to-gray-900">
+                {/* Decorative dots */}
+                <div className="absolute inset-0 opacity-10"
+                  style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+
+                <div className="relative flex flex-col items-center gap-4 text-center px-6">
+                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 shadow-2xl">
+                    <Play size={32} className="text-white ml-1.5" fill="white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-extrabold text-lg mb-1">Tutorial Video</p>
+                    <p className="text-white/60 text-sm">
+                      Coming soon — a step-by-step walkthrough<br className="hidden sm:block" /> of how to list your school in under 5 minutes.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white/70 text-xs font-medium">
+                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                    Video will be added here shortly
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Quick steps below video */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+            {[
+              { step: '1', title: 'Fill School Info', desc: 'Enter your school name, location, type, and description.' },
+              { step: '2', title: 'Add Fees & Facilities', desc: 'Share your tuition, boarding fees, curriculum and facilities.' },
+              { step: '3', title: 'Submit & Go Live', desc: 'Add contact details and submit. We review and publish within 24–48 hrs.' },
+            ].map(({ step, title, desc }) => (
+              <div key={step} className="flex gap-3 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                  {step}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">{title}</p>
+                  <p className="text-gray-500 text-xs mt-0.5 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <div className="max-w-3xl mx-auto px-4 py-10">
 
