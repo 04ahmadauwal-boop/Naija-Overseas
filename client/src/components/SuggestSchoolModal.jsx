@@ -281,23 +281,30 @@ export default function FindSchoolModal({ onClose }) {
 
   /* ── RENDER ──────────────────────────────────────────────── */
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden"
-        style={{ maxHeight: 'min(92vh, 660px)' }}>
+      {/* Bottom-sheet on mobile → centered card on sm+ */}
+      <div className="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-4">
+        <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
+          style={{ maxHeight: 'min(92vh, 660px)' }}>
 
-        {/* Close */}
-        <button onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition shadow-sm">
-          <X size={16} />
-        </button>
+          {/* Mobile drag handle */}
+          <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+
+          {/* Close */}
+          <button onClick={onClose}
+            className="absolute top-3 sm:top-4 right-4 z-20 w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition shadow-sm">
+            <X size={16} />
+          </button>
 
         {/* ── RESULTS VIEW ─────────────────────────────────── */}
         {showResults ? (
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Results header */}
-            <div className="px-6 pt-6 pb-4 border-b border-gray-100 shrink-0">
+            <div className="px-5 sm:px-6 pt-4 sm:pt-6 pb-4 border-b border-gray-100 shrink-0">
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
                   <Search size={17} className="text-green-700" />
@@ -343,7 +350,7 @@ export default function FindSchoolModal({ onClose }) {
 
             {/* Results footer */}
             {!resultsLoading && results !== null && (
-              <div className="shrink-0 border-t border-gray-100 px-5 py-4 flex items-center justify-between gap-3 bg-gray-50/80">
+              <div className="shrink-0 border-t border-gray-100 px-4 sm:px-5 py-4 pb-6 sm:pb-4 flex items-center justify-between gap-3 bg-gray-50/80">
                 <button onClick={() => setResults(null)}
                   className="flex items-center gap-1.5 text-sm text-gray-500 font-semibold hover:text-gray-800 transition">
                   <ChevronLeft size={15} /> Edit preferences
@@ -360,7 +367,7 @@ export default function FindSchoolModal({ onClose }) {
         ) : (
           <>
             {/* Content */}
-            <div className="flex-1 px-8 pt-10 pb-4 overflow-y-auto">
+            <div className="flex-1 px-5 sm:px-8 pt-7 sm:pt-10 pb-4 overflow-y-auto">
               {isSummary ? (
                 <div className="flex flex-col items-center text-center">
                   <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
@@ -407,7 +414,7 @@ export default function FindSchoolModal({ onClose }) {
 
             {/* Footer nav */}
             {!isSummary && (
-              <div className="shrink-0 bg-gray-50/80 border-t border-gray-100 px-6 pt-4 pb-5">
+              <div className="shrink-0 bg-gray-50/80 border-t border-gray-100 px-4 sm:px-6 pt-4 pb-6 sm:pb-5">
 
                 {/* Progress bar */}
                 <div className="h-1.5 bg-gray-200 rounded-full mb-5 overflow-hidden">
@@ -434,11 +441,11 @@ export default function FindSchoolModal({ onClose }) {
                       return (
                         <div key={s.id}
                           className={`flex items-center justify-center rounded-full transition-all duration-300 ${
-                            done   ? 'w-8 h-8 bg-green-600 text-white shadow-sm' :
-                            active ? 'w-9 h-9 bg-green-600 text-white ring-4 ring-green-100 shadow-md' :
-                                     'w-8 h-8 bg-gray-200 text-gray-400'
+                            done   ? 'w-7 h-7 sm:w-8 sm:h-8 bg-green-600 text-white shadow-sm' :
+                            active ? 'w-8 h-8 sm:w-9 sm:h-9 bg-green-600 text-white ring-4 ring-green-100 shadow-md' :
+                                     'w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 text-gray-400'
                           }`}>
-                          {done ? <CheckCircle size={14} /> : <Icon size={14} />}
+                          {done ? <CheckCircle size={12} /> : <Icon size={12} />}
                         </div>
                       );
                     })}
@@ -458,6 +465,7 @@ export default function FindSchoolModal({ onClose }) {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );

@@ -138,6 +138,14 @@ function FAQItem({ q, a }) {
 
 const EMPTY_FILTERS = { search: '', state: '', type: '', level: '', curriculum: '', minFee: '', maxFee: '' };
 
+const BUDGET_OPTIONS = [
+  { label: 'Below ₦100k',     min: '',        max: '100000'  },
+  { label: '₦100k – ₦300k',   min: '100000',  max: '300000'  },
+  { label: '₦300k – ₦500k',   min: '300000',  max: '500000'  },
+  { label: '₦500k – ₦1M',     min: '500000',  max: '1000000' },
+  { label: 'Above ₦1M',       min: '1000000', max: ''        },
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -148,7 +156,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Hero live-search dropdown
   const [heroQuery, setHeroQuery] = useState('');
@@ -239,6 +247,26 @@ export default function Home() {
     if (selected.length < 2) { toast.error('Select at least 2 schools to compare'); return; }
     navigate('/compare', { state: { schools: selected } });
   };
+
+  const updateFilter = (key, value) => {
+    const next = { ...filters, [key]: value };
+    setFilters(next);
+    doFetch(1, next);
+  };
+
+  const setBudget = (min, max) => {
+    const already = filters.minFee === min && filters.maxFee === max;
+    const next = { ...filters, minFee: already ? '' : min, maxFee: already ? '' : max };
+    setFilters(next);
+    doFetch(1, next);
+  };
+
+  const clearFilters = () => { setFilters(EMPTY_FILTERS); doFetch(1, EMPTY_FILTERS); };
+
+  const activeCount = [
+    filters.state, filters.type, filters.level, filters.curriculum,
+    filters.minFee || filters.maxFee,
+  ].filter(Boolean).length;
 
   return (
     <div className="overflow-x-hidden">
@@ -428,56 +456,206 @@ export default function Home() {
       {/* ── SCHOOL SEARCH SECTION ─────────────────────────────────── */}
       <section className="bg-gray-50 py-8 md:py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Browse Schools</h2>
               <p className="text-gray-500 text-sm mt-1">{total > 0 ? `${total} schools available` : 'Loading schools...'}</p>
             </div>
-
-            {/* Filter toggle */}
             <button onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white rounded-xl px-4 py-2.5 hover:border-green-400 hover:text-green-700 transition shadow-sm">
+              className="self-start sm:self-auto flex items-center gap-2 text-sm font-semibold border border-gray-200 bg-white rounded-xl px-4 py-2.5 hover:border-green-500 hover:text-green-700 transition shadow-sm">
               <SlidersHorizontal size={15} />
               {showFilters ? 'Hide Filters' : 'Show Filters'}
+              {activeCount > 0 && (
+                <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {activeCount}
+                </span>
+              )}
             </button>
           </div>
 
-          {/* Filters */}
+          {/* ── PRO FILTER PANEL ── */}
           {showFilters && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6 shadow-sm">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <select value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })}
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">All States</option>
-                  {NIGERIAN_STATES.map((s) => <option key={s}>{s}</option>)}
-                </select>
-                <select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">All Types</option>
-                  <option value="private">Private</option>
-                  <option value="public">Public</option>
-                  <option value="federal">Federal</option>
-                </select>
-                <select value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })}
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">All Levels</option>
-                  <option value="primary">Primary</option>
-                  <option value="secondary">Secondary</option>
-                  <option value="both">Both</option>
-                </select>
-                <select value={filters.curriculum} onChange={(e) => setFilters({ ...filters, curriculum: e.target.value })}
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">All Curricula</option>
-                  {['WAEC', 'NECO', 'IGCSE', 'IB', 'Cambridge', 'BECE'].map((c) => <option key={c}>{c}</option>)}
-                </select>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-8 overflow-hidden">
+
+              {/* Active filter chips row */}
+              {activeCount > 0 && (
+                <div className="flex items-center gap-2 flex-wrap px-5 py-3 bg-green-50 border-b border-green-100">
+                  <span className="text-xs text-green-700 font-bold shrink-0">Active:</span>
+                  {filters.state && (
+                    <button onClick={() => updateFilter('state', '')}
+                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                      {filters.state} <X size={10} />
+                    </button>
+                  )}
+                  {filters.type && (
+                    <button onClick={() => updateFilter('type', '')}
+                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition capitalize">
+                      {filters.type} <X size={10} />
+                    </button>
+                  )}
+                  {filters.level && (
+                    <button onClick={() => updateFilter('level', '')}
+                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition capitalize">
+                      {filters.level} <X size={10} />
+                    </button>
+                  )}
+                  {filters.curriculum && (
+                    <button onClick={() => updateFilter('curriculum', '')}
+                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                      {filters.curriculum} <X size={10} />
+                    </button>
+                  )}
+                  {(filters.minFee || filters.maxFee) && (
+                    <button onClick={() => setBudget('', '')}
+                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                      {filters.minFee ? `₦${Number(filters.minFee).toLocaleString()}` : '₦0'}
+                      {' – '}
+                      {filters.maxFee ? `₦${Number(filters.maxFee).toLocaleString()}` : 'Any'}
+                      <X size={10} />
+                    </button>
+                  )}
+                  <button onClick={clearFilters}
+                    className="ml-auto text-xs text-red-500 font-semibold hover:text-red-700 transition shrink-0">
+                    Clear all
+                  </button>
+                </div>
+              )}
+
+              <div className="p-5 space-y-6">
+
+                {/* Location */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Location / State</p>
+                  <div className="flex flex-col gap-3">
+                    <select value={filters.state} onChange={(e) => updateFilter('state', e.target.value)}
+                      className="w-full sm:w-64 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 bg-white transition">
+                      <option value="">All States</option>
+                      {NIGERIAN_STATES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Lagos', 'FCT', 'Kano', 'Rivers', 'Ogun', 'Oyo'].map((s) => (
+                        <button key={s} onClick={() => updateFilter('state', filters.state === s ? '' : s)}
+                          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border-2 transition ${
+                            filters.state === s
+                              ? 'bg-green-600 border-green-600 text-white shadow-sm'
+                              : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 bg-white'
+                          }`}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                {/* Type + Level row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">School Type</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: 'private',       label: 'Private'       },
+                        { value: 'public',        label: 'Public'        },
+                        { value: 'federal',       label: 'Federal'       },
+                        { value: 'international', label: 'International' },
+                      ].map(({ value, label }) => {
+                        const active = filters.type === value;
+                        return (
+                          <button key={value} onClick={() => updateFilter('type', active ? '' : value)}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                              active
+                                ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
+                                : 'border-gray-200 text-gray-600 hover:border-green-300 bg-white'
+                            }`}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">School Level</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: 'primary',   label: 'Primary'   },
+                        { value: 'secondary', label: 'Secondary' },
+                        { value: 'both',      label: 'All Levels'},
+                      ].map(({ value, label }) => {
+                        const active = filters.level === value;
+                        return (
+                          <button key={value} onClick={() => updateFilter('level', active ? '' : value)}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                              active
+                                ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm'
+                                : 'border-gray-200 text-gray-600 hover:border-blue-300 bg-white'
+                            }`}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                {/* Curriculum */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Curriculum</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['WAEC', 'NECO', 'IGCSE', 'IB', 'Cambridge', 'BECE'].map((c) => {
+                      const active = filters.curriculum === c;
+                      return (
+                        <button key={c} onClick={() => updateFilter('curriculum', active ? '' : c)}
+                          className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                            active
+                              ? 'bg-purple-50 border-purple-500 text-purple-700 shadow-sm'
+                              : 'border-gray-200 text-gray-600 hover:border-purple-300 bg-white'
+                          }`}>
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                {/* Budget */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Annual Fee Budget</p>
+                  <div className="flex flex-wrap gap-2">
+                    {BUDGET_OPTIONS.map(({ label, min, max }) => {
+                      const active = filters.minFee === min && filters.maxFee === max;
+                      return (
+                        <button key={label} onClick={() => setBudget(min, max)}
+                          className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                            active
+                              ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm'
+                              : 'border-gray-200 text-gray-600 hover:border-orange-300 bg-white'
+                          }`}>
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
-              <div className="flex gap-3 mt-3">
-                <button onClick={() => { setFilters(EMPTY_FILTERS); doFetch(1, EMPTY_FILTERS); }}
-                  className="text-sm text-gray-500 hover:text-red-600 transition px-1">Clear all</button>
-                <button onClick={() => fetchSchools(1)}
-                  className="ml-auto text-sm bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800 transition font-medium">
-                  Apply Filters
-                </button>
+
+              {/* Filter footer */}
+              <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
+                <p className="text-xs text-gray-400">
+                  {loading ? 'Searching…' : `${total} school${total !== 1 ? 's' : ''} match your filters`}
+                </p>
+                {activeCount > 0 && (
+                  <button onClick={clearFilters}
+                    className="text-xs text-red-500 font-semibold hover:text-red-700 transition">
+                    Clear all filters
+                  </button>
+                )}
               </div>
             </div>
           )}

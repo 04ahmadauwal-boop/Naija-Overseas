@@ -258,7 +258,7 @@ export default function StudyAbroad() {
 
         {/* Content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="max-w-7xl mx-auto px-6 py-0 w-full grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-7xl mx-auto px-6 py-20 w-full grid lg:grid-cols-2 gap-12 items-center">
 
             {/* LEFT: Country info */}
             <div>
