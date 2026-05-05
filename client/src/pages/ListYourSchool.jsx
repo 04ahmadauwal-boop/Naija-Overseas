@@ -181,22 +181,28 @@ export default function ListYourSchool() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── PAGE HEADER ─────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">List Your School</h1>
-              <p className="text-gray-500">Join 500+ schools already on the platform. Free to list — admin approved before going live.</p>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {BENEFITS.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 text-sm text-gray-600">
-                  <Icon size={15} className="text-green-600 shrink-0" />
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
+      {/* ── HERO HEADER ─────────────────────────────────────── */}
+      <div className="relative bg-linear-to-br from-green-800 via-green-700 to-green-900 overflow-hidden">
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative max-w-5xl mx-auto px-4 py-12 md:py-16 text-center">
+          <span className="inline-block bg-white/15 border border-white/25 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 tracking-wider uppercase">
+            Free to list · Live in 24–48 hrs
+          </span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+            Add Your School in<br className="hidden sm:block" /> <span className="text-green-300">5 Minutes</span>
+          </h1>
+          <p className="text-green-100 text-base md:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+            Join 500+ schools reaching 10,000+ parents monthly on Nigeria's smartest school discovery platform.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {BENEFITS.map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3.5 py-2 rounded-full">
+                <Icon size={13} className="text-green-300 shrink-0" />
+                <span>{text}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -332,7 +338,7 @@ export default function ListYourSchool() {
         </div>
 
         {/* ── FORM CARD ───────────────────────────────────────── */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-8">
 
           {/* STEP 1: School Info */}
           {step === 0 && (
@@ -353,7 +359,7 @@ export default function ListYourSchool() {
                   className={inp} placeholder="e.g. Kings College Lagos" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">School Type <span className="text-red-500">*</span></label>
                   <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inp}>
@@ -372,7 +378,7 @@ export default function ListYourSchool() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">State <span className="text-red-500">*</span></label>
                   <select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} className={inp}>
@@ -416,7 +422,7 @@ export default function ListYourSchool() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                   <label className="block text-sm font-semibold text-green-800 mb-1.5">Annual Tuition Fee (₦)</label>
                   <input type="number" value={form.fees.tuition}
@@ -523,7 +529,7 @@ export default function ListYourSchool() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">School Phone <span className="text-red-500">*</span></label>
                   <input value={form.contact.phone}
@@ -546,7 +552,7 @@ export default function ListYourSchool() {
 
               <div className="border-t border-gray-100 pt-5">
                 <p className="text-sm font-bold text-gray-700 mb-4">Your Details (for listing notifications)</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Name</label>
                     <input value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} className={inp} placeholder="Full name" />
@@ -563,7 +569,7 @@ export default function ListYourSchool() {
               {/* Review Summary */}
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-3">
                 <p className="text-sm font-bold text-gray-700 mb-2">Listing Summary</p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div><span className="text-gray-400">School:</span> <span className="font-medium text-gray-800">{form.name || '—'}</span></div>
                   <div><span className="text-gray-400">Type:</span> <span className="font-medium text-gray-800 capitalize">{form.type}</span></div>
                   <div><span className="text-gray-400">Level:</span> <span className="font-medium text-gray-800 capitalize">{form.level}</span></div>
@@ -585,9 +591,9 @@ export default function ListYourSchool() {
           )}
 
           {/* Navigation */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+          <div className="flex items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-100">
             <button onClick={() => setStep(step - 1)} disabled={step === 0}
-              className="flex items-center gap-2 text-sm border border-gray-200 px-6 py-3 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium text-gray-700">
+              className="flex items-center gap-2 text-sm border border-gray-200 px-5 py-3 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium text-gray-700 shrink-0">
               <ChevronLeft size={16} /> Back
             </button>
 
@@ -597,12 +603,12 @@ export default function ListYourSchool() {
                   if (step === 0 && (!form.name.trim() || !form.state)) { toast.error('School name and state are required'); return; }
                   setStep(step + 1);
                 }}
-                className="flex items-center gap-2 bg-green-700 text-white text-sm px-8 py-3 rounded-xl hover:bg-green-800 transition font-semibold">
+                className="flex items-center gap-2 bg-green-700 text-white text-sm px-6 py-3 rounded-xl hover:bg-green-800 transition font-semibold">
                 Continue <ChevronRight size={16} />
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={loading}
-                className="flex items-center gap-2 bg-green-700 text-white font-semibold text-sm px-8 py-3 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
+                className="flex items-center gap-2 bg-green-700 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
                 {loading ? (
                   <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
                 ) : (

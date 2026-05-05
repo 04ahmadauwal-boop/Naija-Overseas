@@ -335,7 +335,7 @@ export default function ManageApplications() {
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-2xl font-extrabold text-gray-900">Study Abroad Applications</h1>
@@ -358,7 +358,7 @@ export default function ManageApplications() {
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (

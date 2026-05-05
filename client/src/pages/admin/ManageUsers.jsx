@@ -87,7 +87,7 @@ export default function ManageUsers() {
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-2xl font-extrabold text-gray-900">Manage Users</h1>
@@ -137,7 +137,7 @@ export default function ManageUsers() {
         </div>
 
         {/* Stats row */}
-        <div className="px-8 py-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="px-4 md:px-8 py-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ROLE_TABS.slice(1).map((role) => {
             const s = ROLE_STYLES[role];
             const Icon = s.icon;
@@ -157,8 +157,8 @@ export default function ManageUsers() {
         </div>
 
         {/* Table */}
-        <div className="px-8 pb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-4 md:px-8 pb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
             {loading ? (
               <div className="space-y-px">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -171,7 +171,7 @@ export default function ManageUsers() {
                 <p className="text-gray-500 font-medium">No users found</p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-150">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">User</th>

@@ -64,7 +64,7 @@ export default function ManageBlog() {
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
-        <div className="bg-white border-b border-gray-100 px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-extrabold text-gray-900">Blog Posts</h1>
@@ -78,7 +78,7 @@ export default function ManageBlog() {
           </div>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6">
 
           {/* Form Panel */}
           {showForm && (

@@ -82,7 +82,7 @@ export default function Navbar() {
               ))}
               <button onClick={() => setShowSuggest(true)}
                 className="flex items-center gap-1.5 ml-1 px-3 py-2 rounded-lg text-[13px] font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
-                <Search size={13} /> Find a School
+                <Search size={13} /> Suggest a School
               </button>
             </nav>
 

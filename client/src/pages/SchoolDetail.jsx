@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Globe, ArrowLeft,
   CheckCircle, Building2, GraduationCap, DollarSign,
-  Users, Calendar, Share2, BarChart3
+  Users, Calendar, Share2, BarChart3, Award
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -184,6 +184,48 @@ export default function SchoolDetail() {
                       <CheckCircle size={14} className="text-green-600" /> {c}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Achievements */}
+            {school.achievements?.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Achievements &amp; Awards</h2>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {school.achievements.map((ach, i) => {
+                    const catColors = {
+                      academic: 'bg-blue-100 text-blue-800',
+                      sports: 'bg-green-100 text-green-800',
+                      arts: 'bg-purple-100 text-purple-800',
+                      community: 'bg-orange-100 text-orange-800',
+                      award: 'bg-yellow-100 text-yellow-800',
+                    };
+                    const catColor = catColors[ach.category] || 'bg-gray-100 text-gray-700';
+                    return (
+                      <div key={i} className="flex gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4">
+                        <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                          <Award size={17} className="text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                            <p className="font-bold text-gray-900 text-sm leading-snug">{ach.title}</p>
+                            {ach.year && (
+                              <span className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded-full">{ach.year}</span>
+                            )}
+                          </div>
+                          {ach.category && (
+                            <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 capitalize ${catColor}`}>
+                              {ach.category === 'arts' ? 'Arts & Culture' : ach.category}
+                            </span>
+                          )}
+                          {ach.description && (
+                            <p className="text-gray-500 text-xs leading-relaxed">{ach.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

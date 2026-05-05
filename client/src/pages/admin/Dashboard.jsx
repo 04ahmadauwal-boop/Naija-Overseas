@@ -203,7 +203,7 @@ export function Dashboard() {
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Top bar */}
-        <div className="bg-white border-b border-gray-100 px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-extrabold text-gray-900">Dashboard</h1>
@@ -218,7 +218,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-4 md:p-8 space-y-8">
 
           {/* Stats Grid */}
           {loading ? (
