@@ -43,7 +43,7 @@ function SchoolHeaderCard({ school, index, onRemove }) {
           </div>
         )}
       </div>
-      <p className="text-xs font-bold text-center leading-tight max-w-[90px] sm:max-w-[120px] line-clamp-2">{school.name}</p>
+      <p className="text-xs font-bold text-center leading-tight max-w-22.5 sm:max-w-30 line-clamp-2">{school.name}</p>
       <p className="text-[10px] text-gray-500 flex items-center gap-0.5">
         <MapPin size={9} /> {school.state || school.city || '—'}
       </p>
@@ -221,7 +221,7 @@ export default function Compare() {
             {schools.length < 3 && (
               <button
                 onClick={() => setShowSearchBar(true)}
-                className="flex flex-col items-center gap-2 min-w-[90px]"
+                className="flex flex-col items-center gap-2 min-w-22.5"
               >
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-green-400 hover:bg-green-50 transition">
                   <Plus size={20} className="text-gray-400" />

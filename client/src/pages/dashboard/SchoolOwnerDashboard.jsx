@@ -5,7 +5,7 @@ import {
   Menu, X, Eye, MessageCircle, Star, Plus, Trash2, Save,
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, Globe, DollarSign,
-  Camera, TrendingUp, Users, Activity, BookOpen, LogOut
+  Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -41,13 +41,25 @@ const CATEGORY_COLORS = {
 };
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'school', label: 'My School', icon: School },
-  { id: 'edit', label: 'Edit Listing', icon: Edit3 },
-  { id: 'achievements', label: 'Achievements', icon: Trophy },
-  { id: 'gallery', label: 'Gallery', icon: Image },
-  { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+  { id: 'overview',     label: 'Overview',     icon: LayoutDashboard },
+  { id: 'school',       label: 'My School',    icon: School          },
+  { id: 'edit',         label: 'Edit Listing', icon: Edit3           },
+  { id: 'achievements', label: 'Achievements', icon: Trophy          },
+  { id: 'reports',      label: 'Exam Results', icon: BookOpen        },
+  { id: 'gallery',      label: 'Gallery',      icon: Image           },
+  { id: 'analytics',    label: 'Analytics',    icon: BarChart2       },
 ];
+
+const JAMB_SUBJECTS = ['Use of English', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
+  'Economics', 'Government', 'Literature', 'History', 'Geography',
+  'Commerce', 'Accounting', 'Agricultural Science', 'CRS / IRS', 'Further Maths'];
+
+const WAEC_GRADES = ['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'];
+
+const WAEC_SUBJECTS = ['English Language', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
+  'Economics', 'Government', 'Literature in English', 'History', 'Geography',
+  'Commerce', 'Financial Accounting', 'Agricultural Science', 'CRS', 'IRS',
+  'Further Mathematics', 'Technical Drawing', 'Food & Nutrition', 'Visual Art'];
 
 const WEEKLY_DATA = [
   { day: 'Mon', views: 28 },
@@ -762,6 +774,427 @@ function AchievementsTab({ school }) {
   );
 }
 
+// ─── Exam Results Tab ─────────────────────────────────────────────────────────
+
+const BLANK_JAMB = {
+  studentName: '', photo: '', year: new Date().getFullYear().toString(),
+  subjects: [
+    { subject: 'Use of English',  score: '' },
+    { subject: 'Mathematics',     score: '' },
+    { subject: '',                score: '' },
+    { subject: '',                score: '' },
+  ],
+};
+
+const BLANK_WAEC = {
+  studentName: '', photo: '', year: new Date().getFullYear().toString(),
+  grades: [
+    { subject: 'English Language', grade: 'A1' },
+    { subject: 'Mathematics',      grade: 'A1' },
+    { subject: '',                 grade: 'A1' },
+  ],
+};
+
+function ExamResultsTab({ school }) {
+  const [subTab, setSubTab] = useState('jamb');
+  // JAMB state
+  const [jambReports, setJambReports] = useState(school?.jambReports || []);
+  const [jambForm, setJambForm] = useState(BLANK_JAMB);
+  const [showJambForm, setShowJambForm] = useState(false);
+  const [savingJamb, setSavingJamb] = useState(false);
+  const [uploadingJamb, setUploadingJamb] = useState(false);
+  const jambPhotoRef = useRef(null);
+  // WAEC state
+  const [waecReports, setWaecReports] = useState(school?.waecReports || []);
+  const [waecForm, setWaecForm] = useState(BLANK_WAEC);
+  const [showWaecForm, setShowWaecForm] = useState(false);
+  const [savingWaec, setSavingWaec] = useState(false);
+  const [uploadingWaec, setUploadingWaec] = useState(false);
+  const waecPhotoRef = useRef(null);
+
+  const uploadPhoto = async (file, onSuccess, setUploading) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast.error('File too large — max 10 MB'); return; }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      const { data } = await api.post('/schools/upload-image', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onSuccess(data.imageUrl);
+      toast.success('Photo uploaded!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const persistJamb = async (updated) => {
+    if (!school?._id) return;
+    setSavingJamb(true);
+    try {
+      await api.put(`/schools/${school._id}`, { jambReports: updated });
+      toast.success('JAMB results saved!');
+    } catch { toast.error('Failed to save'); }
+    finally { setSavingJamb(false); }
+  };
+
+  const persistWaec = async (updated) => {
+    if (!school?._id) return;
+    setSavingWaec(true);
+    try {
+      await api.put(`/schools/${school._id}`, { waecReports: updated });
+      toast.success('WAEC results saved!');
+    } catch { toast.error('Failed to save'); }
+    finally { setSavingWaec(false); }
+  };
+
+  const addJambReport = async () => {
+    if (!jambForm.studentName.trim()) { toast.error('Enter student name'); return; }
+    const total = jambForm.subjects.reduce((s, x) => s + (Number(x.score) || 0), 0);
+    const entry = { ...jambForm, id: Date.now().toString(), total,
+      subjects: jambForm.subjects.filter(s => s.subject.trim()).map(s => ({ subject: s.subject, score: Number(s.score) || 0 })) };
+    const updated = [...jambReports, entry];
+    setJambReports(updated);
+    setJambForm(BLANK_JAMB);
+    setShowJambForm(false);
+    await persistJamb(updated);
+  };
+
+  const deleteJamb = async (id) => {
+    const updated = jambReports.filter(r => r.id !== id);
+    setJambReports(updated);
+    await persistJamb(updated);
+  };
+
+  const addWaecReport = async () => {
+    if (!waecForm.studentName.trim()) { toast.error('Enter student name'); return; }
+    const entry = { ...waecForm, id: Date.now().toString(),
+      grades: waecForm.grades.filter(g => g.subject.trim()) };
+    const updated = [...waecReports, entry];
+    setWaecReports(updated);
+    setWaecForm(BLANK_WAEC);
+    setShowWaecForm(false);
+    await persistWaec(updated);
+  };
+
+  const deleteWaec = async (id) => {
+    const updated = waecReports.filter(r => r.id !== id);
+    setWaecReports(updated);
+    await persistWaec(updated);
+  };
+
+  const jambTotal = (form) => form.subjects.reduce((s, x) => s + (Number(x.score) || 0), 0);
+
+  return (
+    <div className="space-y-5">
+      {/* Sub-tab switcher */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setSubTab('jamb')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition ${
+            subTab === 'jamb' ? 'bg-blue-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}>
+          JAMB Results ({jambReports.length})
+        </button>
+        <button onClick={() => setSubTab('waec')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition ${
+            subTab === 'waec' ? 'bg-green-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}>
+          WAEC Results ({waecReports.length})
+        </button>
+      </div>
+
+      {/* ── JAMB Tab ── */}
+      {subTab === 'jamb' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">JAMB Top Scorers</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Add up to 5 top JAMB students — shown as cards on your school page</p>
+            </div>
+            {jambReports.length < 5 && (
+              <button onClick={() => setShowJambForm(v => !v)}
+                className="inline-flex items-center gap-2 bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-800 transition">
+                <Plus size={14} /> Add Student
+              </button>
+            )}
+          </div>
+
+          {/* JAMB add form */}
+          {showJambForm && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+              <h3 className="font-bold text-gray-900">New JAMB Entry</h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student Name</label>
+                  <input value={jambForm.studentName} onChange={e => setJambForm({ ...jambForm, studentName: e.target.value })}
+                    className={inp} placeholder="e.g. Nadia Oyinkansola Raji" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Year</label>
+                  <input value={jambForm.year} onChange={e => setJambForm({ ...jambForm, year: e.target.value })}
+                    className={inp} placeholder="e.g. 2025" maxLength={4} />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student Photo</label>
+                <div className="flex items-start gap-3">
+                  {/* Preview */}
+                  <div className="w-16 h-20 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center shrink-0 overflow-hidden bg-gray-50">
+                    {jambForm.photo
+                      ? <img src={jambForm.photo} alt="" className="w-full h-full object-cover" />
+                      : <Camera size={18} className="text-gray-300" />}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    {/* File upload button */}
+                    <input ref={jambPhotoRef} type="file" accept="image/*" className="hidden"
+                      onChange={e => uploadPhoto(e.target.files[0], (url) => setJambForm(f => ({ ...f, photo: url })), setUploadingJamb)} />
+                    <button type="button" onClick={() => jambPhotoRef.current?.click()} disabled={uploadingJamb}
+                      className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-100 transition disabled:opacity-60">
+                      <Upload size={14} />
+                      {uploadingJamb ? 'Uploading…' : 'Upload from device'}
+                    </button>
+                    {/* Or paste URL */}
+                    <input value={jambForm.photo} onChange={e => setJambForm({ ...jambForm, photo: e.target.value })}
+                      className={inp} placeholder="or paste image URL…" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-gray-700">Subjects & Scores (4 subjects)</label>
+                  <span className="text-sm font-bold text-blue-700">Total: {jambTotal(jambForm)}</span>
+                </div>
+                <div className="space-y-2">
+                  {jambForm.subjects.map((s, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select value={s.subject}
+                        onChange={e => { const ss = [...jambForm.subjects]; ss[i] = { ...ss[i], subject: e.target.value }; setJambForm({ ...jambForm, subjects: ss }); }}
+                        className={inp + ' flex-1'}>
+                        <option value="">— Select Subject —</option>
+                        {JAMB_SUBJECTS.map(sub => <option key={sub}>{sub}</option>)}
+                      </select>
+                      <input type="number" min="0" max="100" value={s.score}
+                        onChange={e => { const ss = [...jambForm.subjects]; ss[i] = { ...ss[i], score: e.target.value }; setJambForm({ ...jambForm, subjects: ss }); }}
+                        className={inp + ' w-20 text-center'} placeholder="0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => { setShowJambForm(false); setJambForm(BLANK_JAMB); }}
+                  className="flex-1 border border-gray-200 py-3 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
+                  Cancel
+                </button>
+                <button onClick={addJambReport} disabled={savingJamb}
+                  className="flex-1 bg-blue-700 text-white py-3 rounded-xl text-sm font-bold hover:bg-blue-800 transition disabled:opacity-60">
+                  {savingJamb ? 'Saving…' : 'Save Entry'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* JAMB list */}
+          {jambReports.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+              <BookOpen size={32} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No JAMB results added yet.</p>
+              <p className="text-gray-400 text-xs mt-1">Add your top scorers — they appear as beautiful cards on your school page.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {jambReports.map((r) => (
+                <div key={r.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+                  {r.photo ? (
+                    <img src={r.photo} alt={r.studentName} className="w-14 h-16 rounded-xl object-cover border border-gray-200 shrink-0" />
+                  ) : (
+                    <div className="w-14 h-16 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                      <GraduationCap size={24} className="text-blue-300" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900">{r.studentName}</p>
+                    <p className="text-xs text-gray-400">{r.year} JAMB</p>
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                      {r.subjects?.map(s => (
+                        <span key={s.subject} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                          {s.subject.split(' ').map(w => w[0]).join('')}: {s.score}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-3xl font-black text-blue-700">{r.total}</p>
+                    <p className="text-xs text-gray-400">Total</p>
+                    <button onClick={() => deleteJamb(r.id)} className="mt-2 w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── WAEC Tab ── */}
+      {subTab === 'waec' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">WAEC Outstanding Results</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Add up to 5 top WAEC students — shown on your school page</p>
+            </div>
+            {waecReports.length < 5 && (
+              <button onClick={() => setShowWaecForm(v => !v)}
+                className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-green-800 transition">
+                <Plus size={14} /> Add Student
+              </button>
+            )}
+          </div>
+
+          {/* WAEC add form */}
+          {showWaecForm && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+              <h3 className="font-bold text-gray-900">New WAEC Entry</h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student Name</label>
+                  <input value={waecForm.studentName} onChange={e => setWaecForm({ ...waecForm, studentName: e.target.value })}
+                    className={inp} placeholder="e.g. John Adebayo Okafor" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Year</label>
+                  <input value={waecForm.year} onChange={e => setWaecForm({ ...waecForm, year: e.target.value })}
+                    className={inp} placeholder="e.g. 2025" maxLength={4} />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student Photo</label>
+                <div className="flex items-start gap-3">
+                  {/* Preview */}
+                  <div className="w-16 h-20 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center shrink-0 overflow-hidden bg-gray-50">
+                    {waecForm.photo
+                      ? <img src={waecForm.photo} alt="" className="w-full h-full object-cover" />
+                      : <Camera size={18} className="text-gray-300" />}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    {/* File upload button */}
+                    <input ref={waecPhotoRef} type="file" accept="image/*" className="hidden"
+                      onChange={e => uploadPhoto(e.target.files[0], (url) => setWaecForm(f => ({ ...f, photo: url })), setUploadingWaec)} />
+                    <button type="button" onClick={() => waecPhotoRef.current?.click()} disabled={uploadingWaec}
+                      className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-100 transition disabled:opacity-60">
+                      <Upload size={14} />
+                      {uploadingWaec ? 'Uploading…' : 'Upload from device'}
+                    </button>
+                    {/* Or paste URL */}
+                    <input value={waecForm.photo} onChange={e => setWaecForm({ ...waecForm, photo: e.target.value })}
+                      className={inp} placeholder="or paste image URL…" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-gray-700">Subjects & Grades</label>
+                  <button onClick={() => setWaecForm({ ...waecForm, grades: [...waecForm.grades, { subject: '', grade: 'A1' }] })}
+                    className="text-xs text-green-700 font-bold hover:underline flex items-center gap-1">
+                    <Plus size={12} /> Add Subject
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {waecForm.grades.map((g, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select value={g.subject}
+                        onChange={e => { const gs = [...waecForm.grades]; gs[i] = { ...gs[i], subject: e.target.value }; setWaecForm({ ...waecForm, grades: gs }); }}
+                        className={inp + ' flex-1'}>
+                        <option value="">— Select Subject —</option>
+                        {WAEC_SUBJECTS.map(sub => <option key={sub}>{sub}</option>)}
+                      </select>
+                      <select value={g.grade}
+                        onChange={e => { const gs = [...waecForm.grades]; gs[i] = { ...gs[i], grade: e.target.value }; setWaecForm({ ...waecForm, grades: gs }); }}
+                        className={inp + ' w-20 text-center'}>
+                        {WAEC_GRADES.map(gr => <option key={gr}>{gr}</option>)}
+                      </select>
+                      {waecForm.grades.length > 1 && (
+                        <button onClick={() => { const gs = waecForm.grades.filter((_, j) => j !== i); setWaecForm({ ...waecForm, grades: gs }); }}
+                          className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition shrink-0">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => { setShowWaecForm(false); setWaecForm(BLANK_WAEC); }}
+                  className="flex-1 border border-gray-200 py-3 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
+                  Cancel
+                </button>
+                <button onClick={addWaecReport} disabled={savingWaec}
+                  className="flex-1 bg-green-700 text-white py-3 rounded-xl text-sm font-bold hover:bg-green-800 transition disabled:opacity-60">
+                  {savingWaec ? 'Saving…' : 'Save Entry'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* WAEC list */}
+          {waecReports.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+              <BookOpen size={32} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No WAEC results added yet.</p>
+              <p className="text-gray-400 text-xs mt-1">Add your outstanding students — they appear as cards on your school page.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {waecReports.map((r) => (
+                <div key={r.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-start gap-4">
+                  {r.photo ? (
+                    <img src={r.photo} alt={r.studentName} className="w-14 h-16 rounded-xl object-cover border border-gray-200 shrink-0" />
+                  ) : (
+                    <div className="w-14 h-16 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                      <GraduationCap size={24} className="text-green-300" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900">{r.studentName}</p>
+                    <p className="text-xs text-gray-400">{r.year} WAEC · {r.grades?.length} subjects</p>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {r.grades?.map(g => (
+                        <span key={g.subject} className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          g.grade === 'A1' ? 'bg-green-100 text-green-700' :
+                          g.grade?.startsWith('B') ? 'bg-blue-100 text-blue-700' :
+                          g.grade?.startsWith('C') ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {g.subject.split(' ').slice(0, 2).join(' ')}: {g.grade}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={() => deleteWaec(r.id)} className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition shrink-0">
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Gallery Tab ──────────────────────────────────────────────────────────────
 
 function GalleryTab({ school }) {
@@ -1185,6 +1618,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'school' && <MySchoolTab school={school} setActiveTab={setActiveTab} />}
               {activeTab === 'edit' && <EditListingTab school={school} onSaved={(updated) => setSchool((s) => ({ ...s, ...updated }))} />}
               {activeTab === 'achievements' && <AchievementsTab school={school} />}
+              {activeTab === 'reports' && <ExamResultsTab school={school} />}
               {activeTab === 'gallery' && <GalleryTab school={school} />}
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
             </>

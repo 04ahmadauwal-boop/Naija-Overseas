@@ -390,7 +390,7 @@ export default function ManageApplications() {
                         <p className="text-xs text-gray-400">{app.email}</p>
                       </td>
                       <td className="px-6 py-4 text-gray-600">{app.destinationCountry}</td>
-                      <td className="px-6 py-4 text-gray-500 text-xs max-w-[140px] truncate">{app.program || '—'}</td>
+                      <td className="px-6 py-4 text-gray-500 text-xs max-w-35 truncate">{app.program || '—'}</td>
                       <td className="px-6 py-4 text-gray-500 text-xs">{app.intake || '—'}</td>
                       <td className="px-6 py-4"><StatusBadge status={app.status} /></td>
                       <td className="px-6 py-4 text-gray-400 text-xs whitespace-nowrap">

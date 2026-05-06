@@ -1,83 +1,98 @@
 import { Link } from 'react-router-dom';
-import { MapPin, BookOpen, CheckCircle, Eye } from 'lucide-react';
+import { MapPin, BookOpen, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
 
 export default function SchoolCard({ school, onCompare, isSelected }) {
-  const formatFee = (amount) =>
-    amount ? `₦${Number(amount).toLocaleString()}` : 'Contact school';
-
   const href = `/schools/${school.slug || school._id}`;
 
   return (
-    <div className={`group bg-white rounded-2xl border transition-all duration-200 flex flex-col overflow-hidden ${
+    <div className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col overflow-hidden shadow-sm ${
       isSelected
-        ? 'border-green-500 shadow-md ring-2 ring-green-200'
-        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+        ? 'border-green-500 shadow-lg ring-2 ring-green-100'
+        : 'border-gray-100 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5'
     }`}>
-      {/* Image — clicks through to detail page */}
-      <Link to={href} className="block relative w-full h-40 bg-linear-to-br from-green-50 to-green-100 overflow-hidden">
+
+      {/* Image — taller, with location overlay */}
+      <Link to={href} className="block relative w-full h-52 bg-gradient-to-br from-green-50 to-emerald-100 overflow-hidden shrink-0">
         {school.images?.[0] ? (
-          <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img
+            src={school.images[0]}
+            alt={school.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-green-300">
-            <BookOpen size={36} />
+          <div className="w-full h-full flex items-center justify-center text-green-200">
+            <BookOpen size={48} />
           </div>
         )}
+
+        {/* Dark gradient at bottom for overlay legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+        {/* Featured badge */}
         {school.isFeatured && (
-          <div className="absolute top-2.5 right-2.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
             ★ Featured
           </div>
         )}
+
+        {/* Selected overlay */}
         {isSelected && (
-          <div className="absolute top-2.5 left-2.5 bg-green-600 text-white rounded-full p-0.5">
+          <div className="absolute top-3 left-3 bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-md">
             <CheckCircle size={16} />
           </div>
         )}
+
+        {/* Location chip — bottom-left overlay */}
+        <div className="absolute bottom-3 left-3">
+          <div className="flex items-center gap-1 bg-black/55 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">
+            <MapPin size={9} />
+            <span>{[school.city, school.state].filter(Boolean).join(', ')}</span>
+          </div>
+        </div>
       </Link>
 
       {/* Content */}
       <div className="p-4 flex flex-col gap-2.5 flex-1">
-        <Link to={href} className="hover:text-green-700 transition">
-          <h3 className="font-bold text-gray-900 text-[15px] leading-snug">{school.name}</h3>
+
+        {/* School name */}
+        <Link to={href} className="group/name">
+          <h3 className="font-bold text-gray-900 text-[15px] leading-snug line-clamp-2 group-hover/name:text-green-700 transition">
+            {school.name}
+          </h3>
         </Link>
 
-        <div className="flex items-center gap-1 text-xs text-gray-400">
-          <MapPin size={11} />
-          <span>{school.city ? `${school.city}, ` : ''}{school.state}</span>
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          <span className="text-[11px] bg-green-50 text-green-700 px-2 py-0.5 rounded-md font-medium capitalize">{school.type}</span>
-          <span className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-medium capitalize">{school.level}</span>
-          {school.curriculum?.slice(0, 2).map((c) => (
-            <span key={c} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">{c}</span>
-          ))}
-        </div>
-
-        <div className="text-xs text-gray-500 pt-1 border-t border-gray-100 flex items-center justify-between gap-2">
-          <div>
-            <span className="font-semibold text-gray-700">{formatFee(school.fees?.tuition)}</span>
-            <span className="text-gray-400"> / year</span>
+        {/* Curriculum chips */}
+        {school.curriculum?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {school.curriculum.slice(0, 3).map((c) => (
+              <span key={c} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-semibold">
+                {c}
+              </span>
+            ))}
           </div>
-          {school.profileViews > 0 && (
-            <span className="flex items-center gap-1 text-gray-400 shrink-0">
-              <Eye size={10} /> {school.profileViews.toLocaleString()}
-            </span>
-          )}
-        </div>
-        {school.fees?.boarding > 0 && (
-          <div className="text-xs text-gray-400">Boarding: {formatFee(school.fees.boarding)}</div>
         )}
 
-        <button
-          onClick={() => onCompare(school)}
-          className={`mt-auto w-full text-sm py-2.5 rounded-xl font-semibold transition ${
-            isSelected
-              ? 'bg-green-700 text-white hover:bg-green-800'
-              : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 hover:border-green-300'
-          }`}
-        >
-          {isSelected ? '✓ Selected' : 'Add to Compare'}
-        </button>
+        {/* Action row */}
+        <div className="mt-auto pt-3 border-t border-gray-50 flex gap-2">
+          <Link
+            to={href}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-green-700 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-green-800 active:scale-[0.97] transition shadow-sm"
+          >
+            Read More <ArrowRight size={12} />
+          </Link>
+          <button
+            onClick={() => onCompare(school)}
+            title={isSelected ? 'Remove from compare' : 'Add to compare'}
+            className={`flex items-center justify-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-xl border-2 transition ${
+              isSelected
+                ? 'bg-green-600 text-white border-green-600 hover:bg-green-700'
+                : 'border-gray-200 text-gray-500 hover:border-green-400 hover:text-green-700 hover:bg-green-50'
+            }`}
+          >
+            <BarChart3 size={13} />
+            {isSelected ? '✓' : 'Compare'}
+          </button>
+        </div>
       </div>
     </div>
   );

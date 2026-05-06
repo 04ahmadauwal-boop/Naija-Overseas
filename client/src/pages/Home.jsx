@@ -422,6 +422,64 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── EXPLORE TOP SCHOOLS ───────────────────────────────────── */}
+      <section className="py-10 md:py-16 px-4 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Explore Schools</p>
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+              Nigeria's Top 100 Schools
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Browse by state, type, or curriculum — updated from verified listings across Nigeria and West Africa.
+            </p>
+          </div>
+
+          {/* State cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
+            {[
+              { state: 'Lagos',   emoji: '🏙️', title: 'Best in Lagos',        sub: "Nigeria's education capital" },
+              { state: 'FCT',     emoji: '🏛️', title: 'Abuja Schools',        sub: 'Federal Capital Territory'   },
+              { state: 'Kano',    emoji: '🌾', title: 'Kano Top Schools',     sub: 'Northern Nigeria\'s finest'   },
+              { state: 'Rivers',  emoji: '🛢️', title: 'Port Harcourt',        sub: 'South-South excellence'       },
+              { state: 'Ogun',    emoji: '🌲', title: 'Ogun Schools',         sub: 'Gateway to quality edu'       },
+              { state: 'Enugu',   emoji: '⛏️', title: 'Enugu Schools',        sub: 'Coal City\'s top picks'       },
+              { state: 'Oyo',     emoji: '🏯', title: 'Ibadan & Oyo',         sub: 'South-West academic hub'      },
+              { state: 'Delta',   emoji: '🌊', title: 'Delta State',          sub: 'Niger Delta excellence'       },
+            ].map(({ state, emoji, title, sub }) => (
+              <Link key={state} to={`/?state=${state}`}
+                className="group flex items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-green-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
+                <span className="text-3xl shrink-0">{emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-sm leading-tight group-hover:text-green-700 transition truncate">{title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">{sub}</p>
+                </div>
+                <ArrowRight size={14} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Quick-filter chips */}
+          <div className="flex flex-wrap gap-2.5 justify-center">
+            {[
+              { label: 'Top Private Schools',        href: '/?type=private'       },
+              { label: 'Federal Gov\'t Colleges',    href: '/?type=federal'       },
+              { label: 'IGCSE Schools',              href: '/?curriculum=IGCSE'   },
+              { label: 'Cambridge Curriculum',       href: '/?curriculum=Cambridge'},
+              { label: 'IB Schools',                 href: '/?curriculum=IB'      },
+              { label: 'Primary Schools',            href: '/?level=primary'      },
+              { label: 'Secondary Schools',          href: '/?level=secondary'    },
+              { label: 'International Schools',      href: '/?type=international' },
+            ].map(({ label, href }) => (
+              <Link key={href} to={href}
+                className="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 text-gray-600 hover:border-green-500 hover:text-green-700 hover:bg-green-50 bg-white transition">
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
       <section className="py-10 md:py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">

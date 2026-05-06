@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Menu, X, GraduationCap, ChevronRight, LayoutDashboard,
-  BookOpen, Globe, School, Users, Info, Mail, LogOut, User, Search
+  BookOpen, Globe, School, Info, Mail, LogOut, User, Search
 } from 'lucide-react';
 import SuggestSchoolModal from './SuggestSchoolModal';
 

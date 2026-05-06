@@ -31,6 +31,25 @@ const schoolSchema = new mongoose.Schema(
         description: { type: String },
       },
     ],
+    jambReports: [
+      {
+        id: { type: String },
+        year: { type: String },
+        studentName: { type: String },
+        photo: { type: String },
+        subjects: [{ subject: { type: String }, score: { type: Number } }],
+        total: { type: Number },
+      },
+    ],
+    waecReports: [
+      {
+        id: { type: String },
+        year: { type: String },
+        studentName: { type: String },
+        photo: { type: String },
+        grades: [{ subject: { type: String }, grade: { type: String } }],
+      },
+    ],
     profileViews: { type: Number, default: 0 },
     enquiryCount: { type: Number, default: 0 },
     contact: {
