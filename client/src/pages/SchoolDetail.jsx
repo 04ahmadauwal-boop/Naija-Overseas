@@ -30,18 +30,16 @@ const getYoutubeThumbnail = (url) => {
   return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
 };
 
-// ── Shared photo block ────────────────────────────────────────────────────────
-function StudentPhoto({ photo, name, borderColor = 'border-yellow-400', placeholderBorder = 'border-yellow-400/40', size = 'md' }) {
-  const dim = size === 'lg'
-    ? 'w-24 h-28 sm:w-28 sm:h-32'
-    : 'w-[4.5rem] h-[5.5rem] sm:w-20 sm:h-24';
+// ── Shared student photo ──────────────────────────────────────────────────────
+function StudentPhoto({ photo, name, borderColor = 'border-yellow-400', placeholderBorder = 'border-yellow-400/40' }) {
   return photo ? (
-    <div className={`${dim} rounded-xl overflow-hidden border-2 ${borderColor} shadow-lg shrink-0`}>
+    <div className={`w-12 h-[3.5rem] sm:w-16 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden border-2 ${borderColor} shadow shrink-0`}>
       <img src={photo} alt={name} className="w-full h-full object-cover" />
     </div>
   ) : (
-    <div className={`${dim} rounded-xl bg-white/5 border-2 ${placeholderBorder} flex items-center justify-center shrink-0`}>
-      <GraduationCap size={size === 'lg' ? 30 : 24} className="text-white/20" />
+    <div className={`w-12 h-[3.5rem] sm:w-16 sm:h-20 rounded-lg sm:rounded-xl bg-white/5 border-2 ${placeholderBorder} flex items-center justify-center shrink-0`}>
+      <GraduationCap size={16} className="text-white/20 sm:hidden" />
+      <GraduationCap size={20} className="text-white/20 hidden sm:block" />
     </div>
   );
 }
@@ -50,61 +48,46 @@ function StudentPhoto({ photo, name, borderColor = 'border-yellow-400', placehol
 function JambCard({ report, schoolName }) {
   return (
     <div
-      className="relative rounded-2xl overflow-hidden shadow-xl select-none w-full"
+      className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl select-none w-full"
       style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}
     >
-      <div className="absolute inset-0 opacity-[0.07]"
-        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+      <div className="absolute inset-0 opacity-[0.06]"
+        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
 
       {/* Header */}
-      <div className="relative px-4 pt-4 pb-3 border-b border-white/10 text-center">
-        <p className="text-green-400 font-extrabold text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
-        <p className="text-white/35 text-[9px] mt-0.5 tracking-wide">JAMB UTME · {report.year}</p>
+      <div className="relative px-3 sm:px-4 pt-2.5 sm:pt-4 pb-2 sm:pb-2.5 border-b border-white/10 text-center">
+        <p className="text-green-400 font-extrabold text-[9px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/30 text-[8px] tracking-wide">JAMB UTME · {report.year}</p>
       </div>
 
-      {/* Body — stacked on mobile, row on sm+ */}
-      <div className="relative p-4">
+      {/* Body — compact horizontal on all sizes */}
+      <div className="relative px-3 sm:px-4 py-2.5 sm:py-4 flex items-start gap-2 sm:gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-white/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-0.5">Top Score</p>
+          <p className="text-yellow-300 font-black text-[1.75rem] sm:text-4xl leading-none tracking-tight">
+            {report.total}
+          </p>
+          <p className="text-white/20 text-[8px] mt-0.5 mb-2">/400</p>
 
-        {/* Mobile: photo centred above score */}
-        <div className="flex justify-center mb-3 sm:hidden">
-          <StudentPhoto photo={report.photo} name={report.studentName} size="lg" />
+          {report.subjects?.length > 0 && (
+            <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+              {report.subjects.slice(0, 4).map((s) => (
+                <div key={s.subject} className="flex items-center justify-between bg-white/5 rounded px-1.5 py-1 gap-1">
+                  <p className="text-white/40 text-[8px] uppercase font-semibold truncate">{s.subject.slice(0, 5)}</p>
+                  <p className="text-yellow-300 font-bold text-[10px] shrink-0">{s.score}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="flex items-start gap-4">
-          {/* Score + subjects */}
-          <div className="flex-1 min-w-0">
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-0.5">Top Score</p>
-            <p
-              className="text-yellow-300 font-black leading-none tracking-tight"
-              style={{ fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
-            >
-              {report.total}
-            </p>
-            <p className="text-white/25 text-[10px] mt-0.5 mb-3">out of 400</p>
-
-            {report.subjects?.length > 0 && (
-              <div className="grid grid-cols-2 gap-1.5">
-                {report.subjects.map((s) => (
-                  <div key={s.subject} className="flex items-center justify-between bg-white/5 rounded-lg px-2 py-1.5 gap-1">
-                    <p className="text-white/45 text-[9px] uppercase font-semibold truncate">{s.subject.slice(0, 6)}</p>
-                    <p className="text-yellow-300 font-extrabold text-xs shrink-0">{s.score}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Desktop: photo right */}
-          <div className="hidden sm:block">
-            <StudentPhoto photo={report.photo} name={report.studentName} />
-          </div>
-        </div>
+        <StudentPhoto photo={report.photo} name={report.studentName} />
       </div>
 
       {/* Footer */}
-      <div className="relative px-4 py-3 bg-white/5 border-t border-white/10 text-center">
-        <p className="text-white font-extrabold text-sm leading-tight truncate">{report.studentName}</p>
-        <p className="text-white/35 text-[10px] mt-0.5">Top Scorer</p>
+      <div className="relative px-3 sm:px-4 py-1.5 sm:py-2.5 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-bold text-[11px] sm:text-sm leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/30 text-[8px] mt-0.5">Top Scorer</p>
       </div>
     </div>
   );
@@ -121,64 +104,53 @@ function WaecCard({ report, schoolName }) {
     return 'bg-red-400 text-red-950';
   };
 
+  const maxGrades = 5;
+  const visibleGrades = report.grades?.slice(0, maxGrades) ?? [];
+  const extra = (report.grades?.length ?? 0) - maxGrades;
+
   return (
     <div
-      className="relative rounded-2xl overflow-hidden shadow-xl select-none w-full"
+      className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md sm:shadow-xl select-none w-full"
       style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)' }}
     >
-      <div className="absolute inset-0 opacity-[0.07]"
-        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+      <div className="absolute inset-0 opacity-[0.06]"
+        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
 
       {/* Header */}
-      <div className="relative px-4 pt-4 pb-3 border-b border-white/10 text-center">
-        <p className="text-yellow-400 font-extrabold text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
-        <p className="text-white/35 text-[9px] mt-0.5 tracking-wide">WAEC SSCE · {report.year}</p>
+      <div className="relative px-3 sm:px-4 pt-2.5 sm:pt-4 pb-2 sm:pb-2.5 border-b border-white/10 text-center">
+        <p className="text-yellow-400 font-extrabold text-[9px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/30 text-[8px] tracking-wide">WAEC SSCE · {report.year}</p>
       </div>
 
-      {/* Body — stacked on mobile, row on sm+ */}
-      <div className="relative p-4">
-
-        {/* Mobile: photo centred above grades */}
-        <div className="flex justify-center mb-3 sm:hidden">
-          <StudentPhoto
-            photo={report.photo} name={report.studentName} size="lg"
-            borderColor="border-yellow-400" placeholderBorder="border-yellow-400/40"
-          />
-        </div>
-
-        <div className="flex items-start gap-4">
-          {/* Grades list */}
-          <div className="flex-1 min-w-0">
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-2">Top Student</p>
-            <div className="space-y-1.5">
-              {report.grades?.slice(0, 8).map((g) => (
-                <div key={g.subject} className="flex items-center gap-2">
-                  <p className="text-white/60 text-xs flex-1 truncate leading-tight">{g.subject}</p>
-                  <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-md leading-none ${gradeChip(g.grade)}`}>
-                    {g.grade}
-                  </span>
-                </div>
-              ))}
-              {report.grades?.length > 8 && (
-                <p className="text-white/30 text-[10px] pt-0.5">+{report.grades.length - 8} more subjects</p>
-              )}
-            </div>
-          </div>
-
-          {/* Desktop: photo right */}
-          <div className="hidden sm:block">
-            <StudentPhoto
-              photo={report.photo} name={report.studentName}
-              borderColor="border-yellow-400" placeholderBorder="border-yellow-400/40"
-            />
+      {/* Body — compact horizontal on all sizes */}
+      <div className="relative px-3 sm:px-4 py-2.5 sm:py-4 flex items-start gap-2 sm:gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-white/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-1.5">Top Student</p>
+          <div className="space-y-1 sm:space-y-1.5">
+            {visibleGrades.map((g) => (
+              <div key={g.subject} className="flex items-center gap-1.5">
+                <p className="text-white/55 text-[10px] sm:text-xs flex-1 truncate leading-tight">{g.subject}</p>
+                <span className={`shrink-0 text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded leading-none ${gradeChip(g.grade)}`}>
+                  {g.grade}
+                </span>
+              </div>
+            ))}
+            {extra > 0 && (
+              <p className="text-white/25 text-[8px] pt-0.5">+{extra} more</p>
+            )}
           </div>
         </div>
+
+        <StudentPhoto
+          photo={report.photo} name={report.studentName}
+          borderColor="border-yellow-400" placeholderBorder="border-yellow-400/40"
+        />
       </div>
 
       {/* Footer */}
-      <div className="relative px-4 py-3 bg-white/5 border-t border-white/10 text-center">
-        <p className="text-white font-extrabold text-sm leading-tight truncate">{report.studentName}</p>
-        <p className="text-white/35 text-[10px] mt-0.5">Outstanding Result</p>
+      <div className="relative px-3 sm:px-4 py-1.5 sm:py-2.5 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-bold text-[11px] sm:text-sm leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/30 text-[8px] mt-0.5">Outstanding Result</p>
       </div>
     </div>
   );
@@ -514,7 +486,7 @@ export default function SchoolDetail() {
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
 
           {/* ── Left: Main Details ── */}
-          <div className="lg:col-span-2 space-y-7">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-7">
 
             {/* Key Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -601,13 +573,13 @@ export default function SchoolDetail() {
             {/* JAMB Top Scorers */}
             {school.jambReports?.length > 0 && (
               <div>
-                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                    <GraduationCap size={15} className="text-blue-700" />
+                <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                    <GraduationCap size={13} className="text-blue-700" />
                   </div>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">JAMB Top Scorers</h2>
-                    <p className="text-xs text-gray-400">Our best JAMB results — verified by the school</p>
+                    <h2 className="text-base sm:text-xl font-bold text-gray-900 leading-tight">JAMB Top Scorers</h2>
+                    <p className="text-[11px] sm:text-xs text-gray-400">Our best JAMB results — verified by the school</p>
                   </div>
                 </div>
                 <ReportSlideshow
@@ -620,13 +592,13 @@ export default function SchoolDetail() {
             {/* WAEC Outstanding Results */}
             {school.waecReports?.length > 0 && (
               <div>
-                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                  <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-                    <Award size={15} className="text-green-700" />
+                <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                    <Award size={13} className="text-green-700" />
                   </div>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">WAEC Outstanding Results</h2>
-                    <p className="text-xs text-gray-400">Top WAEC performers from this school</p>
+                    <h2 className="text-base sm:text-xl font-bold text-gray-900 leading-tight">WAEC Outstanding Results</h2>
+                    <p className="text-[11px] sm:text-xs text-gray-400">Top WAEC performers from this school</p>
                   </div>
                 </div>
                 <ReportSlideshow
