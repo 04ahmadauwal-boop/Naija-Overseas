@@ -192,11 +192,16 @@ function ReportSlideshow({ items, renderCard }) {
   const onScroll = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
-    const cardW = el.scrollWidth / count;
+    const first = el.children[0];
+    const second = el.children[1];
+    const cardW = second ? second.offsetLeft - first.offsetLeft : first?.offsetWidth ?? 1;
     setIdx(Math.min(Math.round(el.scrollLeft / cardW), maxIdx));
-  }, [count, maxIdx]);
+  }, [maxIdx]);
 
   const dots = maxIdx + 1;
+
+  // card width: 75% on mobile so the next card peeks in; half on md+
+  const cardWidth = cols === 2 ? 'calc(50% - 0.375rem)' : '75%';
 
   return (
     <div>
@@ -204,14 +209,14 @@ function ReportSlideshow({ items, renderCard }) {
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-1"
+        className="flex gap-3 overflow-x-auto scrollbar-hide pb-1"
         style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
       >
         {items.map((item, i) => (
           <div
             key={i}
             className="shrink-0"
-            style={{ width: cols === 2 ? 'calc(50% - 0.375rem)' : '100%', scrollSnapAlign: 'start' }}
+            style={{ width: cardWidth, scrollSnapAlign: 'start' }}
           >
             {renderCard(item)}
           </div>
