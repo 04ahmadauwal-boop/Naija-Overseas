@@ -393,23 +393,20 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden min-h-[92vh]"
+        className="relative flex flex-col overflow-hidden min-h-[100svh] sm:min-h-[92vh]"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
         {/* Background slides */}
         {HERO_SLIDES.map((s, i) => (
           <div key={i} className={`absolute inset-0 transition-opacity duration-1000 ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            {/* Full background image — fully visible */}
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('${s.bg}')` }} />
-            {/* Left overlay — tinted to match bottom card colour so text stays readable */}
             <div className={`absolute inset-0 bg-gradient-to-r ${s.accent} to-transparent`} />
-            {/* Bottom fade — bleeds into the card colour below */}
             <div className={`absolute inset-0 bg-gradient-to-t ${s.bottomFade} via-transparent to-black/10`} />
           </div>
         ))}
 
-        {/* Foreground person image — right side, on top of background */}
+        {/* Foreground person image — desktop only */}
         <div className="absolute inset-y-0 right-0 w-[45%] z-20 hidden lg:block pointer-events-none overflow-hidden">
           {HERO_SLIDES.map((s, i) => (
             <img
@@ -426,144 +423,142 @@ export default function Home() {
 
         {/* Main content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="w-full max-w-7xl mx-auto px-5 sm:px-8 py-12 sm:py-16 lg:w-[55%] lg:mx-0 lg:ml-[4%]">
+          <div className="w-full px-4 sm:px-8 py-8 sm:py-12 lg:py-16 lg:w-[55%] lg:ml-[4%]">
 
-            {/* LEFT: headline + search/CTA */}
-            <div>
-              {/* <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 uppercase tracking-wide">
-                <span className="text-green-400">{HERO_SLIDES[slide].step}.</span>
-                {HERO_SLIDES[slide].label}
-              </div> */}
+            {/* Step badge */}
+            {/* <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wide">
+              <span className="text-green-400">{HERO_SLIDES[slide].step}.</span>
+              {HERO_SLIDES[slide].label}
+            </div> */}
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.08] mb-4 drop-shadow-lg">
-                {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
-                  <span key={i}>{line}{i === 0 && <br />}</span>
-                ))}
-                <br />
-                <span className="text-green-400">{HERO_SLIDES[slide].highlight}</span>
-              </h1>
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.1] mb-3 sm:mb-4 drop-shadow-lg">
+              {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
+                <span key={i}>{line}{i === 0 && <br />}</span>
+              ))}
+              <br />
+              <span className="text-green-400">{HERO_SLIDES[slide].highlight}</span>
+            </h1>
 
-              <p className="text-white/75 text-sm sm:text-base max-w-lg mb-6 leading-relaxed">
-                {HERO_SLIDES[slide].subtitle}
-              </p>
+            <p className="text-white/75 text-sm sm:text-base max-w-lg mb-4 sm:mb-6 leading-relaxed line-clamp-3 sm:line-clamp-none">
+              {HERO_SLIDES[slide].subtitle}
+            </p>
 
-              {/* Stats chips */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {HERO_SLIDES[slide].stats.map((stat) => (
-                  <span key={stat} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                    <CheckCircle size={11} className="text-green-400" /> {stat}
-                  </span>
-                ))}
-              </div>
+            {/* Stats chips */}
+            <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+              {HERO_SLIDES[slide].stats.map((stat) => (
+                <span key={stat} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                  <CheckCircle size={11} className="text-green-400" /> {stat}
+                </span>
+              ))}
+            </div>
 
-              {/* Slide 0 — Search bar */}
-              {slide === 0 && (
-                <div ref={heroRef} className="relative max-w-xl mb-5">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
-                      <input
-                        type="text"
-                        value={heroQuery}
-                        onChange={(e) => setHeroQuery(e.target.value)}
-                        onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
-                        placeholder="Search by school name or location..."
-                        className="w-full pl-11 pr-9 py-3.5 rounded-xl text-gray-800 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg"
-                      />
-                      {heroQuery && (
-                        <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                          <X size={15} />
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
-                      className="bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap text-sm">
-                      Search →
-                    </button>
+            {/* Slide 0 — Search bar */}
+            {slide === 0 && (
+              <div ref={heroRef} className="relative max-w-xl mb-4 sm:mb-5">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                    <input
+                      type="text"
+                      value={heroQuery}
+                      onChange={(e) => setHeroQuery(e.target.value)}
+                      onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
+                      placeholder="Search by school name or location..."
+                      className="w-full pl-11 pr-9 py-3.5 rounded-xl text-gray-800 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg"
+                    />
+                    {heroQuery && (
+                      <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <X size={15} />
+                      </button>
+                    )}
                   </div>
-                  {showDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
-                      {dropdownLoading ? (
-                        <div className="px-4 py-3 text-sm text-gray-500 text-center">Searching...</div>
-                      ) : dropdownResults.length === 0 ? (
-                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No schools found for "{heroQuery}"</div>
-                      ) : (
-                        <ul>
-                          {dropdownResults.map((s) => (
-                            <li key={s._id}>
-                              <Link to={`/schools/${s.slug || s._id}`}
-                                onClick={() => { setShowDropdown(false); setHeroQuery(''); }}
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition border-b border-gray-50 last:border-0">
-                                <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                  {s.images?.[0]
-                                    ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
-                                    : <BookOpen size={16} className="text-green-600" />}
-                                </div>
-                                <div className="flex-1 min-w-0 text-left">
-                                  <p className="font-semibold text-gray-900 text-sm truncate">{s.name}</p>
-                                  <p className="text-xs text-gray-400 truncate">
-                                    {[s.city, s.state].filter(Boolean).join(', ')} · <span className="capitalize">{s.type}</span>
-                                  </p>
-                                </div>
-                                {s.fees?.tuition && (
-                                  <span className="text-xs font-semibold text-green-700 shrink-0">₦{Number(s.fees.tuition).toLocaleString()}/yr</span>
-                                )}
-                              </Link>
-                            </li>
-                          ))}
-                          <li>
-                            <button onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
-                              className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
-                              View all results for "{heroQuery}" →
-                            </button>
-                          </li>
-                        </ul>
-                      )}
-                    </div>
-                  )}
+                  <button
+                    onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
+                    className="bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap text-sm">
+                    Search →
+                  </button>
                 </div>
-              )}
-
-              {/* CTA buttons */}
-              <div className="flex flex-wrap gap-3">
-                {slide === 0 ? (
-                  <>
-                    <Link to="/#browse"
-                      onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="flex items-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
-                      Browse Schools <ArrowRight size={15} />
-                    </Link>
-                    <Link to="/compare"
-                      className="flex items-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
-                      Compare Schools
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to={HERO_SLIDES[slide].cta.href}
-                      className="flex items-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
-                      {HERO_SLIDES[slide].cta.label} <ArrowRight size={15} />
-                    </Link>
-                    <Link to={HERO_SLIDES[slide].cta2.href}
-                      className="flex items-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
-                      {HERO_SLIDES[slide].cta2.label}
-                    </Link>
-                  </>
+                {showDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    {dropdownLoading ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                    ) : dropdownResults.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">No schools found for "{heroQuery}"</div>
+                    ) : (
+                      <ul>
+                        {dropdownResults.map((s) => (
+                          <li key={s._id}>
+                            <Link to={`/schools/${s.slug || s._id}`}
+                              onClick={() => { setShowDropdown(false); setHeroQuery(''); }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition border-b border-gray-50 last:border-0">
+                              <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                {s.images?.[0]
+                                  ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
+                                  : <BookOpen size={16} className="text-green-600" />}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="font-semibold text-gray-900 text-sm truncate">{s.name}</p>
+                                <p className="text-xs text-gray-400 truncate">
+                                  {[s.city, s.state].filter(Boolean).join(', ')} · <span className="capitalize">{s.type}</span>
+                                </p>
+                              </div>
+                              {s.fees?.tuition && (
+                                <span className="text-xs font-semibold text-green-700 shrink-0">₦{Number(s.fees.tuition).toLocaleString()}/yr</span>
+                              )}
+                            </Link>
+                          </li>
+                        ))}
+                        <li>
+                          <button onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
+                            className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
+                            View all results for "{heroQuery}" →
+                          </button>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
                 )}
               </div>
+            )}
+
+            {/* CTA buttons — stacked on mobile, side-by-side on sm+ */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              {slide === 0 ? (
+                <>
+                  <Link to="/#browse"
+                    onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center justify-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
+                    Browse Schools <ArrowRight size={15} />
+                  </Link>
+                  <Link to="/compare"
+                    className="flex items-center justify-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                    Compare Schools
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to={HERO_SLIDES[slide].cta.href}
+                    className="flex items-center justify-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
+                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={15} />
+                  </Link>
+                  <Link to={HERO_SLIDES[slide].cta2.href}
+                    className="flex items-center justify-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                    {HERO_SLIDES[slide].cta2.label}
+                  </Link>
+                </>
+              )}
             </div>
 
           </div>
         </div>
 
         {/* Slide progress + arrow controls */}
-        <div className="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 pb-6 w-full flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <div className="relative z-20 px-4 sm:px-8 pb-3 sm:pb-5 w-full flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-4">
             {HERO_SLIDES.map((s, i) => (
               <button key={i} onClick={() => goToSlide(i)}
-                className={`relative h-1 rounded-full overflow-hidden transition-all ${i === slide ? 'w-14 sm:w-16 bg-white/30' : 'w-7 sm:w-8 bg-white/20 hover:bg-white/40'}`}>
+                className={`relative h-1 rounded-full overflow-hidden transition-all ${i === slide ? 'w-10 sm:w-16 bg-white/30' : 'w-5 sm:w-8 bg-white/20 hover:bg-white/40'}`}>
                 {i === slide && (
                   <div className="absolute inset-y-0 left-0 bg-green-400 rounded-full"
                     style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
@@ -574,41 +569,60 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={heroPrev}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition">
-              <ChevronLeft size={16} />
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition">
+              <ChevronLeft size={15} />
             </button>
             <button onClick={heroNext}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-700 transition">
-              <ChevronRight size={16} />
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-700 transition">
+              <ChevronRight size={15} />
             </button>
           </div>
         </div>
 
-        {/* Three content cards at the bottom */}
-        <div className="relative z-20 mx-4 sm:mx-6 lg:mx-10 mb-4 sm:mb-6 rounded-2xl overflow-hidden grid grid-cols-3 shadow-xl">
+        {/* Bottom cards — compact tab strip on mobile, full cards on md+ */}
+        <div className="relative z-20 mx-3 mb-3 rounded-xl overflow-hidden grid grid-cols-3 shadow-lg md:hidden">
           {HERO_SLIDES.map((s, i) => (
             <button
               key={i}
               onClick={() => goToSlide(i)}
-              className={`${s.cardBg} text-left px-5 sm:px-8 py-5 sm:py-7 transition-all duration-300 relative
+              className={`text-left px-3 py-3 transition-all duration-300 relative
+                ${i === slide ? s.cardBg : 'bg-black/50 backdrop-blur-sm'}
+                ${i < HERO_SLIDES.length - 1 ? 'border-r border-white/10' : ''}
+              `}
+            >
+              <span className={`inline-block text-[10px] font-extrabold px-1.5 py-0.5 rounded mb-1 ${i === slide ? s.cardBadge : 'bg-white/20 text-white'}`}>
+                {s.step}.
+              </span>
+              {i === slide && (
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              )}
+              <h3 className={`font-bold text-[11px] leading-tight ${i === slide ? s.cardText : 'text-white/75'}`}>
+                {s.label}
+              </h3>
+            </button>
+          ))}
+        </div>
+
+        <div className="relative z-20 mx-6 lg:mx-10 mb-6 rounded-2xl overflow-hidden hidden md:grid grid-cols-3 shadow-xl">
+          {HERO_SLIDES.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`${s.cardBg} text-left px-6 lg:px-8 py-6 sm:py-7 transition-all duration-300 relative
                 ${i === slide ? 'opacity-100' : 'opacity-80 hover:opacity-95'}
                 ${i < HERO_SLIDES.length - 1 ? 'border-r border-white/10' : ''}
               `}
             >
-              {/* Step badge */}
               <span className={`inline-block text-xs font-extrabold px-2 py-0.5 rounded mb-2 sm:mb-3 ${s.cardBadge}`}>
                 {s.step}.
               </span>
-
-              {/* Active indicator dot */}
               {i === slide && (
                 <span className="absolute top-4 right-4 sm:top-5 sm:right-5 w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               )}
-
               <h3 className={`font-extrabold text-sm sm:text-base md:text-lg leading-snug mb-1.5 sm:mb-2 ${s.cardText}`}>
                 {s.label}
               </h3>
-              <p className={`text-xs sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-4 ${s.cardDesc2}`}>
+              <p className={`text-xs sm:text-sm leading-relaxed line-clamp-3 lg:line-clamp-4 ${s.cardDesc2}`}>
                 {s.cardDesc}
               </p>
             </button>

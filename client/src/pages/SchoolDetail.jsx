@@ -30,53 +30,81 @@ const getYoutubeThumbnail = (url) => {
   return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
 };
 
+// ── Shared photo block ────────────────────────────────────────────────────────
+function StudentPhoto({ photo, name, borderColor = 'border-yellow-400', placeholderBorder = 'border-yellow-400/40', size = 'md' }) {
+  const dim = size === 'lg'
+    ? 'w-24 h-28 sm:w-28 sm:h-32'
+    : 'w-[4.5rem] h-[5.5rem] sm:w-20 sm:h-24';
+  return photo ? (
+    <div className={`${dim} rounded-xl overflow-hidden border-2 ${borderColor} shadow-lg shrink-0`}>
+      <img src={photo} alt={name} className="w-full h-full object-cover" />
+    </div>
+  ) : (
+    <div className={`${dim} rounded-xl bg-white/5 border-2 ${placeholderBorder} flex items-center justify-center shrink-0`}>
+      <GraduationCap size={size === 'lg' ? 30 : 24} className="text-white/20" />
+    </div>
+  );
+}
+
 // ── JAMB Report Card ──────────────────────────────────────────────────────────
 function JambCard({ report, schoolName }) {
   return (
     <div
-      className="relative rounded-2xl sm:rounded-3xl overflow-hidden shrink-0 shadow-xl select-none w-full"
+      className="relative rounded-2xl overflow-hidden shadow-xl select-none w-full"
       style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}
     >
-      <div className="absolute inset-0 opacity-10"
-        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+      <div className="absolute inset-0 opacity-[0.07]"
+        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
 
-      <div className="relative p-4 sm:p-5">
-        <div className="text-center mb-3 sm:mb-4">
-          <p className="text-green-400 font-extrabold text-[10px] sm:text-xs uppercase tracking-widest line-clamp-1">{schoolName}</p>
-          <p className="text-white/50 text-[9px] sm:text-[10px] tracking-wider">A Tradition of Excellence</p>
+      {/* Header */}
+      <div className="relative px-4 pt-4 pb-3 border-b border-white/10 text-center">
+        <p className="text-green-400 font-extrabold text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/35 text-[9px] mt-0.5 tracking-wide">JAMB UTME · {report.year}</p>
+      </div>
+
+      {/* Body — stacked on mobile, row on sm+ */}
+      <div className="relative p-4">
+
+        {/* Mobile: photo centred above score */}
+        <div className="flex justify-center mb-3 sm:hidden">
+          <StudentPhoto photo={report.photo} name={report.studentName} size="lg" />
         </div>
 
-        <div className="flex items-start gap-3 sm:gap-4">
+        <div className="flex items-start gap-4">
+          {/* Score + subjects */}
           <div className="flex-1 min-w-0">
-            <p className="text-white/60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">{report.year} JAMB</p>
-            <p className="text-green-400 font-extrabold text-xs sm:text-sm uppercase leading-tight">Top Scorer</p>
-            <p className="text-white font-black text-5xl sm:text-6xl leading-none mt-1">{report.total}</p>
-            <div className="mt-2 sm:mt-3 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1">
-              {report.subjects?.map((s) => (
-                <div key={s.subject} className="text-center">
-                  <p className="text-white/50 text-[9px] uppercase font-bold">{s.subject.slice(0, 4)}</p>
-                  <p className="text-yellow-300 font-extrabold text-xs sm:text-sm">{s.score}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-0.5">Top Score</p>
+            <p
+              className="text-yellow-300 font-black leading-none tracking-tight"
+              style={{ fontSize: 'clamp(2.25rem, 9vw, 3.25rem)' }}
+            >
+              {report.total}
+            </p>
+            <p className="text-white/25 text-[10px] mt-0.5 mb-3">out of 400</p>
 
-          <div className="shrink-0">
-            {report.photo ? (
-              <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-lg">
-                <img src={report.photo} alt={report.studentName} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl sm:rounded-2xl bg-white/10 border-2 border-yellow-400/50 flex items-center justify-center">
-                <GraduationCap size={28} className="text-white/30" />
+            {report.subjects?.length > 0 && (
+              <div className="grid grid-cols-2 gap-1.5">
+                {report.subjects.map((s) => (
+                  <div key={s.subject} className="flex items-center justify-between bg-white/5 rounded-lg px-2 py-1.5 gap-1">
+                    <p className="text-white/45 text-[9px] uppercase font-semibold truncate">{s.subject.slice(0, 6)}</p>
+                    <p className="text-yellow-300 font-extrabold text-xs shrink-0">{s.score}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
 
-        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-white/10 text-center">
-          <p className="text-white font-extrabold text-sm sm:text-base leading-tight">{report.studentName}</p>
+          {/* Desktop: photo right */}
+          <div className="hidden sm:block">
+            <StudentPhoto photo={report.photo} name={report.studentName} />
+          </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="relative px-4 py-3 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-extrabold text-sm leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/35 text-[10px] mt-0.5">Top Scorer</p>
       </div>
     </div>
   );
@@ -84,113 +112,134 @@ function JambCard({ report, schoolName }) {
 
 // ── WAEC Report Card ──────────────────────────────────────────────────────────
 function WaecCard({ report, schoolName }) {
-  const gradeColor = (g) => {
-    if (!g) return 'text-gray-400';
-    if (g === 'A1') return 'text-green-400 font-black';
-    if (g === 'B2' || g === 'B3') return 'text-blue-300 font-bold';
-    if (g.startsWith('C')) return 'text-yellow-300 font-semibold';
-    if (g.startsWith('D') || g.startsWith('E')) return 'text-orange-400';
-    return 'text-red-400';
+  const gradeChip = (g) => {
+    if (!g) return 'bg-gray-700 text-gray-300';
+    if (g === 'A1') return 'bg-green-400 text-green-950 font-black';
+    if (g === 'B2' || g === 'B3') return 'bg-blue-400 text-blue-950 font-bold';
+    if (g.startsWith('C')) return 'bg-yellow-300 text-yellow-900 font-semibold';
+    if (g.startsWith('D') || g.startsWith('E')) return 'bg-orange-400 text-orange-950';
+    return 'bg-red-400 text-red-950';
   };
 
   return (
     <div
-      className="relative rounded-2xl sm:rounded-3xl overflow-hidden shrink-0 shadow-xl select-none w-full"
+      className="relative rounded-2xl overflow-hidden shadow-xl select-none w-full"
       style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)' }}
     >
-      <div className="absolute inset-0 opacity-10"
-        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+      <div className="absolute inset-0 opacity-[0.07]"
+        style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
 
-      <div className="relative p-4 sm:p-5">
-        <div className="text-center mb-3 sm:mb-4">
-          <p className="text-yellow-400 font-extrabold text-[10px] sm:text-xs uppercase tracking-widest line-clamp-1">{schoolName}</p>
-          <p className="text-white/50 text-[9px] sm:text-[10px] tracking-wider">Outstanding WAEC Result</p>
+      {/* Header */}
+      <div className="relative px-4 pt-4 pb-3 border-b border-white/10 text-center">
+        <p className="text-yellow-400 font-extrabold text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/35 text-[9px] mt-0.5 tracking-wide">WAEC SSCE · {report.year}</p>
+      </div>
+
+      {/* Body — stacked on mobile, row on sm+ */}
+      <div className="relative p-4">
+
+        {/* Mobile: photo centred above grades */}
+        <div className="flex justify-center mb-3 sm:hidden">
+          <StudentPhoto
+            photo={report.photo} name={report.studentName} size="lg"
+            borderColor="border-yellow-400" placeholderBorder="border-yellow-400/40"
+          />
         </div>
 
-        <div className="flex items-start gap-3 sm:gap-4">
+        <div className="flex items-start gap-4">
+          {/* Grades list */}
           <div className="flex-1 min-w-0">
-            <p className="text-white/60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">{report.year} WAEC</p>
-            <p className="text-yellow-400 font-extrabold text-xs sm:text-sm uppercase leading-tight">Top Student</p>
-            <div className="mt-2 sm:mt-3 space-y-1">
-              {report.grades?.slice(0, 6).map((g) => (
-                <div key={g.subject} className="flex items-center justify-between gap-2">
-                  <p className="text-white/70 text-[10px] font-medium truncate">{g.subject}</p>
-                  <p className={`text-xs ${gradeColor(g.grade)}`}>{g.grade}</p>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-2">Top Student</p>
+            <div className="space-y-1.5">
+              {report.grades?.slice(0, 8).map((g) => (
+                <div key={g.subject} className="flex items-center gap-2">
+                  <p className="text-white/60 text-xs flex-1 truncate leading-tight">{g.subject}</p>
+                  <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-md leading-none ${gradeChip(g.grade)}`}>
+                    {g.grade}
+                  </span>
                 </div>
               ))}
-              {report.grades?.length > 6 && (
-                <p className="text-white/40 text-[10px]">+{report.grades.length - 6} more subjects</p>
+              {report.grades?.length > 8 && (
+                <p className="text-white/30 text-[10px] pt-0.5">+{report.grades.length - 8} more subjects</p>
               )}
             </div>
           </div>
 
-          <div className="shrink-0">
-            {report.photo ? (
-              <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-lg">
-                <img src={report.photo} alt={report.studentName} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl sm:rounded-2xl bg-white/10 border-2 border-yellow-400/50 flex items-center justify-center">
-                <GraduationCap size={28} className="text-white/30" />
-              </div>
-            )}
+          {/* Desktop: photo right */}
+          <div className="hidden sm:block">
+            <StudentPhoto
+              photo={report.photo} name={report.studentName}
+              borderColor="border-yellow-400" placeholderBorder="border-yellow-400/40"
+            />
           </div>
         </div>
+      </div>
 
-        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-white/10 text-center">
-          <p className="text-white font-extrabold text-sm sm:text-base leading-tight">{report.studentName}</p>
-        </div>
+      {/* Footer */}
+      <div className="relative px-4 py-3 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-extrabold text-sm leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/35 text-[10px] mt-0.5">Outstanding Result</p>
       </div>
     </div>
   );
 }
 
-// ── Report Slideshow — 2 cards on desktop, 1 on mobile, 3s auto-advance ────────
+// ── Report Slideshow — CSS scroll-snap (touch-native) + JS dots/auto-advance ──
 function ReportSlideshow({ items, renderCard }) {
   const count = items.length;
-  // How many cards are visible at once: 2 on md+, 1 on mobile
-  const [visible, setVisible] = useState(() => window.matchMedia('(min-width: 768px)').matches ? 2 : 1);
+  const trackRef = useRef(null);
   const [idx, setIdx] = useState(0);
+  const [cols, setCols] = useState(1);
 
-  // Track breakpoint changes
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)');
-    const handler = (e) => {
-      setVisible(e.matches ? 2 : 1);
-      setIdx(0);
-    };
+    setCols(mq.matches ? 2 : 1);
+    const handler = (e) => { setCols(e.matches ? 2 : 1); setIdx(0); };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Max starting index so we never show empty slots
-  const maxIdx = Math.max(0, count - visible);
+  const maxIdx = Math.max(0, count - cols);
 
-  // Auto-advance every 3 seconds
+  // Auto-advance every 3.5 s
   useEffect(() => {
-    if (count <= visible) return;
-    const t = setInterval(() => setIdx((i) => (i >= maxIdx ? 0 : i + 1)), 3000);
+    if (count <= cols) return;
+    const t = setInterval(() => setIdx((i) => (i >= maxIdx ? 0 : i + 1)), 3500);
     return () => clearInterval(t);
-  }, [count, visible, maxIdx]);
+  }, [count, cols, maxIdx]);
 
-  const prev = () => setIdx((i) => Math.max(0, i - 1));
-  const next = () => setIdx((i) => Math.min(maxIdx, i + 1));
+  // Scroll to card when idx changes (programmatic nav)
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.children[idx];
+    if (card) el.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+  }, [idx]);
 
-  // Number of dot positions
+  // Sync dot indicator when user touch-swipes
+  const onScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const cardW = el.scrollWidth / count;
+    setIdx(Math.min(Math.round(el.scrollLeft / cardW), maxIdx));
+  }, [count, maxIdx]);
+
   const dots = maxIdx + 1;
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Sliding track */}
+    <div>
+      {/* Touch-scrollable track with CSS snap */}
       <div
-        className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-out"
-        style={{ transform: `translateX(calc(-${idx} * (${visible === 2 ? '50%' : '100%'} + ${visible === 2 ? '0.75rem' : '0rem'})))` }}
+        ref={trackRef}
+        onScroll={onScroll}
+        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-1"
+        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
       >
         {items.map((item, i) => (
           <div
             key={i}
             className="shrink-0"
-            style={{ width: visible === 2 ? 'calc(50% - 0.375rem)' : '100%' }}
+            style={{ width: cols === 2 ? 'calc(50% - 0.375rem)' : '100%', scrollSnapAlign: 'start' }}
           >
             {renderCard(item)}
           </div>
@@ -198,19 +247,19 @@ function ReportSlideshow({ items, renderCard }) {
       </div>
 
       {dots > 1 && (
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-3 sm:mt-4">
           <div className="flex gap-1.5">
             {Array.from({ length: dots }).map((_, i) => (
               <button key={i} onClick={() => setIdx(i)}
-                className={`rounded-full transition-all ${i === idx ? 'w-6 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`} />
+                className={`rounded-full transition-all duration-300 ${i === idx ? 'w-6 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`} />
             ))}
           </div>
           <div className="flex gap-2">
-            <button onClick={prev} disabled={idx === 0}
+            <button onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0}
               className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-30">
               <ChevronLeft size={14} className="text-gray-600" />
             </button>
-            <button onClick={next} disabled={idx >= maxIdx}
+            <button onClick={() => setIdx((i) => Math.min(maxIdx, i + 1))} disabled={idx >= maxIdx}
               className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-30">
               <ChevronRight size={14} className="text-gray-600" />
             </button>
