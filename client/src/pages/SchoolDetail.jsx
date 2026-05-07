@@ -145,56 +145,73 @@ function WaecCard({ report, schoolName }) {
   );
 }
 
-// ── Report Slideshow — scroll-snap, responsive ────────────────────────────────
+// ── Report Slideshow — 2 cards on desktop, 1 on mobile, 3s auto-advance ────────
 function ReportSlideshow({ items, renderCard }) {
-  const scrollRef = useRef(null);
-  const [idx, setIdx] = useState(0);
   const count = items.length;
+  // How many cards are visible at once: 2 on md+, 1 on mobile
+  const [visible, setVisible] = useState(() => window.matchMedia('(min-width: 768px)').matches ? 2 : 1);
+  const [idx, setIdx] = useState(0);
 
+  // Track breakpoint changes
   useEffect(() => {
-    if (count <= 1) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % count), 5000);
+    const mq = window.matchMedia('(min-width: 768px)');
+    const handler = (e) => {
+      setVisible(e.matches ? 2 : 1);
+      setIdx(0);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Max starting index so we never show empty slots
+  const maxIdx = Math.max(0, count - visible);
+
+  // Auto-advance every 3 seconds
+  useEffect(() => {
+    if (count <= visible) return;
+    const t = setInterval(() => setIdx((i) => (i >= maxIdx ? 0 : i + 1)), 3000);
     return () => clearInterval(t);
-  }, [count]);
+  }, [count, visible, maxIdx]);
 
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const child = el.children[idx];
-    if (child) child.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-  }, [idx]);
+  const prev = () => setIdx((i) => Math.max(0, i - 1));
+  const next = () => setIdx((i) => Math.min(maxIdx, i + 1));
 
-  const prev = () => setIdx((i) => (i - 1 + count) % count);
-  const next = () => setIdx((i) => (i + 1) % count);
+  // Number of dot positions
+  const dots = maxIdx + 1;
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
+      {/* Sliding track */}
       <div
-        ref={scrollRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+        className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-out"
+        style={{ transform: `translateX(calc(-${idx} * (${visible === 2 ? '50%' : '100%'} + ${visible === 2 ? '0.75rem' : '0rem'})))` }}
       >
         {items.map((item, i) => (
-          <div key={i} className="snap-start shrink-0 w-[min(18rem,80vw)]">
+          <div
+            key={i}
+            className="shrink-0"
+            style={{ width: visible === 2 ? 'calc(50% - 0.375rem)' : '100%' }}
+          >
             {renderCard(item)}
           </div>
         ))}
       </div>
 
-      {count > 1 && (
+      {dots > 1 && (
         <div className="flex items-center justify-between mt-3">
           <div className="flex gap-1.5">
-            {Array.from({ length: count }).map((_, i) => (
+            {Array.from({ length: dots }).map((_, i) => (
               <button key={i} onClick={() => setIdx(i)}
                 className={`rounded-full transition-all ${i === idx ? 'w-6 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`} />
             ))}
           </div>
           <div className="flex gap-2">
-            <button onClick={prev}
-              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+            <button onClick={prev} disabled={idx === 0}
+              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-30">
               <ChevronLeft size={14} className="text-gray-600" />
             </button>
-            <button onClick={next}
-              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+            <button onClick={next} disabled={idx >= maxIdx}
+              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-30">
               <ChevronRight size={14} className="text-gray-600" />
             </button>
           </div>

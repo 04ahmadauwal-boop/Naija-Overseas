@@ -970,18 +970,21 @@ function ExamResultsTab({ school }) {
                   <label className="block text-sm font-semibold text-gray-700">Subjects & Scores (4 subjects)</label>
                   <span className="text-sm font-bold text-blue-700">Total: {jambTotal(jambForm)}</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {jambForm.subjects.map((s, i) => (
-                    <div key={i} className="flex gap-2 items-center">
+                    <div key={i} className="flex flex-col sm:flex-row gap-2">
                       <select value={s.subject}
                         onChange={e => { const ss = [...jambForm.subjects]; ss[i] = { ...ss[i], subject: e.target.value }; setJambForm({ ...jambForm, subjects: ss }); }}
                         className={inp + ' flex-1'}>
                         <option value="">— Select Subject —</option>
                         {JAMB_SUBJECTS.map(sub => <option key={sub}>{sub}</option>)}
                       </select>
-                      <input type="number" min="0" max="100" value={s.score}
-                        onChange={e => { const ss = [...jambForm.subjects]; ss[i] = { ...ss[i], score: e.target.value }; setJambForm({ ...jambForm, subjects: ss }); }}
-                        className={inp + ' w-20 text-center'} placeholder="0" />
+                      <div className="flex items-center gap-2">
+                        <input type="number" min="0" max="100" value={s.score}
+                          onChange={e => { const ss = [...jambForm.subjects]; ss[i] = { ...ss[i], score: e.target.value }; setJambForm({ ...jambForm, subjects: ss }); }}
+                          className={inp + ' w-full sm:w-24 text-center'} placeholder="Score" />
+                        <span className="text-xs text-gray-400 shrink-0 sm:hidden">/ 100</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1110,26 +1113,28 @@ function ExamResultsTab({ school }) {
                     <Plus size={12} /> Add Subject
                   </button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {waecForm.grades.map((g, i) => (
-                    <div key={i} className="flex gap-2 items-center">
+                    <div key={i} className="flex flex-col sm:flex-row gap-2">
                       <select value={g.subject}
                         onChange={e => { const gs = [...waecForm.grades]; gs[i] = { ...gs[i], subject: e.target.value }; setWaecForm({ ...waecForm, grades: gs }); }}
                         className={inp + ' flex-1'}>
                         <option value="">— Select Subject —</option>
                         {WAEC_SUBJECTS.map(sub => <option key={sub}>{sub}</option>)}
                       </select>
-                      <select value={g.grade}
-                        onChange={e => { const gs = [...waecForm.grades]; gs[i] = { ...gs[i], grade: e.target.value }; setWaecForm({ ...waecForm, grades: gs }); }}
-                        className={inp + ' w-20 text-center'}>
-                        {WAEC_GRADES.map(gr => <option key={gr}>{gr}</option>)}
-                      </select>
-                      {waecForm.grades.length > 1 && (
-                        <button onClick={() => { const gs = waecForm.grades.filter((_, j) => j !== i); setWaecForm({ ...waecForm, grades: gs }); }}
-                          className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition shrink-0">
-                          <X size={13} />
-                        </button>
-                      )}
+                      <div className="flex gap-2 items-center">
+                        <select value={g.grade}
+                          onChange={e => { const gs = [...waecForm.grades]; gs[i] = { ...gs[i], grade: e.target.value }; setWaecForm({ ...waecForm, grades: gs }); }}
+                          className={inp + ' flex-1 sm:w-24 sm:flex-none'}>
+                          {WAEC_GRADES.map(gr => <option key={gr}>{gr}</option>)}
+                        </select>
+                        {waecForm.grades.length > 1 && (
+                          <button onClick={() => { const gs = waecForm.grades.filter((_, j) => j !== i); setWaecForm({ ...waecForm, grades: gs }); }}
+                            className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition shrink-0">
+                            <X size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

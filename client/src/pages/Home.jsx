@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
-  Users, BarChart3, Shield, Zap, Award, X
+  Users, BarChart3, Shield, Zap, Award, X,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -136,6 +137,99 @@ function FAQItem({ q, a }) {
   );
 }
 
+const HERO_SLIDES = [
+  {
+    step: '01',
+    label: 'Quality Driven',
+    cardDesc: 'Naija & Overseas was founded with the promise of connecting families to the most verified, high-quality schools across Nigeria and West Africa — with smart tools to compare and decide with confidence.',
+    cardBg: 'bg-white',
+    cardText: 'text-gray-900',
+    cardDesc2: 'text-gray-500',
+    cardBadge: 'bg-red-600 text-white',
+    headline: 'Find the perfect school\nfor your child.',
+    highlight: 'Compare & decide.',
+    subtitle: "Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools across Nigeria and West Africa.",
+    bg: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=800&q=80',
+    accent: 'from-gray-900/85 via-gray-800/60',
+    bottomFade: 'from-gray-50/80',
+    accentRight: 'to-black/25',
+    stats: ['500+ Schools', '4 Countries', 'Free to Use'],
+    cta: { label: 'Browse Schools', href: '#browse' },
+    cta2: { label: 'Compare Schools', href: '/compare' },
+    card: {
+      title: 'Popular Searches',
+      items: [
+        { label: 'Best Schools in Lagos',         tag: '🏙️' },
+        { label: 'Top Private Schools',            tag: '🏫' },
+        { label: 'IGCSE Schools Nigeria',          tag: '📚' },
+        { label: 'Federal Government Colleges',    tag: '🏛️' },
+        { label: 'Boarding Schools Nigeria',       tag: '🛏️' },
+      ],
+    },
+  },
+  {
+    step: '02',
+    label: 'Students Focused',
+    cardDesc: 'We guide school owners and parents through the listing, discovery, and enrolment process — putting students at the centre of every decision we make on this platform.',
+    cardBg: 'bg-blue-800',
+    cardText: 'text-white',
+    cardDesc2: 'text-blue-200',
+    cardBadge: 'bg-red-600 text-white',
+    headline: 'Get your school in front\nof thousands of parents.',
+    highlight: 'Grow your enrolment.',
+    subtitle: "List your school on Nigeria's fastest-growing education platform. Reach parents actively searching for schools in your area — starting from ₦15,000.",
+    bg: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+    accent: 'from-blue-950/90 via-blue-900/65',
+    bottomFade: 'from-blue-800/85',
+    accentRight: 'to-black/30',
+    stats: ['500+ Schools Listed', '₦15,000 One-Time', 'Live in 48 hrs'],
+    cta: { label: 'List Your School', href: '/list-your-school' },
+    cta2: { label: 'See How It Works', href: '#how' },
+    card: {
+      title: 'What You Get',
+      items: [
+        { label: 'Verified school profile page',  tag: '✅' },
+        { label: 'Appear in parent searches',      tag: '🔍' },
+        { label: 'JAMB & WAEC result showcase',    tag: '🏆' },
+        { label: 'Photo gallery & achievements',   tag: '🖼️' },
+        { label: 'Direct parent enquiries',        tag: '📞' },
+      ],
+    },
+  },
+  {
+    step: '03',
+    label: 'Global Sourcing',
+    cardDesc: 'We are the pioneers in overseas education consultancy for West Africa, placing students in leading universities across the UK, Canada, USA, Australia, Germany, and more.',
+    cardBg: 'bg-red-600',
+    cardText: 'text-white',
+    cardDesc2: 'text-red-100',
+    cardBadge: 'bg-white text-red-600',
+    headline: 'Get into a top university\nabroad.',
+    highlight: 'Your future starts here.',
+    subtitle: "Expert guidance for Nigerian students seeking admission in the UK, Canada, USA, Australia, Germany and more. 95% visa success rate — end-to-end support.",
+    bg: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
+    accent: 'from-red-950/90 via-red-900/65',
+    bottomFade: 'from-red-600/85',
+    accentRight: 'to-black/30',
+    stats: ['2,000+ Students Placed', '95% Visa Success', '8 Countries'],
+    cta: { label: 'Start Your Application', href: '/study-abroad' },
+    cta2: { label: 'View Destinations', href: '/study-abroad#destinations' },
+    card: {
+      title: 'Top Destinations',
+      items: [
+        { label: 'United Kingdom',   tag: '🇬🇧' },
+        { label: 'Canada',           tag: '🇨🇦' },
+        { label: 'United States',    tag: '🇺🇸' },
+        { label: 'Germany',          tag: '🇩🇪' },
+        { label: 'Australia',        tag: '🇦🇺' },
+      ],
+    },
+  },
+];
+
 const EMPTY_FILTERS = { search: '', state: '', type: '', level: '', curriculum: '', minFee: '', maxFee: '' };
 
 const BUDGET_OPTIONS = [
@@ -156,7 +250,33 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Hero slider
+  const [slide, setSlide] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+  const [heroProgress, setHeroProgress] = useState(0);
+  const SLIDE_DURATION = 6000;
+  const TOTAL_TICKS = SLIDE_DURATION / 50;
+
+  const goToSlide = (i) => { setSlide(i); setHeroProgress(0); };
+  const heroPrev = () => goToSlide((slide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  const heroNext = () => goToSlide((slide + 1) % HERO_SLIDES.length);
+
+  useEffect(() => {
+    if (heroPaused) return;
+    const t = setTimeout(() => {
+      setSlide((s) => (s + 1) % HERO_SLIDES.length);
+      setHeroProgress(0);
+    }, SLIDE_DURATION);
+    return () => clearTimeout(t);
+  }, [heroPaused, slide]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (heroPaused) return;
+    const t = setInterval(() => setHeroProgress((p) => Math.min(p + 100 / TOTAL_TICKS, 100)), 50);
+    return () => clearInterval(t);
+  }, [slide, heroPaused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Hero live-search dropdown
   const [heroQuery, setHeroQuery] = useState('');
@@ -272,140 +392,226 @@ export default function Home() {
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative pt-10 pb-32 px-4 overflow-hidden min-h-170 flex items-center">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1920&q=80')" }}
-        />
-        {/* Layered gradient overlay for depth */}
-        <div className="absolute inset-0 bg-linear-to-r from-black/85 via-black/60 to-black/40" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-black/30" />
-
-        <div className="relative w-full max-w-7xl mx-auto">
-          <div className="max-w-3xl">
-            {/* Badge 
-            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              Trusted by 10,000+ families across West Africa
-            </div>
-            */}
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.06] mb-6 drop-shadow-lg">
-              Find the perfect<br />
-              school for your child.<br />
-              <span className="text-green-400">Compare &amp; decide.</span>
-            </h1>
-
-            <p className="text-white/75 text-lg md:text-sl max-w-xxl mb-5 leading-relaxed">
-              Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools, then get expert study abroad guidance.
-            </p>
+      <section
+        className="relative flex flex-col overflow-hidden min-h-[92vh]"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+      >
+        {/* Background slides */}
+        {HERO_SLIDES.map((s, i) => (
+          <div key={i} className={`absolute inset-0 transition-opacity duration-1000 ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+            {/* Full background image — fully visible */}
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('${s.bg}')` }} />
+            {/* Left overlay — tinted to match bottom card colour so text stays readable */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${s.accent} to-transparent`} />
+            {/* Bottom fade — bleeds into the card colour below */}
+            <div className={`absolute inset-0 bg-gradient-to-t ${s.bottomFade} via-transparent to-black/10`} />
           </div>
+        ))}
 
-          {/* Hero live-search */}
-          <div ref={heroRef} className="relative max-w-2xl mb-8">
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  value={heroQuery}
-                  onChange={(e) => setHeroQuery(e.target.value)}
-                  onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
-                  placeholder="Search by school name or location..."
-                  className="w-full pl-11 pr-10 py-4 rounded-xl text-gray-400 text-sm border focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg"
-                />
-                {heroQuery && (
-                  <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    <X size={16} />
-                  </button>
-                )}
+        {/* Foreground person image — right side, on top of background */}
+        <div className="absolute inset-y-0 right-0 w-[45%] z-20 hidden lg:block pointer-events-none overflow-hidden">
+          {HERO_SLIDES.map((s, i) => (
+            <img
+              key={i}
+              src={s.personImg}
+              alt=""
+              className={`absolute bottom-0 right-0 h-full w-full object-cover object-top transition-opacity duration-1000 ${
+                i === slide ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)' }}
+            />
+          ))}
+        </div>
+
+        {/* Main content */}
+        <div className="relative z-20 flex-1 flex items-center">
+          <div className="w-full max-w-7xl mx-auto px-5 sm:px-8 py-12 sm:py-16 lg:w-[55%] lg:mx-0 lg:ml-[4%]">
+
+            {/* LEFT: headline + search/CTA */}
+            <div>
+              {/* <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 uppercase tracking-wide">
+                <span className="text-green-400">{HERO_SLIDES[slide].step}.</span>
+                {HERO_SLIDES[slide].label}
+              </div> */}
+
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.08] mb-4 drop-shadow-lg">
+                {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
+                  <span key={i}>{line}{i === 0 && <br />}</span>
+                ))}
+                <br />
+                <span className="text-green-400">{HERO_SLIDES[slide].highlight}</span>
+              </h1>
+
+              <p className="text-white/75 text-sm sm:text-base max-w-lg mb-6 leading-relaxed">
+                {HERO_SLIDES[slide].subtitle}
+              </p>
+
+              {/* Stats chips */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {HERO_SLIDES[slide].stats.map((stat) => (
+                  <span key={stat} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                    <CheckCircle size={11} className="text-green-400" /> {stat}
+                  </span>
+                ))}
               </div>
-              <button
-                onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
-                className="bg-green-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap">
-                Search →
-              </button>
-            </div>
 
-            {/* Dropdown results */}
-            {showDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
-                {dropdownLoading ? (
-                  <div className="px-4 py-3 text-sm text-gray-500 text-center">Searching...</div>
-                ) : dropdownResults.length === 0 ? (
-                  <div className="px-4 py-3 text-sm text-gray-500 text-center">No schools found for "{heroQuery}"</div>
+              {/* Slide 0 — Search bar */}
+              {slide === 0 && (
+                <div ref={heroRef} className="relative max-w-xl mb-5">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                      <input
+                        type="text"
+                        value={heroQuery}
+                        onChange={(e) => setHeroQuery(e.target.value)}
+                        onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
+                        placeholder="Search by school name or location..."
+                        className="w-full pl-11 pr-9 py-3.5 rounded-xl text-gray-800 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg"
+                      />
+                      {heroQuery && (
+                        <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          <X size={15} />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
+                      className="bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap text-sm">
+                      Search →
+                    </button>
+                  </div>
+                  {showDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                      {dropdownLoading ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                      ) : dropdownResults.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No schools found for "{heroQuery}"</div>
+                      ) : (
+                        <ul>
+                          {dropdownResults.map((s) => (
+                            <li key={s._id}>
+                              <Link to={`/schools/${s.slug || s._id}`}
+                                onClick={() => { setShowDropdown(false); setHeroQuery(''); }}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition border-b border-gray-50 last:border-0">
+                                <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                  {s.images?.[0]
+                                    ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
+                                    : <BookOpen size={16} className="text-green-600" />}
+                                </div>
+                                <div className="flex-1 min-w-0 text-left">
+                                  <p className="font-semibold text-gray-900 text-sm truncate">{s.name}</p>
+                                  <p className="text-xs text-gray-400 truncate">
+                                    {[s.city, s.state].filter(Boolean).join(', ')} · <span className="capitalize">{s.type}</span>
+                                  </p>
+                                </div>
+                                {s.fees?.tuition && (
+                                  <span className="text-xs font-semibold text-green-700 shrink-0">₦{Number(s.fees.tuition).toLocaleString()}/yr</span>
+                                )}
+                              </Link>
+                            </li>
+                          ))}
+                          <li>
+                            <button onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
+                              className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
+                              View all results for "{heroQuery}" →
+                            </button>
+                          </li>
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* CTA buttons */}
+              <div className="flex flex-wrap gap-3">
+                {slide === 0 ? (
+                  <>
+                    <Link to="/#browse"
+                      onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="flex items-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
+                      Browse Schools <ArrowRight size={15} />
+                    </Link>
+                    <Link to="/compare"
+                      className="flex items-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                      Compare Schools
+                    </Link>
+                  </>
                 ) : (
-                  <ul>
-                    {dropdownResults.map((s) => (
-                      <li key={s._id}>
-                        <Link
-                          to={`/schools/${s.slug || s._id}`}
-                          onClick={() => { setShowDropdown(false); setHeroQuery(''); }}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition border-b border-gray-50 last:border-0">
-                          <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
-                            {s.images?.[0]
-                              ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
-                              : <BookOpen size={16} className="text-green-600" />}
-                          </div>
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className="font-semibold text-gray-900 text-sm truncate">{s.name}</p>
-                            <p className="text-xs text-gray-400 truncate">
-                              {[s.city, s.state].filter(Boolean).join(', ')} · <span className="capitalize">{s.type}</span>
-                            </p>
-                          </div>
-                          {s.fees?.tuition && (
-                            <span className="text-xs font-semibold text-green-700 shrink-0">
-                              ₦{Number(s.fees.tuition).toLocaleString()}/yr
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    ))}
-                    <li>
-                      <button
-                        onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
-                        className="w-full text-center text-xs text-green-700 font-semibold py-3 hover:bg-green-50 transition">
-                        View all results for "{heroQuery}" →
-                      </button>
-                    </li>
-                  </ul>
+                  <>
+                    <Link to={HERO_SLIDES[slide].cta.href}
+                      className="flex items-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
+                      {HERO_SLIDES[slide].cta.label} <ArrowRight size={15} />
+                    </Link>
+                    <Link to={HERO_SLIDES[slide].cta2.href}
+                      className="flex items-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                      {HERO_SLIDES[slide].cta2.label}
+                    </Link>
+                  </>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Quick filters + secondary CTA */}
-          <div className="flex flex-wrap gap-2 items-center text-sm">
-            <span className="text-white/50 text-xs">Popular:</span>
-            {['Lagos Schools', 'Private Schools', 'IGCSE', 'Boarding Schools'].map((tag) => (
-              <button key={tag}
-                onClick={() => { const f = { ...filters, search: tag }; setHeroQuery(tag); setFilters(f); doFetch(1, f); }}
-                className="px-3.5 py-1.5 rounded-full border border-white/25 text-white/75 hover:border-white hover:text-white hover:bg-white/10 transition backdrop-blur-sm text-xs">
-                {tag}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-3">
-            <Link to="/study-abroad"
-              className="inline-flex items-center gap-2 text-white/70 text-sm hover:text-white transition underline underline-offset-4 decoration-white/30">
-              <ArrowRight size={14} /> Want to study abroad? Talk to our counsellors →
-            </Link>
           </div>
         </div>
 
-        {/* Floating stat chips — bottom right of hero */}
-        <div className="absolute bottom-8 right-8 hidden lg:flex flex-row gap-3">
-          {[
-            { n: '500+', l: 'Schools Listed' },
-            { n: '10k+', l: 'Families Served' },
-            { n: '98%', l: 'Satisfaction' },
-          ].map(({ n, l }) => (
-            <div key={l} className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-2.5">
-              <span className="text-lg font-extrabold text-white">{n}</span>
-              <span className="text-white/60 text-xs">{l}</span>
-            </div>
+        {/* Slide progress + arrow controls */}
+        <div className="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 pb-6 w-full flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {HERO_SLIDES.map((s, i) => (
+              <button key={i} onClick={() => goToSlide(i)}
+                className={`relative h-1 rounded-full overflow-hidden transition-all ${i === slide ? 'w-14 sm:w-16 bg-white/30' : 'w-7 sm:w-8 bg-white/20 hover:bg-white/40'}`}>
+                {i === slide && (
+                  <div className="absolute inset-y-0 left-0 bg-green-400 rounded-full"
+                    style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
+                )}
+              </button>
+            ))}
+            <span className="text-white/50 text-xs ml-1">{slide + 1} / {HERO_SLIDES.length}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={heroPrev}
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition">
+              <ChevronLeft size={16} />
+            </button>
+            <button onClick={heroNext}
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-700 transition">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Three content cards at the bottom */}
+        <div className="relative z-20 mx-4 sm:mx-6 lg:mx-10 mb-4 sm:mb-6 rounded-2xl overflow-hidden grid grid-cols-3 shadow-xl">
+          {HERO_SLIDES.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`${s.cardBg} text-left px-5 sm:px-8 py-5 sm:py-7 transition-all duration-300 relative
+                ${i === slide ? 'opacity-100' : 'opacity-80 hover:opacity-95'}
+                ${i < HERO_SLIDES.length - 1 ? 'border-r border-white/10' : ''}
+              `}
+            >
+              {/* Step badge */}
+              <span className={`inline-block text-xs font-extrabold px-2 py-0.5 rounded mb-2 sm:mb-3 ${s.cardBadge}`}>
+                {s.step}.
+              </span>
+
+              {/* Active indicator dot */}
+              {i === slide && (
+                <span className="absolute top-4 right-4 sm:top-5 sm:right-5 w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              )}
+
+              <h3 className={`font-extrabold text-sm sm:text-base md:text-lg leading-snug mb-1.5 sm:mb-2 ${s.cardText}`}>
+                {s.label}
+              </h3>
+              <p className={`text-xs sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-4 ${s.cardDesc2}`}>
+                {s.cardDesc}
+              </p>
+            </button>
           ))}
         </div>
       </section>
@@ -512,7 +718,7 @@ export default function Home() {
       </section>
 
       {/* ── SCHOOL SEARCH SECTION ─────────────────────────────────── */}
-      <section className="bg-gray-50 py-8 md:py-16 px-4">
+      <section id="browse" className="bg-gray-50 py-8 md:py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div>
