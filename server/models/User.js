@@ -46,6 +46,8 @@ const userSchema = new mongoose.Schema(
     onboardingComplete: { type: Boolean, default: false },
     preferredLanguage: { type: String },
     learningStyle: { type: String },
+    profilePhoto:          { type: String },
+    profilePhotoPublicId:  { type: String },
     // Google Calendar OAuth tokens (tutors only)
     googleTokens: {
       accessToken:  { type: String },

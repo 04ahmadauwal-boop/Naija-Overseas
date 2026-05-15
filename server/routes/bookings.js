@@ -171,12 +171,12 @@ router.patch('/:id/school-action', protect, async (req, res) => {
   }
 });
 
-// PATCH /api/bookings/:id/tutor-action — tutor confirms or declines their own booking
+// PATCH /api/bookings/:id/tutor-action — tutor confirms, declines, or completes their own booking
 router.patch('/:id/tutor-action', protect, async (req, res) => {
   try {
     const { action } = req.body;
-    if (!['confirm', 'decline'].includes(action)) {
-      return res.status(400).json({ message: 'action must be confirm or decline' });
+    if (!['confirm', 'decline', 'complete'].includes(action)) {
+      return res.status(400).json({ message: 'action must be confirm, decline, or complete' });
     }
     const tutorProfile = await TutorProfile.findOne({ user: req.user._id });
     if (!tutorProfile) return res.status(403).json({ message: 'Only tutors can perform this action' });
@@ -184,6 +184,12 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
     const booking = await Booking.findOne({ _id: req.params.id, tutorId: tutorProfile._id });
     if (!booking) return res.status(404).json({ message: 'Booking not found or does not belong to you' });
     if (booking.status === 'cancelled') return res.status(400).json({ message: 'Booking already cancelled' });
+
+    if (action === 'complete') {
+      booking.status = 'completed';
+      await booking.save();
+      return res.json({ booking, message: 'Session marked as completed' });
+    }
 
     booking.status = action === 'confirm' ? 'confirmed' : 'cancelled';
 

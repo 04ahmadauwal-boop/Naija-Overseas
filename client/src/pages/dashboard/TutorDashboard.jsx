@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 import {
   LayoutDashboard, BookOpen, Star, Settings, Menu, X,
   LogOut, ExternalLink, CheckCircle, Clock, Video, MapPin,
-  Plus, Trash2, ChevronLeft, ChevronRight, Users, TrendingUp, GraduationCap,
-  Globe, Banknote, Shield, Edit2, Save, AlertCircle, CalendarCheck,
+  Plus, Trash2, ChevronLeft, ChevronRight, Users, User, TrendingUp, GraduationCap,
+  Globe, Banknote, Shield, Edit2, Save, AlertCircle, CalendarCheck, Camera,
 } from 'lucide-react';
 
 const CURRENCY_SYMBOLS = {
@@ -246,9 +246,10 @@ function OverviewTab({ profile, bookings, reviews, setActiveTab }) {
 
 // ─── BOOKINGS TAB ────────────────────────────────────────────────────────────
 function BookingsTab({ bookings: initialBookings, loading }) {
-  const [filter, setFilter]       = useState('all');
-  const [bookings, setBookings]   = useState(initialBookings);
-  const [acting, setActing]       = useState(null); // id of booking being actioned
+  const [filter, setFilter]           = useState('all');
+  const [bookings, setBookings]       = useState(initialBookings);
+  const [acting, setActing]           = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   // Keep in sync when parent re-fetches
   useEffect(() => { setBookings(initialBookings); }, [initialBookings]);
@@ -394,11 +395,35 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                       <Video size={12} /> Start Class
                     </a>
                   )}
+
+                  {/* Mark as Done — confirmed sessions only */}
+                  {b.status === 'confirmed' && (
+                    <button
+                      onClick={() => handleAction(b._id, 'complete')}
+                      disabled={acting === b._id}
+                      className="px-3 py-1.5 text-xs font-bold text-gray-700 border border-gray-300 hover:bg-gray-100 rounded-xl transition disabled:opacity-50 flex items-center gap-1">
+                      {acting === b._id ? '…' : <><CheckCircle size={12} className="text-gray-500" /> Mark Done</>}
+                    </button>
+                  )}
+
+                  {/* View student details */}
+                  <button onClick={() => setSelectedBooking(b)}
+                    className="px-3 py-1.5 text-xs font-bold text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-green-300 rounded-xl transition flex items-center gap-1">
+                    <User size={11} /> View Student
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {selectedBooking && (
+        <StudentDetailModal
+          booking={selectedBooking}
+          allBookings={bookings}
+          onClose={() => setSelectedBooking(null)}
+        />
       )}
     </div>
   );
@@ -745,16 +770,61 @@ function ReviewsTab({ profile, reviews, loadingReviews }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ user, profile }) {
+function SettingsTab({ user: userProp, profile }) {
+  const { updateUser } = useAuth();
+  const user = userProp;
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    setUploading(true);
+    try {
+      const { data } = await api.post('/users/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      updateUser({ profilePhoto: data.profilePhoto });
+      toast.success('Profile photo updated!');
+    } catch {
+      toast.error('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-2xl">
       <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Account Settings</h2>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-50">
-          <div className="w-14 h-14 bg-green-700 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shrink-0">
-            {(user?.name || 'T').charAt(0).toUpperCase()}
+          {/* Avatar with upload button */}
+          <div className="relative shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-green-700 flex items-center justify-center text-white font-extrabold text-xl">
+              {user?.profilePhoto
+                ? <img src={user.profilePhoto} alt="" className="w-full h-full object-cover" />
+                : (user?.name || 'T').charAt(0).toUpperCase()
+              }
+            </div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              title="Change photo"
+              className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-700 border-2 border-white rounded-full flex items-center justify-center text-white hover:bg-green-800 transition disabled:opacity-50"
+            >
+              {uploading
+                ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                : <Camera size={11} />
+              }
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
+
           <div>
             <p className="font-bold text-gray-900">{user?.name}</p>
             <p className="text-sm text-gray-400">{user?.email}</p>
@@ -762,6 +832,14 @@ function SettingsTab({ user, profile }) {
               <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Tutor Account</span>
               {profile?.isVerified && <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle size={10} /> Verified</span>}
             </div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="mt-2 text-xs text-green-700 font-semibold hover:underline disabled:opacity-50"
+            >
+              {uploading ? 'Uploading…' : 'Change profile photo'}
+            </button>
           </div>
         </div>
 
@@ -801,6 +879,166 @@ function SettingsTab({ user, profile }) {
   );
 }
 
+// ─── STUDENT DETAIL MODAL ────────────────────────────────────────────────────
+function StudentDetailModal({ booking, allBookings, onClose }) {
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const studentId = booking.user?._id || booking.user;
+
+  useEffect(() => {
+    if (!studentId) { setLoading(false); return; }
+    api.get(`/users/${studentId}/student-profile`)
+      .then(({ data }) => setStudent(data.student))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentId]);
+
+  // All bookings this student has with this tutor
+  const studentBookings = allBookings.filter(b =>
+    (b.user?._id || b.user)?.toString() === studentId?.toString()
+  ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Parse notes: "Tutor: X | Subject: Y | Type: Z | Message: W"
+  const subject = booking.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || null;
+  const message = booking.notes?.match(/Message: (.+)/)?.[1]?.trim() || null;
+
+  const name = booking.user?.name || booking.name || 'Student';
+  const email = booking.user?.email || booking.email || '';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <h2 className="font-extrabold text-gray-900">Student Profile</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition p-1">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Identity */}
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center text-green-700 font-extrabold text-xl shrink-0">
+              {name[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold text-gray-900 text-lg leading-tight">{name}</p>
+              <p className="text-sm text-gray-400">{email}</p>
+              {(booking.phone || student?.phone) && (
+                <p className="text-sm text-gray-500 mt-0.5">{booking.phone || student?.phone}</p>
+              )}
+              {student?.country && (
+                <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                  <MapPin size={11} /> {student.country}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Tutoring requirements */}
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
+              Loading student profile…
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">What They Need</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {(subject || (student?.subjects?.length > 0)) && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase">Subject</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                      {subject || student?.subjects?.slice(0, 2).join(', ')}
+                    </p>
+                  </div>
+                )}
+                {student?.classLevel && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase">Level</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5">{student.classLevel}</p>
+                  </div>
+                )}
+                {student?.preferredLanguage && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase">Preferred Language</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5">{student.preferredLanguage}</p>
+                  </div>
+                )}
+                {student?.learningStyle && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase">Learning Style</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-0.5">{student.learningStyle}</p>
+                  </div>
+                )}
+              </div>
+
+              {student?.preferredSchedule?.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">Preferred Schedule</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {student.preferredSchedule.map(s => (
+                      <span key={s} className="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-1 rounded-full">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {message && (
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1">Message</p>
+                  <p className="text-sm text-gray-700 bg-white rounded-xl p-3 border border-gray-100 leading-relaxed">{message}</p>
+                </div>
+              )}
+
+              {student?.tutoringGoal && (
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1">Goal</p>
+                  <p className="text-sm text-gray-700">{student.tutoringGoal}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Booking history with this tutor */}
+          <div>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+              Sessions with You ({studentBookings.length})
+            </p>
+            {studentBookings.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">No bookings yet</p>
+            ) : (
+              <div className="space-y-2">
+                {studentBookings.map(b => (
+                  <div key={b._id} className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-semibold text-gray-700">
+                          {b.date ? new Date(b.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
+                        </p>
+                        {b.timeSlot && <span className="text-xs text-gray-400">· {b.timeSlot}</span>}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Trial</span>}
+                        {b.subscriptionId && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
+                        <StatusBadge status={b.status} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── CALENDAR TAB ────────────────────────────────────────────────────────────
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -811,6 +1049,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
   const [selected, setSelected] = useState(null);
   const [localBookings, setLocalBookings] = useState(initialBookings);
   const [acting, setActing] = useState(null);
+  const [modalBooking, setModalBooking] = useState(null);
 
   useEffect(() => { setLocalBookings(initialBookings); }, [initialBookings]);
 
@@ -893,8 +1132,10 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                 const dayBookings = byDate[key] || [];
                 const isToday = key === todayStr;
                 const isSelected = key === selected;
-                const trialCount = dayBookings.filter(b => b.isTrial).length;
-                const paidCount  = dayBookings.filter(b => !b.isTrial).length;
+                const activeBookings    = dayBookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled');
+                const completedBookings = dayBookings.filter(b => b.status === 'completed');
+                const trialCount = activeBookings.filter(b => b.isTrial).length;
+                const paidCount  = activeBookings.filter(b => !b.isTrial).length;
 
                 return (
                   <button key={key} onClick={() => setSelected(isSelected ? null : key)}
@@ -914,6 +1155,11 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                             {paidCount}
                           </span>
                         )}
+                        {completedBookings.length > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                            ✓{completedBookings.length}
+                          </span>
+                        )}
                       </div>
                     )}
                   </button>
@@ -926,10 +1172,13 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                 <span className="w-4 h-4 rounded-lg border-2 border-green-500 bg-green-50 inline-block" /> Today
               </div>
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">2T</span> Trial sessions
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">2T</span> Trial
               </div>
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold">3</span> Paid sessions
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold">3</span> Paid
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold">✓1</span> Done
               </div>
             </div>
           </div>
@@ -961,7 +1210,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                     </div>
                   ) : (
                     selectedBookings.map(b => (
-                      <div key={b._id} className={`px-5 py-4 ${b.status === 'pending' ? 'bg-amber-50' : ''}`}>
+                      <div key={b._id} className={`px-5 py-4 ${b.status === 'pending' ? 'bg-amber-50' : b.status === 'completed' ? 'bg-gray-50 opacity-80' : ''}`}>
                         <div className="flex items-start gap-3">
                           <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0 text-green-700 font-bold text-sm">
                             {(b.user?.name || b.name || 'S')[0].toUpperCase()}
@@ -996,6 +1245,16 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                                 <Video size={10} /> Start Class
                               </a>
                             )}
+                            {b.status === 'confirmed' && (
+                              <button onClick={() => handleAction(b._id, 'complete')} disabled={acting === b._id}
+                                className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-gray-600 border border-gray-300 hover:bg-gray-100 px-2.5 py-1 rounded-lg transition disabled:opacity-50 w-fit">
+                                {acting === b._id ? '…' : <><CheckCircle size={10} className="text-gray-500" /> Mark Done</>}
+                              </button>
+                            )}
+                            <button onClick={() => setModalBooking(b)}
+                              className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-gray-500 border border-gray-200 hover:border-green-300 hover:text-green-700 px-2.5 py-1 rounded-lg transition w-fit">
+                              <User size={10} /> View Student
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1006,6 +1265,14 @@ function CalendarTab({ bookings: initialBookings, loading }) {
             )}
           </div>
         </div>
+      )}
+
+      {modalBooking && (
+        <StudentDetailModal
+          booking={modalBooking}
+          allBookings={localBookings}
+          onClose={() => setModalBooking(null)}
+        />
       )}
     </div>
   );

@@ -188,6 +188,22 @@ router.post('/book', protect, async (req, res) => {
       .populate('user', 'name email googleTokens');
     if (!tutorProfile) return res.status(404).json({ message: 'Tutor not found' });
 
+    // Enforce: one trial per tutor per student
+    if (isTrial) {
+      const existingTrial = await Booking.findOne({
+        user:    req.user._id,
+        tutorId: tutorId,
+        isTrial: true,
+        status:  { $ne: 'cancelled' },
+      });
+      if (existingTrial) {
+        return res.status(400).json({
+          message: 'You have already booked a free trial with this tutor. Subscribe to continue learning with them.',
+          alreadyTrialled: true,
+        });
+      }
+    }
+
     const avail          = await TutorAvailability.findOne({ tutor: tutorId });
     const sessionDuration = avail?.sessionDuration || 60;
     const tutorTz         = avail?.timezone || 'Africa/Lagos';

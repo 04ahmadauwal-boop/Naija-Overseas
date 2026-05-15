@@ -15,7 +15,7 @@ const bookingSchema = new mongoose.Schema(
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School', default: null },
     date: { type: Date, required: true },
     timeSlot: { type: String, required: true },
-    status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' },
+    status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
     notes: { type: String },
     paymentRef: { type: String },
     callLink: { type: String },

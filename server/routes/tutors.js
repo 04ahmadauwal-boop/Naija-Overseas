@@ -299,6 +299,22 @@ router.post('/:id/book', optionalAuth, async (req, res) => {
 
     const { name, email, phone, date, timeSlot, sessionType, subject, message } = req.body;
 
+    // Enforce: one trial per tutor per student
+    if (req.user && sessionType !== 'paid') {
+      const existingTrial = await Booking.findOne({
+        user:    req.user._id,
+        tutorId: tutor._id,
+        isTrial: true,
+        status:  { $ne: 'cancelled' },
+      });
+      if (existingTrial) {
+        return res.status(400).json({
+          message: 'You have already booked a free trial with this tutor.',
+          alreadyTrialled: true,
+        });
+      }
+    }
+
     const booking = await Booking.create({
       user: req.user?._id,
       name,

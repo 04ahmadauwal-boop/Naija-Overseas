@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const User = require('../models/User');
+const TutorProfile = require('../models/TutorProfile');
 const StudyAbroadApplication = require('../models/StudyAbroadApplication');
 const cloudinary = require('../utils/cloudinary');
 const { protect } = require('../middleware/auth');
@@ -28,6 +29,45 @@ router.patch('/me/profile', protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true })
       .select('-password -resetPasswordToken -resetPasswordExpires');
     res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/users/me/avatar — upload / replace profile picture
+router.post('/me/avatar', protect, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file provided' });
+
+    const user = await User.findById(req.user._id);
+
+    if (user.profilePhotoPublicId) {
+      await cloudinary.uploader.destroy(user.profilePhotoPublicId).catch(() => {});
+    }
+
+    const b64     = Buffer.from(req.file.buffer).toString('base64');
+    const dataUri = `data:${req.file.mimetype};base64,${b64}`;
+
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder:         'naija-overseas/avatars',
+      public_id:      `user-${req.user._id}`,
+      overwrite:      true,
+      transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }],
+    });
+
+    user.profilePhoto         = result.secure_url;
+    user.profilePhotoPublicId = result.public_id;
+    await user.save();
+
+    // Keep TutorProfile in sync so the photo shows on the public listing
+    if (req.user.role === 'tutor') {
+      await TutorProfile.findOneAndUpdate(
+        { user: req.user._id },
+        { profilePhoto: result.secure_url }
+      ).catch(() => {});
+    }
+
+    res.json({ profilePhoto: result.secure_url, message: 'Profile photo updated' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -105,6 +145,18 @@ router.get('/', protect, isAdmin, async (req, res) => {
       .skip((page - 1) * limit)
       .limit(Number(limit));
     res.json({ users, total });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/users/:id/student-profile — tutor views a student's tutoring profile
+router.get('/:id/student-profile', protect, async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id)
+      .select('name email phone country subjects classLevel preferredSchedule preferredLanguage learningStyle tutoringGoal goal createdAt');
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    res.json({ student });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

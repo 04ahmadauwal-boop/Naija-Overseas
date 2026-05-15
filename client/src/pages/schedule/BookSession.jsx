@@ -42,6 +42,8 @@ export default function BookSession() {
   // Only notes remain — everything else comes from the logged-in user
   const [notes,      setNotes]      = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [hasExistingTrial, setHasExistingTrial] = useState(false);
+  const [trialCheckDone,   setTrialCheckDone]   = useState(false);
 
   useEffect(() => {
     api.get(`/tutors/${tutorId}`)
@@ -51,6 +53,21 @@ export default function BookSession() {
       .then(({ data }) => setAvail(data.availability))
       .catch(() => {});
   }, [tutorId]);
+
+  // Check if logged-in student already has a trial with this tutor
+  useEffect(() => {
+    if (!user) return;
+    api.get('/bookings/my?service=tutoring-session')
+      .then(({ data }) => {
+        const already = (data.bookings || []).some(b =>
+          (b.tutorId?._id?.toString() || b.tutorId?.toString()) === tutorId &&
+          b.isTrial && b.status !== 'cancelled'
+        );
+        setHasExistingTrial(already);
+      })
+      .catch(() => {})
+      .finally(() => setTrialCheckDone(true));
+  }, [user, tutorId]);
 
   const loadDates = useCallback(async (y, m) => {
     setDatesLoading(true);
@@ -158,6 +175,34 @@ export default function BookSession() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (trialCheckDone && hasExistingTrial) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 max-w-sm w-full text-center space-y-5">
+          <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto">
+            <Zap size={24} className="text-amber-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-extrabold text-gray-900 mb-1">Trial Already Used</h2>
+            <p className="text-sm text-gray-500">
+              You've already booked a free trial with{' '}
+              <strong>{tutorName}</strong>. Subscribe to continue learning with them.
+            </p>
+          </div>
+          <Link
+            to={`/subscribe/${tutorId}`}
+            className="block w-full bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition text-sm"
+          >
+            Subscribe Now →
+          </Link>
+          <Link to={`/tutors/${tutorId}`} className="text-xs text-gray-400 hover:underline">
+            ← Back to tutor profile
+          </Link>
+        </div>
       </div>
     );
   }

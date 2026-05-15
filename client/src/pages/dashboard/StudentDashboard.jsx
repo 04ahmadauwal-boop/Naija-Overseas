@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -18,12 +18,14 @@ import {
   CheckCircle2,
   Clock,
   Circle,
+  ChevronLeft,
   ChevronRight,
   BookOpen,
   Plus,
   ExternalLink,
   Upload,
   User,
+  Camera,
   Globe,
   MapPin,
   Star,
@@ -37,21 +39,22 @@ import {
 // CONSTANTS
 // ---------------------------------------------------------------------------
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'applications', label: 'My Applications', icon: FolderOpen },
-  { id: 'consultations', label: 'Consultations', icon: CalendarCheck },
-  { id: 'tutoring', label: 'My Tutoring', icon: GraduationCap },
-  { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'universities', label: 'Universities', icon: School },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'overview',      label: 'Overview',         icon: LayoutDashboard },
+  { id: 'applications',  label: 'My Applications',  icon: FolderOpen },
+  { id: 'consultations', label: 'Consultations',     icon: CalendarCheck },
+  { id: 'tutoring',      label: 'My Sessions',       icon: GraduationCap },
+  { id: 'calendar',      label: 'Calendar',          icon: CalendarCheck },
+  { id: 'documents',     label: 'Documents',         icon: FileText },
+  { id: 'universities',  label: 'Universities',      icon: School },
+  { id: 'settings',      label: 'Settings',          icon: Settings },
 ];
 
 const BOTTOM_TABS = [
-  { id: 'overview', label: 'Home', icon: LayoutDashboard },
-  { id: 'applications', label: 'Apps', icon: FolderOpen },
-  { id: 'tutoring', label: 'Tutoring', icon: GraduationCap },
-  { id: 'consultations', label: 'Book', icon: CalendarCheck },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'overview',  label: 'Home',     icon: LayoutDashboard },
+  { id: 'tutoring',  label: 'Sessions', icon: GraduationCap },
+  { id: 'calendar',  label: 'Calendar', icon: CalendarCheck },
+  { id: 'consultations', label: 'Book', icon: BookOpen },
+  { id: 'settings',  label: 'Settings', icon: Settings },
 ];
 
 // Country → ISO flag code map
@@ -1544,33 +1547,54 @@ function UniversitiesTab() {
   );
 }
 
-function SettingsTab({ user }) {
+function SettingsTab({ user: userProp }) {
+  const { updateUser } = useAuth();
+  const user = userProp;
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
   const [form, setForm] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    nationality: 'Nigerian',
-    qualification: "Bachelor's Degree",
-    goalCountry: 'United Kingdom',
+    name:  user?.name  || '',
+    phone: user?.phone || '',
   });
   const [saving, setSaving] = useState(false);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    setUploading(true);
+    try {
+      const { data } = await api.post('/users/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      updateUser({ profilePhoto: data.profilePhoto });
+      toast.success('Profile photo updated!');
+    } catch {
+      toast.error('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 900)); // Replace with PUT /api/users/:id when ready
-    toast.success('Profile updated successfully!');
-    setSaving(false);
+    try {
+      const { data } = await api.patch('/users/me/profile', {
+        name:  form.name,
+        phone: form.phone,
+      });
+      updateUser({ name: data.user.name, phone: data.user.phone });
+      toast.success('Profile updated!');
+    } catch {
+      toast.error('Failed to save changes.');
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const countries = [
-    'United Kingdom', 'United States', 'Canada', 'Australia',
-    'Germany', 'Netherlands', 'Ireland', 'New Zealand',
-  ];
-  const qualifications = [
-    'WAEC / SSCE', 'OND / NCE', 'HND', "Bachelor's Degree",
-    "Master's Degree", 'PhD',
-  ];
 
   return (
     <div className="space-y-5 max-w-2xl">
@@ -1578,15 +1602,44 @@ function SettingsTab({ user }) {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-50">
-          <div className="w-14 h-14 bg-green-700 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shrink-0">
-            {(user?.name || 'S').charAt(0).toUpperCase()}
+          {/* Avatar with upload button */}
+          <div className="relative shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-green-700 flex items-center justify-center text-white font-extrabold text-xl">
+              {user?.profilePhoto
+                ? <img src={user.profilePhoto} alt="" className="w-full h-full object-cover" />
+                : (user?.name || 'S').charAt(0).toUpperCase()
+              }
+            </div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              title="Change photo"
+              className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-700 border-2 border-white rounded-full flex items-center justify-center text-white hover:bg-green-800 transition disabled:opacity-50"
+            >
+              {uploading
+                ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                : <Camera size={11} />
+              }
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
+
           <div>
             <p className="font-bold text-gray-900">{user?.name || 'Student'}</p>
             <p className="text-sm text-gray-400">{user?.email || ''}</p>
             <span className="inline-block mt-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
               Student Account
             </span>
+            <br />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="mt-1.5 text-xs text-green-700 font-semibold hover:underline disabled:opacity-50"
+            >
+              {uploading ? 'Uploading…' : 'Change profile photo'}
+            </button>
           </div>
         </div>
 
@@ -1611,10 +1664,9 @@ function SettingsTab({ user }) {
               </label>
               <input
                 type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
-                placeholder="you@example.com"
+                value={user?.email || ''}
+                readOnly
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
               />
             </div>
 
@@ -1629,49 +1681,6 @@ function SettingsTab({ user }) {
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                 placeholder="+234 800 000 0000"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                Nationality
-              </label>
-              <input
-                type="text"
-                value={form.nationality}
-                onChange={(e) => setForm({ ...form, nationality: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
-                placeholder="e.g. Nigerian"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                Current Qualification
-              </label>
-              <select
-                value={form.qualification}
-                onChange={(e) => setForm({ ...form, qualification: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
-              >
-                {qualifications.map((q) => (
-                  <option key={q} value={q}>{q}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                Goal Country
-              </label>
-              <select
-                value={form.goalCountry}
-                onChange={(e) => setForm({ ...form, goalCountry: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
-              >
-                {countries.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -1725,17 +1734,14 @@ function TutoringTab({ user }) {
     load();
   }, []);
 
-  // Find completed trials where student hasn't yet subscribed to that tutor
-  const now = new Date();
-  const completedTrials = sessions.filter(s =>
-    s.isTrial && new Date(s.date) < now && s.status !== 'cancelled'
-  );
+  // All trials without an active subscription with that tutor — regardless of date
   const subscribedTutorIds = new Set(
     subscriptions.filter(s => s.status === 'active').map(s =>
       s.tutor?._id?.toString() || s.tutor?.toString()
     )
   );
-  const trialsAwaitingSubscription = completedTrials.filter(s => {
+  const trialsAwaitingSubscription = sessions.filter(s => {
+    if (!s.isTrial || s.status === 'cancelled') return false;
     const tid = s.tutorId?._id?.toString() || s.tutorId?.toString();
     return tid && !subscribedTutorIds.has(tid);
   });
@@ -1875,49 +1881,61 @@ function TutoringTab({ user }) {
             {filtered.map(s => (
               <div key={s._id}
                 className={`flex flex-col gap-3 px-5 py-4 transition ${
-                  s.status === 'confirmed' ? 'bg-green-50 border-l-4 border-green-600' : 'hover:bg-gray-50'
+                  s.status === 'confirmed' && !s.isTrial ? 'bg-green-50 border-l-4 border-green-600' :
+                  s.isTrial ? 'bg-amber-50 border-l-4 border-amber-400' : 'hover:bg-gray-50'
                 }`}>
-                {s.isTrial && (
-                  <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold">
-                    <Zap size={12} /> Trial Session
+                {/* Header row */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    {s.isTrial ? (
+                      <span className="flex items-center gap-1 text-amber-700 text-xs font-bold bg-amber-100 px-2 py-0.5 rounded-full">
+                        <Zap size={10} /> Free Trial
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-green-700 text-xs font-bold bg-green-100 px-2 py-0.5 rounded-full">
+                        <CheckCircle2 size={10} /> Regular Session
+                      </span>
+                    )}
+                    <StatusBadge status={s.status} />
                   </div>
-                )}
-                {s.status === 'confirmed' && !s.isTrial && (
-                  <div className="flex items-center gap-2 text-green-700 text-xs font-semibold">
-                    <CheckCircle2 size={13} /> Your tutor has confirmed this session
-                  </div>
-                )}
+                  {/* Inline Subscribe CTA — only on trial sessions without an active subscription */}
+                  {s.isTrial && (() => {
+                    const tid = s.tutorId?._id?.toString() || s.tutorId?.toString();
+                    if (!tid || subscribedTutorIds.has(tid)) return null;
+                    return (
+                      <Link to={`/subscribe/${tid}`}
+                        className="inline-flex items-center gap-1.5 bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-green-800 transition shrink-0">
+                        <Zap size={11} /> Subscribe Now
+                      </Link>
+                    );
+                  })()}
+                </div>
+
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    s.status === 'confirmed' ? 'bg-green-200' : 'bg-green-100'
+                    s.isTrial ? 'bg-amber-100' : s.status === 'confirmed' ? 'bg-green-200' : 'bg-green-100'
                   }`}>
-                    <GraduationCap size={18} className="text-green-700" />
+                    <GraduationCap size={18} className={s.isTrial ? 'text-amber-700' : 'text-green-700'} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">
                       {s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim() || 'Tutoring Session'}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || 'Subject TBD'} ·{' '}
-                      {s.notes?.match(/Type: ([^|]+)/)?.[1]?.trim() || 'Session'}
+                    <p className="text-xs text-gray-500">
+                      {s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || 'Subject TBD'}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock size={10} className="text-gray-400" />
+                      <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <Clock size={10} />
                         {s.date ? new Date(s.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
                       </span>
                       {s.timeSlot && <span className="text-xs text-gray-400">· {s.timeSlot}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <StatusBadge status={s.status} />
+                  <div className="flex items-center gap-2 shrink-0">
                     {s.callLink && s.status === 'confirmed' && (
-                      <a
-                        href={s.callLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 transition"
-                      >
+                      <a href={s.callLink} target="_blank" rel="noreferrer"
+                        className="flex items-center gap-1.5 bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 transition">
                         <Video size={12} /> Join Class
                       </a>
                     )}
@@ -1943,6 +1961,257 @@ function TutoringTab({ user }) {
 }
 
 // ---------------------------------------------------------------------------
+// STUDENT CALENDAR TAB
+// ---------------------------------------------------------------------------
+const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function StudentCalendarTab({ user }) {
+  const today = new Date();
+  const [current, setCurrent] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selected, setSelected] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [bookRes, subRes] = await Promise.allSettled([
+          api.get('/bookings/my?service=tutoring-session'),
+          api.get('/subscriptions/my'),
+        ]);
+        if (bookRes.status === 'fulfilled') setSessions(bookRes.value.data.bookings || []);
+        if (subRes.status === 'fulfilled') setSubscriptions(subRes.value.data.subscriptions || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const subscribedTutorIds = useMemo(() => new Set(
+    subscriptions.filter(s => s.status === 'active').map(s =>
+      s.tutor?._id?.toString() || s.tutor?.toString()
+    )
+  ), [subscriptions]);
+
+  const year  = current.getFullYear();
+  const month = current.getMonth();
+  const daysInMonth    = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const dayKey   = (d) => `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+  const byDate = useMemo(() => {
+    const map = {};
+    sessions.forEach(s => {
+      if (!s.date) return;
+      const d   = new Date(s.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!map[key]) map[key] = [];
+      map[key].push(s);
+    });
+    return map;
+  }, [sessions]);
+
+  const days = [];
+  for (let i = 0; i < firstDayOfWeek; i++) days.push(null);
+  for (let d = 1; d <= daysInMonth; d++) days.push(d);
+
+  const selectedSessions = selected
+    ? [...(byDate[selected] || [])].sort((a, b) => (a.timeSlot || '').localeCompare(b.timeSlot || ''))
+    : [];
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Session Calendar</h2>
+        <Link to="/find-tutoring"
+          className="inline-flex items-center gap-2 bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-green-800 transition self-start sm:self-auto">
+          <Users size={14} /> Find a Tutor
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading calendar…</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          {/* ── Monthly grid ── */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            {/* Month navigation */}
+            <div className="flex items-center justify-between mb-5">
+              <button onClick={() => setCurrent(new Date(year, month - 1, 1))}
+                className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-600">
+                <ChevronLeft size={16} />
+              </button>
+              <h3 className="font-extrabold text-gray-900 text-base">{CAL_MONTHS[month]} {year}</h3>
+              <button onClick={() => setCurrent(new Date(year, month + 1, 1))}
+                className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-600">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* Day-of-week headers */}
+            <div className="grid grid-cols-7 mb-1">
+              {CAL_DAYS.map(d => (
+                <div key={d} className="text-center text-[11px] font-bold text-gray-400 py-1">{d}</div>
+              ))}
+            </div>
+
+            {/* Day cells */}
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, i) => {
+                if (!day) return <div key={`b-${i}`} />;
+                const key          = dayKey(day);
+                const daySessions  = byDate[key] || [];
+                const isToday      = key === todayStr;
+                const isSelected   = key === selected;
+                const trials       = daySessions.filter(s => s.isTrial && s.status !== 'cancelled');
+                const regular      = daySessions.filter(s => !s.isTrial && s.status !== 'cancelled');
+                const done         = daySessions.filter(s => s.status === 'completed');
+
+                return (
+                  <button key={key} onClick={() => setSelected(isSelected ? null : key)}
+                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-[44px]
+                      ${isSelected ? 'bg-green-700 border-green-700 text-white'
+                        : isToday  ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-transparent hover:bg-gray-50 text-gray-700'}
+                    `}>
+                    <span className="leading-none text-sm">{day}</span>
+                    {daySessions.length > 0 && (
+                      <div className="flex gap-0.5 flex-wrap justify-center">
+                        {trials.length > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none
+                            ${isSelected ? 'bg-amber-300/60 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                            {trials.length}T
+                          </span>
+                        )}
+                        {regular.length > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none
+                            ${isSelected ? 'bg-white/25 text-white' : 'bg-green-100 text-green-700'}`}>
+                            {regular.length}
+                          </span>
+                        )}
+                        {done.length > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none
+                            ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                            ✓{done.length}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50 flex-wrap">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="w-4 h-4 rounded-lg border-2 border-green-500 bg-green-50 inline-block" /> Today
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">1T</span> Trial
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold">2</span> Regular
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold">✓1</span> Done
+              </div>
+            </div>
+          </div>
+
+          {/* ── Day detail panel ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+            {!selected ? (
+              <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] p-6 text-center">
+                <CalendarCheck size={36} className="text-gray-200 mb-3" />
+                <p className="text-sm font-semibold text-gray-400">Tap a day to see sessions</p>
+                <p className="text-xs text-gray-300 mt-1">Days with sessions show a badge</p>
+              </div>
+            ) : (
+              <>
+                <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
+                  <p className="font-extrabold text-gray-900 text-sm">
+                    {new Date(selected + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {selectedSessions.length === 0 ? 'No sessions' : `${selectedSessions.length} session${selectedSessions.length !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-gray-50 overflow-y-auto flex-1" style={{ maxHeight: 460 }}>
+                  {selectedSessions.length === 0 ? (
+                    <div className="px-5 py-10 text-center text-sm text-gray-400">
+                      <Clock size={24} className="text-gray-200 mx-auto mb-2" />
+                      No sessions on this day
+                    </div>
+                  ) : (
+                    selectedSessions.map(s => {
+                      const tid = s.tutorId?._id?.toString() || s.tutorId?.toString();
+                      const canSubscribe = s.isTrial && s.status !== 'cancelled' && tid && !subscribedTutorIds.has(tid);
+                      const tutorName = s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim() || 'Tutor';
+                      const subject   = s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || '';
+
+                      return (
+                        <div key={s._id}
+                          className={`px-5 py-4 ${s.status === 'completed' ? 'bg-gray-50 opacity-80' : ''}`}>
+                          <div className="flex items-start gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm
+                              ${s.isTrial ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                              <GraduationCap size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="text-sm font-bold text-gray-900 truncate">{tutorName}</p>
+                                {s.isTrial
+                                  ? <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Trial</span>
+                                  : <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Regular</span>
+                                }
+                              </div>
+                              {subject && <p className="text-xs text-gray-500 mt-0.5">{subject}</p>}
+                              <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                <Clock size={10} className="text-gray-300" /> {s.timeSlot || 'Time TBD'}
+                              </p>
+                              <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                                <StatusBadge status={s.status} />
+                                {s.callLink && s.status === 'confirmed' && (
+                                  <a href={s.callLink} target="_blank" rel="noreferrer"
+                                    className="flex items-center gap-1 bg-green-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-green-800 transition">
+                                    <Video size={10} /> Join Class
+                                  </a>
+                                )}
+                                {canSubscribe && (
+                                  <Link to={`/subscribe/${tid}`}
+                                    className="flex items-center gap-1 bg-green-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-green-800 transition">
+                                    <Zap size={10} /> Subscribe
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // MAIN COMPONENT
 // ---------------------------------------------------------------------------
 export default function StudentDashboard() {
@@ -1953,12 +2222,12 @@ export default function StudentDashboard() {
 
   const goal = user?.goal;
   const visibleTabs = TABS.filter(({ id }) => {
-    if (goal === 'tutoring') return ['overview', 'tutoring', 'settings'].includes(id);
+    if (goal === 'tutoring') return ['overview', 'tutoring', 'calendar', 'settings'].includes(id);
     if (goal === 'study-abroad') return ['overview', 'applications', 'consultations', 'documents', 'universities', 'settings'].includes(id);
-    return true;
+    return true; // 'both' sees everything
   });
   const visibleBottomTabs = BOTTOM_TABS.filter(({ id }) => {
-    if (goal === 'tutoring') return ['overview', 'tutoring', 'settings'].includes(id);
+    if (goal === 'tutoring') return ['overview', 'tutoring', 'calendar', 'settings'].includes(id);
     if (goal === 'study-abroad') return ['overview', 'applications', 'consultations', 'settings'].includes(id);
     return true;
   });
@@ -2062,6 +2331,8 @@ export default function StudentDashboard() {
         );
       case 'tutoring':
         return <TutoringTab user={user} />;
+      case 'calendar':
+        return <StudentCalendarTab user={user} />;
       case 'documents':
         return <DocumentsTab applications={applications} uploadedDocs={uploadedDocs} userProfile={userProfile} onRefresh={fetchDocuments} />;
       case 'universities':
@@ -2220,7 +2491,8 @@ export default function StudentDashboard() {
               {activeTab === 'overview' && `Welcome back, ${user?.name?.split(' ')[0] || 'Student'}`}
               {activeTab === 'applications' && 'Track and manage your university applications'}
               {activeTab === 'consultations' && 'Manage your sessions with our counsellors'}
-              {activeTab === 'tutoring' && 'Your booked tutoring sessions'}
+              {activeTab === 'tutoring' && 'All your tutoring sessions — trials and regular'}
+              {activeTab === 'calendar' && 'A monthly view of all your scheduled sessions'}
               {activeTab === 'documents' && 'Upload and track your application documents'}
               {activeTab === 'universities' && 'Your bookmarked universities'}
               {activeTab === 'settings' && 'Update your profile information'}
