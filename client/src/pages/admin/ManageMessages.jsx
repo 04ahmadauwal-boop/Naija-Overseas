@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { AdminNav } from './Dashboard';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
-import { MessageSquare, Mail, CheckCheck } from 'lucide-react';
+import { MessageSquare, Mail, CheckCheck, ChevronLeft } from 'lucide-react';
 
 export default function ManageMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [mobileView, setMobileView] = useState('list'); // 'list' | 'detail'
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -31,6 +32,7 @@ export default function ManageMessages() {
   const open = (msg) => {
     setSelected(msg);
     if (!msg.isRead) markRead(msg._id);
+    setMobileView('detail');
   };
 
   const filtered = filter === 'unread'
@@ -70,8 +72,8 @@ export default function ManageMessages() {
 
         <div className="flex flex-1 overflow-hidden">
 
-          {/* Message list */}
-          <div className="w-80 shrink-0 border-r border-gray-100 bg-white overflow-y-auto">
+          {/* Message list — full width on mobile, fixed sidebar on md+ */}
+          <div className={`${mobileView === 'detail' ? 'hidden md:block' : 'block'} w-full md:w-80 shrink-0 border-r border-gray-100 bg-white overflow-y-auto`}>
             {loading ? (
               <div className="p-4 space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -115,10 +117,16 @@ export default function ManageMessages() {
             )}
           </div>
 
-          {/* Detail view */}
-          <div className="flex-1 overflow-y-auto bg-gray-50">
+          {/* Detail view — full width on mobile, flex-1 on md+ */}
+          <div className={`${mobileView === 'list' ? 'hidden md:flex' : 'flex'} flex-1 flex-col overflow-y-auto bg-gray-50`}>
             {selected ? (
-              <div className="p-8 max-w-2xl">
+              <div className="p-4 md:p-8 max-w-2xl w-full">
+                <button
+                  className="md:hidden mb-4 flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition"
+                  onClick={() => setMobileView('list')}
+                >
+                  <ChevronLeft size={16} /> Back to messages
+                </button>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="px-6 py-5 border-b border-gray-100">
                     <h2 className="text-lg font-extrabold text-gray-900 mb-3">{selected.subject || 'No Subject'}</h2>

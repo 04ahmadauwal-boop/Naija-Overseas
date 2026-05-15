@@ -593,6 +593,7 @@ function ChatTab({ role, userId, fixedContact }) {
   const [active, setActive] = useState(fixedContact || null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const [mobilePage, setMobilePage] = useState('list'); // 'list' | 'chat'
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -622,26 +623,39 @@ function ChatTab({ role, userId, fixedContact }) {
     } catch { toast.error('Failed to send'); }
   }
 
-  const chatWindow = (
+  function selectContact(c) {
+    setActive(c);
+    setMobilePage('chat');
+  }
+
+  const chatPanel = (
     <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden" style={{ minHeight: 420 }}>
       {!active ? (
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm p-8 text-center">
           Select a contact to start chatting
         </div>
       ) : (
         <>
-          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white text-xs font-bold">
+          <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-2.5">
+            {!fixedContact && (
+              <button
+                className="md:hidden p-1 -ml-1 text-gray-500 hover:text-gray-800 transition shrink-0"
+                onClick={() => setMobilePage('list')}
+              >
+                <ChevronLeft size={18} />
+              </button>
+            )}
+            <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
               {active.name?.charAt(0)?.toUpperCase()}
             </div>
             <span className="font-semibold text-gray-800 text-sm">{active.name}</span>
           </div>
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.map(m => {
               const mine = String(m.sender?._id || m.sender) === String(userId);
               return (
                 <div key={m._id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     mine ? 'bg-green-700 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                   }`}>
                     {m.text}
@@ -651,13 +665,15 @@ function ChatTab({ role, userId, fixedContact }) {
             })}
             <div ref={bottomRef} />
           </div>
-          <form onSubmit={send} className="px-4 py-3 border-t border-gray-100 flex gap-2">
+          <form onSubmit={send} className="px-3 py-3 border-t border-gray-100 flex gap-2">
             <input
-              className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-green-300 transition"
-              placeholder="Type a message…" value={text}
-              onChange={e => setText(e.target.value)} />
+              className="flex-1 bg-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-green-300 transition"
+              placeholder="Type a message…"
+              value={text}
+              onChange={e => setText(e.target.value)}
+            />
             <button type="submit" disabled={!text.trim()}
-              className="w-10 h-10 bg-green-700 rounded-xl flex items-center justify-center text-white hover:bg-green-800 transition disabled:opacity-40">
+              className="w-10 h-10 bg-green-700 rounded-xl flex items-center justify-center text-white hover:bg-green-800 transition disabled:opacity-40 shrink-0">
               <Send size={15} />
             </button>
           </form>
@@ -666,17 +682,24 @@ function ChatTab({ role, userId, fixedContact }) {
     </div>
   );
 
-  if (fixedContact) return chatWindow;
+  if (fixedContact) return chatPanel;
 
   return (
-    <div className="flex gap-4" style={{ minHeight: 480 }}>
-      <div className="w-52 shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-y-auto">
+    <div className="flex flex-col md:flex-row gap-4" style={{ minHeight: 480 }}>
+      {/* Contact list — full width on mobile, fixed sidebar on desktop */}
+      <div className={`
+        ${mobilePage === 'chat' ? 'hidden md:flex' : 'flex'}
+        flex-col md:w-52 md:shrink-0
+        bg-white rounded-2xl border border-gray-100 shadow-sm overflow-y-auto
+      `}>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-4 pt-4 pb-2">
           {role === 'tutor' ? 'Students' : 'Tutors'}
         </p>
-        {contacts.length === 0 && <p className="text-xs text-gray-400 px-4 pb-4">No conversations yet</p>}
+        {contacts.length === 0 && (
+          <p className="text-xs text-gray-400 px-4 pb-4">No conversations yet</p>
+        )}
         {contacts.map(c => (
-          <button key={c._id} onClick={() => setActive(c)}
+          <button key={c._id} onClick={() => selectContact(c)}
             className={`w-full text-left px-4 py-3 flex items-center gap-2.5 hover:bg-gray-50 transition ${active?._id === c._id ? 'bg-green-50' : ''}`}>
             <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
               {c.name?.charAt(0)?.toUpperCase()}
@@ -685,7 +708,11 @@ function ChatTab({ role, userId, fixedContact }) {
           </button>
         ))}
       </div>
-      {chatWindow}
+
+      {/* Chat panel — hidden on mobile until contact selected */}
+      <div className={`${mobilePage === 'list' ? 'hidden md:flex' : 'flex'} flex-1 flex-col`}>
+        {chatPanel}
+      </div>
     </div>
   );
 }
