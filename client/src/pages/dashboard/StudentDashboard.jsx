@@ -15,7 +15,6 @@ import {
   GraduationCap,
   LogOut,
   Video,
-  Phone,
   CheckCircle2,
   Clock,
   Circle,
@@ -30,6 +29,8 @@ import {
   Star,
   TrendingUp,
   AlertCircle,
+  Users,
+  Zap,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +40,7 @@ const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'applications', label: 'My Applications', icon: FolderOpen },
   { id: 'consultations', label: 'Consultations', icon: CalendarCheck },
+  { id: 'tutoring', label: 'My Tutoring', icon: GraduationCap },
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'universities', label: 'Universities', icon: School },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -47,7 +49,7 @@ const TABS = [
 const BOTTOM_TABS = [
   { id: 'overview', label: 'Home', icon: LayoutDashboard },
   { id: 'applications', label: 'Apps', icon: FolderOpen },
-  { id: 'documents', label: 'Docs', icon: FileText },
+  { id: 'tutoring', label: 'Tutoring', icon: GraduationCap },
   { id: 'consultations', label: 'Book', icon: CalendarCheck },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -460,28 +462,100 @@ function ApplyModal({ user, onClose, onSuccess }) {
 // ---------------------------------------------------------------------------
 
 function OverviewTab({ user, applications, consultations, loading, setActiveTab }) {
+  const goal = user?.goal;
+  const isTutoringOnly = goal === 'tutoring';
+
   const activeApps = applications.filter(
     (a) => !['admitted', 'rejected'].includes(a.status)
   ).length;
 
   const upcomingConsults = consultations.filter((c) => ['pending', 'confirmed', 'upcoming'].includes(c.status));
   const upcoming = upcomingConsults[0] || null;
-
-  // Documents pending: count how many STATIC_DOCS are not "uploaded"
-  // Since we have no real doc upload status, we show action-required count based on applications
   const docsActionRequired = applications.filter((a) => a.status === 'documents-requested').length;
-
   const progressSteps = deriveProgressSteps(applications);
+
+  if (isTutoringOnly) {
+    return (
+      <div className="space-y-6">
+        {/* Welcome Banner — tutoring */}
+        <div className="bg-linear-to-r from-green-800 via-green-700 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-black/10 rounded-full translate-y-1/2" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-3">
+              <GraduationCap size={12} /> Tutoring Journey
+            </div>
+            <h1 className="text-lg sm:text-2xl font-extrabold leading-snug">
+              Welcome back, {user?.name?.split(' ')[0] || 'Student'}!
+            </h1>
+            <p className="text-green-200 text-sm mt-1">
+              Find expert tutors for WAEC, JAMB, GCSE, A-Level, SAT and more — online or in-person, worldwide.
+            </p>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Link to="/find-tutoring"
+            className="flex items-center gap-4 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+              <Users size={22} className="text-green-700" />
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">Find a Tutor</p>
+              <p className="text-xs text-gray-400 mt-0.5">Browse verified tutors by subject and level</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-300 ml-auto shrink-0" />
+          </Link>
+
+          <button onClick={() => setActiveTab('tutoring')}
+            className="flex items-center gap-4 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-left w-full">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+              <CalendarCheck size={22} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">My Sessions</p>
+              <p className="text-xs text-gray-400 mt-0.5">View and manage your booked tutoring sessions</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-300 ml-auto shrink-0" />
+          </button>
+        </div>
+
+        {/* Learning Hub CTA */}
+        <Link to="/learning"
+          className="flex items-center gap-4 bg-linear-to-r from-purple-700 to-purple-600 rounded-2xl p-5 text-white hover:opacity-95 transition">
+          <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+            <GraduationCap size={20} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-extrabold text-base leading-tight">Learning Hub</p>
+            <p className="text-purple-200 text-xs mt-0.5">Notes · Quizzes · Chat with tutor · Progress tracking</p>
+          </div>
+          <ChevronRight size={18} className="text-white/60 shrink-0" />
+        </Link>
+
+        {/* CTA banner */}
+        <div className="bg-linear-to-r from-blue-700 to-blue-600 rounded-2xl p-6 text-white">
+          <h3 className="font-bold text-base mb-1">Ready to start learning?</h3>
+          <p className="text-blue-200 text-sm mb-4">Choose from hundreds of expert tutors. First session free for trials!</p>
+          <Link to="/find-tutoring"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition text-sm">
+            <Users size={14} /> Browse All Tutors →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Banner */}
+      {/* Welcome Banner — study abroad / both */}
       <div className="bg-linear-to-r from-green-800 via-green-700 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-black/10 rounded-full translate-y-1/2" />
         <div className="relative z-10">
           <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-3">
-            <span>Study Abroad Journey</span>
+            <Globe size={12} /> {goal === 'both' ? 'Full Learning Journey' : 'Study Abroad Journey'}
           </div>
           <h1 className="text-lg sm:text-2xl font-extrabold leading-snug">
             Welcome back, {user?.name?.split(' ')[0] || 'Student'}!
@@ -533,6 +607,21 @@ function OverviewTab({ user, applications, consultations, loading, setActiveTab 
           <div className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">Docs Action Required</div>
         </button>
       </div>
+
+      {/* Learning Hub CTA — only for students who also do tutoring */}
+      {goal === 'both' && (
+        <Link to="/learning"
+          className="flex items-center gap-4 bg-linear-to-r from-purple-700 to-purple-600 rounded-2xl p-5 text-white hover:opacity-95 transition">
+          <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+            <GraduationCap size={20} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-extrabold text-base leading-tight">Learning Hub</p>
+            <p className="text-purple-200 text-xs mt-0.5">Notes · Quizzes · Chat with tutor · Progress tracking</p>
+          </div>
+          <ChevronRight size={18} className="text-white/60 shrink-0" />
+        </Link>
+      )}
 
       {/* Applications Preview */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -1606,6 +1695,254 @@ function SettingsTab({ user }) {
 }
 
 // ---------------------------------------------------------------------------
+// TUTORING TAB
+// ---------------------------------------------------------------------------
+const CURRENCY_SYMBOLS = {
+  NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: 'GH₵',
+  KES: 'KSh', ZAR: 'R', CAD: 'CA$', AUD: 'A$', INR: '₹',
+};
+
+function TutoringTab({ user }) {
+  const [sessions, setSessions] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [bookRes, subRes] = await Promise.allSettled([
+          api.get('/bookings/my?service=tutoring-session'),
+          api.get('/subscriptions/my'),
+        ]);
+        if (bookRes.status === 'fulfilled') setSessions(bookRes.value.data.bookings || []);
+        if (subRes.status === 'fulfilled') setSubscriptions(subRes.value.data.subscriptions || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // Find completed trials where student hasn't yet subscribed to that tutor
+  const now = new Date();
+  const completedTrials = sessions.filter(s =>
+    s.isTrial && new Date(s.date) < now && s.status !== 'cancelled'
+  );
+  const subscribedTutorIds = new Set(
+    subscriptions.filter(s => s.status === 'active').map(s =>
+      s.tutor?._id?.toString() || s.tutor?.toString()
+    )
+  );
+  const trialsAwaitingSubscription = completedTrials.filter(s => {
+    const tid = s.tutorId?._id?.toString() || s.tutorId?.toString();
+    return tid && !subscribedTutorIds.has(tid);
+  });
+
+  const filters = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'upcoming', label: 'Upcoming' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
+
+  const filtered = filter === 'all' ? sessions : sessions.filter(s => s.status === filter);
+  const upcoming = sessions.filter(s => ['pending','upcoming','confirmed'].includes(s.status));
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">My Tutoring Sessions</h2>
+        <Link to="/find-tutoring"
+          className="inline-flex items-center gap-2 bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-green-800 transition self-start sm:self-auto">
+          <Users size={14} /> Find a Tutor
+        </Link>
+      </div>
+
+      {/* Stats */}
+      {!loading && sessions.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Total Sessions', value: sessions.length, color: 'bg-blue-100 text-blue-600' },
+            { label: 'Upcoming', value: upcoming.length, color: 'bg-green-100 text-green-600' },
+            { label: 'Completed', value: sessions.filter(s => s.status === 'completed').length, color: 'bg-gray-100 text-gray-600' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+              <div className={`text-2xl font-extrabold mb-1 ${color.split(' ')[1]}`}>{value}</div>
+              <div className="text-xs text-gray-500 font-medium">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Subscribe to Continue — show after completed trials */}
+      {!loading && trialsAwaitingSubscription.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <Zap size={15} className="text-green-600" /> Ready to continue?
+          </p>
+          {trialsAwaitingSubscription.map(s => {
+            const tutorId = s.tutorId?._id || s.tutorId;
+            const tutorName = s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim() || 'your tutor';
+            return (
+              <div key={s._id} className="bg-green-50 border border-green-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-200 flex items-center justify-center shrink-0">
+                  <GraduationCap size={18} className="text-green-800" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-green-900">
+                    Trial with {tutorName} complete!
+                  </p>
+                  <p className="text-xs text-green-700 mt-0.5">
+                    Subscribe for weekly sessions — choose your schedule and pay monthly.
+                  </p>
+                </div>
+                <Link to={`/subscribe/${tutorId}`}
+                  className="inline-flex items-center gap-1.5 bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-800 transition shrink-0">
+                  <Zap size={12} /> Subscribe Now
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Active subscriptions summary */}
+      {!loading && subscriptions.filter(s => s.status === 'active').length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-bold text-gray-800">Active Subscriptions</p>
+          {subscriptions.filter(s => s.status === 'active').map(sub => (
+            <div key={sub._id} className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm">
+              <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                <GraduationCap size={14} className="text-green-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {sub.tutor?.displayName || 'Tutor'}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {sub.timesPerWeek}× per week · renews {sub.renewalDate ? new Date(sub.renewalDate).toLocaleDateString() : '—'}
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700">Active</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filter chips */}
+      {sessions.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {filters.map(f => (
+            <button key={f.value} onClick={() => setFilter(f.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                filter === f.value ? 'bg-green-700 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-green-300'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Sessions list */}
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading sessions…</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+          <GraduationCap size={40} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 font-medium mb-2">
+            {filter === 'all' ? "No tutoring sessions yet" : `No ${filter} sessions`}
+          </p>
+          <p className="text-gray-400 text-sm mb-5">
+            {filter === 'all' ? 'Book a session with one of our expert tutors to get started' : 'Try a different filter'}
+          </p>
+          {filter === 'all' && (
+            <Link to="/find-tutoring"
+              className="inline-flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-green-800 transition">
+              <Users size={14} /> Browse Tutors
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="divide-y divide-gray-50">
+            {filtered.map(s => (
+              <div key={s._id}
+                className={`flex flex-col gap-3 px-5 py-4 transition ${
+                  s.status === 'confirmed' ? 'bg-green-50 border-l-4 border-green-600' : 'hover:bg-gray-50'
+                }`}>
+                {s.isTrial && (
+                  <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold">
+                    <Zap size={12} /> Trial Session
+                  </div>
+                )}
+                {s.status === 'confirmed' && !s.isTrial && (
+                  <div className="flex items-center gap-2 text-green-700 text-xs font-semibold">
+                    <CheckCircle2 size={13} /> Your tutor has confirmed this session
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    s.status === 'confirmed' ? 'bg-green-200' : 'bg-green-100'
+                  }`}>
+                    <GraduationCap size={18} className="text-green-700" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">
+                      {s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim() || 'Tutoring Session'}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || 'Subject TBD'} ·{' '}
+                      {s.notes?.match(/Type: ([^|]+)/)?.[1]?.trim() || 'Session'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock size={10} className="text-gray-400" />
+                        {s.date ? new Date(s.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
+                      </span>
+                      {s.timeSlot && <span className="text-xs text-gray-400">· {s.timeSlot}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <StatusBadge status={s.status} />
+                    {s.callLink && s.status === 'confirmed' && (
+                      <a
+                        href={s.callLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1.5 bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 transition"
+                      >
+                        <Video size={12} /> Join Class
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CTA for finding a tutor */}
+      <div className="bg-linear-to-r from-green-700 to-green-600 rounded-2xl p-6 text-white">
+        <h3 className="font-bold text-base mb-1">Explore More Tutors</h3>
+        <p className="text-green-200 text-sm mb-4">Find verified tutors for WAEC, JAMB, GCSE, A-Level, SAT and more — online or in-person, worldwide.</p>
+        <Link to="/find-tutoring"
+          className="inline-flex items-center gap-2 bg-white text-green-700 font-bold px-5 py-2.5 rounded-xl hover:bg-green-50 transition text-sm">
+          <Users size={14} /> Browse All Tutors →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // MAIN COMPONENT
 // ---------------------------------------------------------------------------
 export default function StudentDashboard() {
@@ -1613,6 +1950,18 @@ export default function StudentDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const goal = user?.goal;
+  const visibleTabs = TABS.filter(({ id }) => {
+    if (goal === 'tutoring') return ['overview', 'tutoring', 'settings'].includes(id);
+    if (goal === 'study-abroad') return ['overview', 'applications', 'consultations', 'documents', 'universities', 'settings'].includes(id);
+    return true;
+  });
+  const visibleBottomTabs = BOTTOM_TABS.filter(({ id }) => {
+    if (goal === 'tutoring') return ['overview', 'tutoring', 'settings'].includes(id);
+    if (goal === 'study-abroad') return ['overview', 'applications', 'consultations', 'settings'].includes(id);
+    return true;
+  });
 
   // Real data state
   const [applications, setApplications] = useState([]);
@@ -1711,6 +2060,8 @@ export default function StudentDashboard() {
             onRefresh={fetchConsultations}
           />
         );
+      case 'tutoring':
+        return <TutoringTab user={user} />;
       case 'documents':
         return <DocumentsTab applications={applications} uploadedDocs={uploadedDocs} userProfile={userProfile} onRefresh={fetchDocuments} />;
       case 'universities':
@@ -1749,7 +2100,7 @@ export default function StudentDashboard() {
 
       {/* Nav items */}
       <nav className="flex-1 p-4 space-y-0.5">
-        {TABS.map(({ id, label, icon: Icon }) => (
+        {visibleTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => handleTabChange(id)}
@@ -1768,6 +2119,12 @@ export default function StudentDashboard() {
         ))}
 
         <div className="pt-4 mt-4 border-t border-gray-800">
+          {goal !== 'study-abroad' && (
+            <Link to="/learning"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-purple-400 hover:text-white hover:bg-purple-700/40 transition-all">
+              <GraduationCap size={16} /> Learning Hub
+            </Link>
+          )}
           <Link
             to="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-white hover:bg-gray-800 transition-all"
@@ -1857,12 +2214,13 @@ export default function StudentDashboard() {
         <div className="hidden lg:flex bg-white border-b border-gray-100 px-8 py-5 items-center justify-between">
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900">
-              {TABS.find((t) => t.id === activeTab)?.label || 'Overview'}
+              {visibleTabs.find((t) => t.id === activeTab)?.label || 'Overview'}
             </h1>
             <p className="text-gray-400 text-sm mt-0.5">
               {activeTab === 'overview' && `Welcome back, ${user?.name?.split(' ')[0] || 'Student'}`}
               {activeTab === 'applications' && 'Track and manage your university applications'}
               {activeTab === 'consultations' && 'Manage your sessions with our counsellors'}
+              {activeTab === 'tutoring' && 'Your booked tutoring sessions'}
               {activeTab === 'documents' && 'Upload and track your application documents'}
               {activeTab === 'universities' && 'Your bookmarked universities'}
               {activeTab === 'settings' && 'Update your profile information'}
@@ -1890,7 +2248,7 @@ export default function StudentDashboard() {
 
       {/* MOBILE BOTTOM TAB BAR */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex">
-        {BOTTOM_TABS.map(({ id, label, icon: Icon }) => (
+        {visibleBottomTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => handleTabChange(id)}

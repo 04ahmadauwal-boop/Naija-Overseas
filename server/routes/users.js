@@ -22,7 +22,7 @@ router.get('/me', protect, async (req, res) => {
 // PATCH /api/users/me/profile — student updates their own bio data
 router.patch('/me/profile', protect, async (req, res) => {
   try {
-    const allowed = ['name', 'phone', 'dateOfBirth', 'gender', 'stateOfOrigin', 'lga', 'address', 'nextOfKin'];
+    const allowed = ['name', 'phone', 'dateOfBirth', 'gender', 'stateOfOrigin', 'lga', 'address', 'nextOfKin', 'subjects', 'classLevel', 'preferredSchedule', 'tutoringGoal', 'onboardingComplete', 'preferredLanguage', 'learningStyle'];
     const updates = {};
     allowed.forEach((key) => { if (req.body[key] !== undefined) updates[key] = req.body[key]; });
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true })

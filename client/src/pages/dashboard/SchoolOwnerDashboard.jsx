@@ -5,7 +5,8 @@ import {
   Menu, X, Eye, MessageCircle, Star, Plus, Trash2, Save,
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, Globe, DollarSign,
-  Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload
+  Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload,
+  CalendarCheck, XCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -41,13 +42,14 @@ const CATEGORY_COLORS = {
 };
 
 const TABS = [
-  { id: 'overview',     label: 'Overview',     icon: LayoutDashboard },
-  { id: 'school',       label: 'My School',    icon: School          },
-  { id: 'edit',         label: 'Edit Listing', icon: Edit3           },
-  { id: 'achievements', label: 'Achievements', icon: Trophy          },
-  { id: 'reports',      label: 'Exam Results', icon: BookOpen        },
-  { id: 'gallery',      label: 'Gallery',      icon: Image           },
-  { id: 'analytics',    label: 'Analytics',    icon: BarChart2       },
+  { id: 'overview',     label: 'Overview',        icon: LayoutDashboard },
+  { id: 'school',       label: 'My School',        icon: School          },
+  { id: 'edit',         label: 'Edit Listing',     icon: Edit3           },
+  { id: 'achievements', label: 'Achievements',     icon: Trophy          },
+  { id: 'reports',      label: 'Exam Results',     icon: BookOpen        },
+  { id: 'gallery',      label: 'Gallery',          icon: Image           },
+  { id: 'analytics',    label: 'Analytics',        icon: BarChart2       },
+  { id: 'visits',       label: 'Visit Requests',   icon: CalendarCheck   },
 ];
 
 const JAMB_SUBJECTS = ['Use of English', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
@@ -279,7 +281,7 @@ function OverviewTab({ school, setActiveTab }) {
             { label: 'Edit Listing', tab: 'edit', icon: Edit3, color: 'text-blue-700 bg-blue-50 hover:bg-blue-100' },
             { label: 'Add Achievement', tab: 'achievements', icon: Trophy, color: 'text-yellow-700 bg-yellow-50 hover:bg-yellow-100' },
             { label: 'Upload Photo', tab: 'gallery', icon: Camera, color: 'text-purple-700 bg-purple-50 hover:bg-purple-100' },
-            { label: 'View Analytics', tab: 'analytics', icon: BarChart2, color: 'text-green-700 bg-green-50 hover:bg-green-100' },
+            { label: 'Visit Requests', tab: 'visits', icon: CalendarCheck, color: 'text-teal-700 bg-teal-50 hover:bg-teal-100' },
           ].map(({ label, tab, icon: Icon, color }) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`flex flex-col items-center gap-2 p-4 rounded-xl text-sm font-semibold text-center transition cursor-pointer ${color}`}>
@@ -1425,6 +1427,142 @@ function AnalyticsTab({ school }) {
   );
 }
 
+// ─── Visit Requests Tab ───────────────────────────────────────────────────────
+
+function VisitStatusBadge({ status }) {
+  const map = {
+    confirmed: { cls: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Confirmed' },
+    pending:   { cls: 'bg-yellow-100 text-yellow-700', icon: Clock,        label: 'Pending'   },
+    cancelled: { cls: 'bg-red-100 text-red-700',    icon: XCircle,      label: 'Declined'  },
+  };
+  const s = map[status] || map.pending;
+  const Icon = s.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.cls}`}>
+      <Icon size={11} />
+      {s.label}
+    </span>
+  );
+}
+
+function VisitRequestsTab() {
+  const [visits, setVisits] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/bookings/school')
+      .then(({ data }) => setVisits(data.bookings || []))
+      .catch(() => setVisits([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAction = async (id, action) => {
+    try {
+      const { data } = await api.patch(`/bookings/${id}/school-action`, { action });
+      setVisits((prev) => prev.map((v) => v._id === id ? { ...v, ...data.booking } : v));
+      toast.success(action === 'confirm' ? 'Visit confirmed! Parent notified.' : 'Visit declined.');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Action failed. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-3 max-w-2xl">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse h-28" />
+        ))}
+      </div>
+    );
+  }
+
+  const pending = visits.filter((v) => v.status === 'pending').length;
+
+  return (
+    <div className="space-y-5 max-w-2xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-gray-900">Visit Requests</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Parents requesting school visits</p>
+        </div>
+        {pending > 0 && (
+          <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">
+            {pending} pending
+          </span>
+        )}
+      </div>
+
+      {visits.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+          <CalendarCheck size={40} className="mx-auto mb-3 text-gray-200" />
+          <p className="font-semibold text-gray-700 mb-1">No visit requests yet</p>
+          <p className="text-sm text-gray-400">When parents request visits to your school, they'll appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visits.map((visit) => (
+            <div
+              key={visit._id}
+              className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-4 transition ${
+                visit.status === 'cancelled' ? 'opacity-60' : ''
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                  <Users size={18} className="text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <p className="font-semibold text-gray-900 text-sm">
+                      {visit.name || visit.user?.name || 'Parent'}
+                    </p>
+                    <VisitStatusBadge status={visit.status} />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {visit.email || visit.user?.email}
+                    {visit.phone && ` · ${visit.phone}`}
+                  </p>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      <CalendarCheck size={11} className="text-gray-400" />
+                      {new Date(visit.date).toDateString()}
+                    </span>
+                    {visit.timeSlot && (
+                      <span className="text-xs text-gray-500 flex items-center gap-1">
+                        <Clock size={11} className="text-gray-400" />
+                        {visit.timeSlot}
+                      </span>
+                    )}
+                  </div>
+                  {visit.notes && (
+                    <p className="text-xs text-gray-400 mt-1.5 italic">"{visit.notes}"</p>
+                  )}
+                  {visit.status === 'pending' && (
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => handleAction(visit._id, 'confirm')}
+                        className="flex items-center gap-1.5 text-xs font-semibold bg-green-700 text-white px-4 py-1.5 rounded-lg hover:bg-green-800 transition"
+                      >
+                        <CheckCircle size={13} /> Confirm Visit
+                      </button>
+                      <button
+                        onClick={() => handleAction(visit._id, 'decline')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 border border-red-100 px-4 py-1.5 rounded-lg hover:bg-red-100 transition"
+                      >
+                        <XCircle size={13} /> Decline
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function SchoolOwnerDashboard() {
@@ -1626,6 +1764,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'reports' && <ExamResultsTab school={school} />}
               {activeTab === 'gallery' && <GalleryTab school={school} />}
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
+              {activeTab === 'visits' && <VisitRequestsTab />}
             </>
           )}
         </div>

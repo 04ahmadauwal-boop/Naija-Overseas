@@ -1,41 +1,113 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { GraduationCap, Eye, EyeOff, User, Users, School, CheckCircle } from 'lucide-react';
+import {
+  GraduationCap, Eye, EyeOff, User, Users, School,
+  CheckCircle, Globe, BookOpen, ChevronRight,
+} from 'lucide-react';
 
-const COUNTRIES = ['Nigeria', 'Ghana', 'The Gambia', 'Cameroon'];
-
-const ROLES = [
-  { value: 'student', label: 'Student', sub: 'Find schools & study abroad', icon: User, color: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { value: 'parent', label: 'Parent / Guardian', sub: 'Research schools for my child', icon: Users, color: 'bg-purple-50 border-purple-200 text-purple-700' },
-  { value: 'school-owner', label: 'School Owner', sub: 'List & manage my school', icon: School, color: 'bg-green-50 border-green-200 text-green-700' },
+const COUNTRIES = [
+  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'United Kingdom',
+  'United States', 'Canada', 'Australia', 'The Gambia', 'Cameroon', 'Other',
 ];
 
-const BENEFITS = [
-  'Access 500+ verified school profiles',
-  'Compare schools side by side for free',
-  'Get matched with study abroad counsellors',
-  'Receive personalised school recommendations',
+// Top-level account types
+const ACCOUNT_TYPES = [
+  {
+    value: 'student',
+    label: 'Student',
+    sub: 'I want to learn — tutoring or study abroad',
+    icon: User,
+  },
+  {
+    value: 'tutor',
+    label: 'Tutor',
+    sub: 'I want to teach and earn from my knowledge',
+    icon: GraduationCap,
+  },
+  {
+    value: 'parent',
+    label: 'Parent / Guardian',
+    sub: 'Finding tutors or schools for my child',
+    icon: Users,
+  },
+  {
+    value: 'school-owner',
+    label: 'School Owner',
+    sub: 'List and manage my school',
+    icon: School,
+  },
 ];
+
+// Student sub-goals — shown only when 'student' is selected
+const STUDENT_GOALS = [
+  {
+    value: 'tutoring',
+    label: 'Find a Tutor',
+    desc: 'Get 1:1 help for WAEC, JAMB, GCSE, A-Level, SAT and more',
+    icon: BookOpen,
+    color: 'blue',
+  },
+  {
+    value: 'study-abroad',
+    label: 'Study Abroad',
+    desc: 'Apply to universities in the UK, US, Canada, Australia & more',
+    icon: Globe,
+    color: 'purple',
+  },
+  {
+    value: 'both',
+    label: 'Both',
+    desc: 'I want tutoring and study abroad guidance',
+    icon: CheckCircle,
+    color: 'green',
+  },
+];
+
+const GOAL_COLOR = {
+  blue:   { border: 'border-blue-500 bg-blue-50',   icon: 'bg-blue-100 text-blue-600',   text: 'text-blue-900'   },
+  purple: { border: 'border-purple-500 bg-purple-50', icon: 'bg-purple-100 text-purple-600', text: 'text-purple-900' },
+  green:  { border: 'border-green-600 bg-green-50',  icon: 'bg-green-100 text-green-700',  text: 'text-green-900'  },
+};
+
+function getRedirectPath(role, goal) {
+  if (role === 'tutor')       return '/become-a-tutor';
+  if (role === 'school-owner') return '/list-your-school';
+  if (role === 'student') {
+    if (goal === 'tutoring')     return '/student-onboarding';
+    if (goal === 'both')         return '/student-onboarding';
+    if (goal === 'study-abroad') return '/study-abroad';
+  }
+  return '/';
+}
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: '', email: '', password: '', role: 'student', phone: '', country: 'Nigeria',
-  });
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
+  const [role, setRole] = useState('student');
+  const [goal, setGoal] = useState('');        // only used for students
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', country: 'Nigeria' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+
+  const needsGoal = role === 'student';
+  const canSubmit = !needsGoal || goal !== '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (needsGoal && !goal) { toast.error('Please choose what you\'re looking for'); return; }
     setLoading(true);
     try {
-      const user = await register(form);
-      toast.success(`Welcome, ${user.name.split(' ')[0]}!`);
-      navigate('/');
+      const payload = { ...form, role, goal: needsGoal ? goal : 'both' };
+      const user = await register(payload);
+      toast.success(`Welcome, ${user.name.split(' ')[0]}! 🎉`);
+      if (redirectTo) { navigate(redirectTo); return; }
+      navigate(getRedirectPath(role, goal));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -43,7 +115,7 @@ export default function Register() {
     }
   };
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition';
+  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white';
 
   return (
     <div className="min-h-screen flex">
@@ -64,24 +136,29 @@ export default function Register() {
           </div>
 
           <h2 className="text-3xl font-extrabold text-white leading-tight mb-3">
-            Start your education<br />journey today.
+            Your education<br />journey starts here.
           </h2>
           <p className="text-green-300 text-sm leading-relaxed mb-8">
-            Join 10,000+ students, parents and school owners already using our platform across West Africa.
+            Join thousands of students, tutors, parents and schools across Africa and beyond.
           </p>
 
-          <div className="space-y-3">
-            {BENEFITS.map((b) => (
-              <div key={b} className="flex items-center gap-3">
-                <CheckCircle size={15} className="text-green-400 shrink-0" />
-                <p className="text-green-200 text-sm">{b}</p>
+          <div className="space-y-4">
+            {[
+              { icon: BookOpen, label: 'Find expert tutors for any subject', color: 'text-blue-400' },
+              { icon: Globe,    label: 'Apply to universities worldwide',    color: 'text-purple-400' },
+              { icon: GraduationCap, label: 'Earn as a verified tutor',       color: 'text-yellow-400' },
+              { icon: School,   label: 'List and grow your school',          color: 'text-green-400' },
+            ].map(({ icon: Icon, label, color }) => (
+              <div key={label} className="flex items-center gap-3">
+                <Icon size={15} className={`${color} shrink-0`} />
+                <p className="text-green-200 text-sm">{label}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="relative z-10 flex gap-6 text-center">
-          {[['500+', 'Schools'], ['10k+', 'Families'], ['4', 'Countries']].map(([n, l]) => (
+          {[['500+', 'Schools'], ['50+', 'Tutors'], ['30+', 'Countries']].map(([n, l]) => (
             <div key={l}>
               <div className="text-2xl font-extrabold text-white">{n}</div>
               <div className="text-green-400 text-xs mt-0.5">{l}</div>
@@ -94,6 +171,7 @@ export default function Register() {
       <div className="flex-1 flex items-start justify-center px-6 py-10 bg-white overflow-y-auto">
         <div className="w-full max-w-lg">
 
+          {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
               <GraduationCap size={16} className="text-white" />
@@ -102,66 +180,112 @@ export default function Register() {
           </div>
 
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Create account</h1>
-          <p className="text-gray-500 mb-7">Free forever for students and parents.</p>
+          <p className="text-gray-500 mb-7">Free forever · Takes less than a minute</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Role selector */}
+            {/* ── STEP 1: Account type ──────────────────────── */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">I am a</label>
-              <div className="grid grid-cols-3 gap-2">
-                {ROLES.map(({ value, label, sub, icon: Icon, color }) => (
-                  <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
-                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition ${
-                      form.role === value
+              <label className="block text-sm font-bold text-gray-700 mb-2">I am a…</label>
+              <div className="grid grid-cols-2 gap-2">
+                {ACCOUNT_TYPES.map(({ value, label, sub, icon: Icon }) => (
+                  <button key={value} type="button" onClick={() => { setRole(value); setGoal(''); }}
+                    className={`relative flex items-start gap-3 p-3.5 rounded-xl border-2 text-left transition ${
+                      role === value
                         ? 'border-green-600 bg-green-50'
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}>
-                    {form.role === value && (
-                      <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                    {role === value && (
+                      <div className="absolute top-2 right-2 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center shrink-0">
                         <CheckCircle size={10} className="text-white" />
                       </div>
                     )}
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${form.role === value ? 'bg-green-100' : 'bg-gray-100'}`}>
-                      <Icon size={16} className={form.role === value ? 'text-green-700' : 'text-gray-500'} />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${role === value ? 'bg-green-100' : 'bg-gray-100'}`}>
+                      <Icon size={15} className={role === value ? 'text-green-700' : 'text-gray-500'} />
                     </div>
-                    <p className={`text-xs font-semibold leading-tight ${form.role === value ? 'text-green-900' : 'text-gray-700'}`}>{label}</p>
-                    <p className="text-[10px] text-gray-400 leading-tight hidden sm:block">{sub}</p>
+                    <div className="min-w-0 pr-4">
+                      <p className={`text-xs font-bold leading-tight ${role === value ? 'text-green-900' : 'text-gray-800'}`}>{label}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{sub}</p>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
+            {/* ── STEP 2: Student goal (only shown for students) ── */}
+            {needsGoal && (
+              <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  What are you looking for? <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-2">
+                  {STUDENT_GOALS.map(({ value, label, desc, icon: Icon, color }) => {
+                    const c = GOAL_COLOR[color];
+                    const active = goal === value;
+                    return (
+                      <button key={value} type="button" onClick={() => setGoal(value)}
+                        className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition ${
+                          active ? c.border : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}>
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${active ? c.icon : 'bg-gray-100 text-gray-400'}`}>
+                          <Icon size={16} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-bold ${active ? c.text : 'text-gray-800'}`}>{label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 leading-snug">{desc}</p>
+                        </div>
+                        {active && <CheckCircle size={16} className="text-green-600 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Tutor info banner */}
+            {role === 'tutor' && (
+              <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-start gap-3">
+                <GraduationCap size={18} className="text-green-700 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-green-800">You're registering as a Tutor</p>
+                  <p className="text-xs text-green-600 mt-0.5">After creating your account, you'll set up your tutor profile — subjects, rates, and availability. Your profile goes live after a quick review by our team.</p>
+                </div>
+              </div>
+            )}
+
+            {/* ── Personal details ──────────────────────────── */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
                 <input type="text" required value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
                   className={inp} placeholder="Your full name" />
               </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email address <span className="text-red-500">*</span></label>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Email address <span className="text-red-500">*</span></label>
                 <input type="email" required value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
                   className={inp} placeholder="you@example.com" />
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone number</label>
-                <input type="tel" value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className={inp} placeholder="+234 800 000 0000" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Phone</label>
+                  <input type="tel" value={form.phone}
+                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                    className={inp} placeholder="+234 800 000 000" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Country</label>
+                  <select value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} className={inp}>
+                    {COUNTRIES.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Country</label>
-                <select value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className={inp}>
-                  {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <input type={showPw ? 'text' : 'password'} required value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    onChange={e => setForm({ ...form, password: e.target.value })}
                     className={inp + ' pr-12'} placeholder="At least 6 characters" />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -171,17 +295,21 @@ export default function Register() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading}
-              className="w-full bg-green-700 text-white py-4 rounded-xl font-bold hover:bg-green-800 transition disabled:opacity-60 text-sm flex items-center justify-center gap-2">
+            <button type="submit" disabled={loading || !canSubmit}
+              className="w-full bg-green-700 text-white py-4 rounded-xl font-bold hover:bg-green-800 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2">
               {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account...</>
-              ) : 'Create Free Account →'}
+                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account…</>
+              ) : (
+                <>
+                  {role === 'tutor' ? 'Create Account & Set Up Profile' : 'Create Free Account'}
+                  <ChevronRight size={16} />
+                </>
+              )}
             </button>
 
             <p className="text-center text-xs text-gray-400">
               By signing up you agree to our{' '}
-              <a href="#" className="text-green-700 hover:underline">Terms of Service</a>{' '}
-              and{' '}
+              <a href="#" className="text-green-700 hover:underline">Terms of Service</a> and{' '}
               <a href="#" className="text-green-700 hover:underline">Privacy Policy</a>.
             </p>
           </form>

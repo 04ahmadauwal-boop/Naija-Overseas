@@ -1,0 +1,1253 @@
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
+import toast from 'react-hot-toast';
+import {
+  LayoutDashboard, BookOpen, Star, Settings, Menu, X,
+  LogOut, ExternalLink, CheckCircle, Clock, Video, MapPin,
+  Plus, Trash2, ChevronLeft, ChevronRight, Users, TrendingUp, GraduationCap,
+  Globe, Banknote, Shield, Edit2, Save, AlertCircle, CalendarCheck,
+} from 'lucide-react';
+
+const CURRENCY_SYMBOLS = {
+  NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: 'GH₵',
+  KES: 'KSh', ZAR: 'R', CAD: 'CA$', AUD: 'A$', INR: '₹', ZMW: 'ZK',
+};
+
+const CURRENCIES = [
+  { value: 'NGN', label: 'Nigerian Naira (₦)' },
+  { value: 'USD', label: 'US Dollar ($)' },
+  { value: 'GBP', label: 'British Pound (£)' },
+  { value: 'EUR', label: 'Euro (€)' },
+  { value: 'GHS', label: 'Ghanaian Cedi (GH₵)' },
+  { value: 'KES', label: 'Kenyan Shilling (KSh)' },
+  { value: 'ZAR', label: 'South African Rand (R)' },
+  { value: 'CAD', label: 'Canadian Dollar (CA$)' },
+  { value: 'AUD', label: 'Australian Dollar (A$)' },
+  { value: 'INR', label: 'Indian Rupee (₹)' },
+];
+
+const WORLD_COUNTRIES = [
+  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Uganda', 'Tanzania', 'Rwanda',
+  'Cameroon', 'Senegal', 'Ethiopia', 'Zimbabwe', 'Zambia', 'Ivory Coast',
+  'United Kingdom', 'United States', 'Canada', 'Australia', 'Germany',
+  'France', 'Netherlands', 'Ireland', 'New Zealand', 'UAE', 'Qatar',
+  'Saudi Arabia', 'India', 'Pakistan', 'Malaysia', 'Singapore', 'Other',
+];
+
+const ALL_SUBJECTS = [
+  'Mathematics', 'Further Mathematics', 'English Language', 'Literature in English',
+  'Physics', 'Chemistry', 'Biology', 'Agricultural Science', 'Economics', 'Government',
+  'Geography', 'History', 'Commerce', 'Financial Accounting', 'JAMB Prep', 'WAEC Prep',
+  'NECO Prep', 'IELTS', 'TOEFL', 'SAT', 'ACT', 'GCSE Mathematics', 'GCSE English',
+  'A-Level Mathematics', 'A-Level Physics', 'A-Level Chemistry', 'A-Level Biology',
+  'Computer Science', 'Web Development', 'Python', 'Data Science',
+  'French', 'Spanish', 'Arabic', 'Yoruba', 'Igbo', 'Hausa',
+  'Music', 'Fine Arts',
+];
+
+const ALL_LEVELS = [
+  { value: 'primary', label: 'Primary School' },
+  { value: 'jss', label: 'Junior Secondary (JSS)' },
+  { value: 'sss', label: 'Senior Secondary (SSS)' },
+  { value: 'waec', label: 'WAEC Preparation' },
+  { value: 'jamb', label: 'JAMB / UTME' },
+  { value: 'neco', label: 'NECO Preparation' },
+  { value: 'gcse', label: 'GCSE / IGCSE' },
+  { value: 'a-level', label: 'A-Level' },
+  { value: 'sat', label: 'SAT / ACT' },
+  { value: 'ib', label: 'IB Programme' },
+  { value: 'university', label: 'University Level' },
+  { value: 'adult', label: 'Adult Learning' },
+];
+
+const TABS = [
+  { id: 'overview',     label: 'Overview',     icon: LayoutDashboard },
+  { id: 'bookings',     label: 'Bookings',     icon: BookOpen },
+  { id: 'subscribers',  label: 'Subscribers',  icon: Users },
+  { id: 'calendar',     label: 'Calendar',     icon: CalendarCheck },
+  { id: 'profile',      label: 'My Profile',   icon: Edit2 },
+  { id: 'reviews',      label: 'Reviews',      icon: Star },
+  { id: 'settings',     label: 'Settings',     icon: Settings },
+];
+
+const BOTTOM_TABS = [
+  { id: 'overview',     label: 'Home',        icon: LayoutDashboard },
+  { id: 'bookings',     label: 'Bookings',    icon: BookOpen },
+  { id: 'subscribers',  label: 'Subscribers', icon: Users },
+  { id: 'profile',      label: 'Profile',     icon: Edit2 },
+  { id: 'reviews',      label: 'Reviews',     icon: Star },
+  { id: 'settings',     label: 'Settings',    icon: Settings },
+];
+
+function formatDate(d) {
+  if (!d) return '';
+  try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch { return d; }
+}
+
+function StarRow({ rating, size = 13 }) {
+  return (
+    <div className="flex items-center gap-px">
+      {[1,2,3,4,5].map(n => (
+        <Star key={n} size={size} className={n <= Math.round(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'} />
+      ))}
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    pending: 'bg-yellow-100 text-yellow-700',
+    confirmed: 'bg-green-100 text-green-700',
+    upcoming: 'bg-green-100 text-green-700',
+    completed: 'bg-gray-100 text-gray-500',
+    cancelled: 'bg-red-100 text-red-600',
+  };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${map[status] || 'bg-gray-100 text-gray-500'}`}>
+      {status?.charAt(0).toUpperCase() + status?.slice(1) || 'Pending'}
+    </span>
+  );
+}
+
+// ─── OVERVIEW TAB ────────────────────────────────────────────────────────────
+function OverviewTab({ profile, bookings, reviews, setActiveTab }) {
+  const sym = CURRENCY_SYMBOLS[profile?.currency] || '₦';
+  const rate = profile?.hourlyRateNaira;
+  const upcomingBookings = bookings.filter(b => !['completed','cancelled'].includes(b.status));
+  const totalRevenue = bookings.filter(b => b.status === 'completed').length * (rate || 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome banner */}
+      <div className="bg-linear-to-r from-green-800 via-green-700 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="relative z-10">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 ${profile?.isVerified ? 'bg-white/20' : 'bg-orange-500/30'}`}>
+            {profile?.isVerified ? <><CheckCircle size={12} /> Verified Tutor</> : <><AlertCircle size={12} /> Awaiting Verification</>}
+          </div>
+          <h1 className="text-lg sm:text-2xl font-extrabold">
+            {profile?.isActive ? 'Your profile is live!' : 'Profile under review'}
+          </h1>
+          <p className="text-green-200 text-sm mt-1">
+            {profile?.isActive
+              ? 'Students can find and book sessions with you.'
+              : 'We\'ll notify you by email once your profile is approved.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5">
+        {[
+          { label: 'Rating',        value: profile?.rating > 0 ? profile.rating.toFixed(1) : '—', icon: Star,        color: 'bg-yellow-100 text-yellow-600' },
+          { label: 'Reviews',       value: profile?.reviewCount || 0,                               icon: Users,       color: 'bg-blue-100 text-blue-600' },
+          { label: 'Total Sessions',value: profile?.totalSessions || bookings.length,               icon: BookOpen,    color: 'bg-green-100 text-green-600' },
+          { label: 'Upcoming',      value: upcomingBookings.length,                                 icon: TrendingUp,  color: 'bg-purple-100 text-purple-600' },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color}`}>
+              <Icon size={18} />
+            </div>
+            <div className="text-2xl font-extrabold text-gray-900">{value}</div>
+            <div className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Class quick launch */}
+      <div className="bg-gradient-to-r from-green-700 to-emerald-700 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+          <Video size={22} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-extrabold text-base leading-tight">Start a Class Session</p>
+          <p className="text-green-200 text-xs mt-0.5">
+            Whiteboard · Video · Screen share · Homework · File sharing — all in one room
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+            window.open(`/classroom/${roomId}`, '_blank');
+          }}
+          className="shrink-0 bg-white text-green-800 font-bold px-5 py-2.5 rounded-xl hover:bg-green-50 transition text-sm flex items-center gap-2">
+          <Video size={15} /> Start Class
+        </button>
+      </div>
+
+      {/* Learning Hub CTA */}
+      <Link to="/learning"
+        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 rounded-2xl p-5 flex items-center gap-4 text-white hover:opacity-95 transition">
+        <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+          <GraduationCap size={20} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-extrabold text-base leading-tight">Learning Hub</p>
+          <p className="text-purple-200 text-xs mt-0.5">Upload notes · Create quizzes · Track progress · Chat with students</p>
+        </div>
+        <ChevronRight size={18} className="text-white/60 shrink-0" />
+      </Link>
+
+      {/* Profile completeness */}
+      {(() => {
+        const fields = [profile?.headline, profile?.bio, profile?.subjects?.length, profile?.levels?.length, profile?.hourlyRateNaira];
+        const done = fields.filter(Boolean).length;
+        const pct = Math.round((done / fields.length) * 100);
+        return pct < 100 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-gray-900">Profile Completeness</p>
+              <span className="text-sm font-bold text-green-700">{pct}%</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+              <div className="bg-green-600 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+            </div>
+            <p className="text-xs text-gray-500">Complete your profile to get more bookings. <button onClick={() => setActiveTab('profile')} className="text-green-700 font-semibold hover:underline">Edit profile →</button></p>
+          </div>
+        ) : null;
+      })()}
+
+      {/* Recent bookings */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+          <h2 className="font-bold text-gray-900 text-sm sm:text-base">Recent Bookings</h2>
+          <button onClick={() => setActiveTab('bookings')} className="text-xs text-green-700 font-semibold hover:underline flex items-center gap-1">
+            View all <ChevronRight size={13} />
+          </button>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {bookings.length === 0 ? (
+            <div className="px-5 py-8 text-center text-sm text-gray-400">
+              <BookOpen size={28} className="text-gray-200 mx-auto mb-2" />
+              No bookings yet. Share your profile to get started!
+            </div>
+          ) : (
+            bookings.slice(0, 4).map(b => (
+              <div key={b._id} className="flex items-center gap-3 px-5 py-3.5">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                  <BookOpen size={14} className="text-green-700" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{b.name || 'Student'}</p>
+                  <p className="text-xs text-gray-400">{formatDate(b.date)} · {b.timeSlot}</p>
+                </div>
+                <StatusBadge status={b.status} />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── BOOKINGS TAB ────────────────────────────────────────────────────────────
+function BookingsTab({ bookings: initialBookings, loading }) {
+  const [filter, setFilter]       = useState('all');
+  const [bookings, setBookings]   = useState(initialBookings);
+  const [acting, setActing]       = useState(null); // id of booking being actioned
+
+  // Keep in sync when parent re-fetches
+  useEffect(() => { setBookings(initialBookings); }, [initialBookings]);
+
+  const filters = [
+    { value: 'all',       label: 'All' },
+    { value: 'pending',   label: `Pending${initialBookings.filter(b => b.status === 'pending').length > 0 ? ` (${initialBookings.filter(b => b.status === 'pending').length})` : ''}` },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Declined' },
+  ];
+
+  const filtered = filter === 'all' ? bookings : bookings.filter(b => {
+    if (filter === 'confirmed') return b.status === 'confirmed';
+    return b.status === filter;
+  });
+
+  const handleAction = async (bookingId, action) => {
+    setActing(bookingId);
+    try {
+      const { data } = await api.patch(`/bookings/${bookingId}/tutor-action`, { action });
+      setBookings(prev => prev.map(b => b._id === bookingId ? data.booking : b));
+      toast.success(action === 'confirm' ? 'Session confirmed — student notified!' : 'Session declined.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const pendingCount = bookings.filter(b => b.status === 'pending').length;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">My Bookings</h2>
+        {pendingCount > 0 && (
+          <span className="flex items-center gap-1.5 bg-amber-100 text-amber-700 font-bold text-xs px-3 py-1.5 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            {pendingCount} awaiting your approval
+          </span>
+        )}
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {filters.map(f => (
+          <button key={f.value} onClick={() => setFilter(f.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+              filter === f.value ? 'bg-green-700 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-green-300'
+            }`}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading bookings…</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <BookOpen size={36} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">{filter === 'all' ? 'No bookings yet' : `No ${filter} bookings`}</p>
+          <p className="text-gray-400 text-sm mt-1">Bookings from students will appear here</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(b => (
+            <div key={b._id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition ${
+              b.status === 'pending' ? 'border-amber-200' : 'border-gray-100'
+            }`}>
+              {/* Pending banner */}
+              {b.status === 'pending' && (
+                <div className="bg-amber-50 border-b border-amber-100 px-5 py-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <p className="text-xs font-bold text-amber-700">Awaiting your approval — confirm or decline below</p>
+                </div>
+              )}
+
+              <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-4">
+                {/* Student info */}
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0 text-green-700 font-bold text-sm">
+                    {(b.name || 'S')[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-gray-900">{b.user?.name || b.name || 'Student'}</p>
+                      {b.isTrial && (
+                        <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Trial</span>
+                      )}
+                      {b.subscriptionId && (
+                        <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Paid · ₦{(b.subscriptionId.monthlyRate || 0).toLocaleString()}/mo</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400">{b.user?.email || b.email}</p>
+                    {b.phone && <p className="text-xs text-gray-400">{b.phone}</p>}
+                  </div>
+                </div>
+
+                {/* Session details */}
+                <div className="flex flex-col gap-1 sm:min-w-[160px]">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <Clock size={11} className="text-gray-400" />
+                    <span className="font-semibold">{formatDate(b.date)}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 pl-4">{b.timeSlot}</p>
+                  {b.notes && (
+                    <p className="text-xs text-gray-400 pl-4 truncate max-w-xs">{b.notes.slice(0, 80)}</p>
+                  )}
+                </div>
+
+                {/* Status + actions */}
+                <div className="flex flex-col gap-2 sm:items-end sm:min-w-[180px]">
+                  <StatusBadge status={b.status} />
+
+                  {/* Action buttons for pending */}
+                  {b.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAction(b._id, 'decline')}
+                        disabled={acting === b._id}
+                        className="px-3 py-1.5 text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 rounded-xl transition disabled:opacity-50">
+                        {acting === b._id ? '…' : 'Decline'}
+                      </button>
+                      <button
+                        onClick={() => handleAction(b._id, 'confirm')}
+                        disabled={acting === b._id}
+                        className="px-4 py-1.5 text-xs font-bold bg-green-700 text-white hover:bg-green-800 rounded-xl transition disabled:opacity-50 flex items-center gap-1">
+                        {acting === b._id
+                          ? <><span className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> Confirming…</>
+                          : <><CheckCircle size={12} /> Confirm</>
+                        }
+                      </button>
+                    </div>
+                  )}
+
+                  {/* GoClass launch for confirmed */}
+                  {b.status === 'confirmed' && b.callLink && (
+                    <a href={b.callLink} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-green-700 text-white text-xs font-bold rounded-xl hover:bg-green-800 transition">
+                      <Video size={12} /> Start Class
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── SUBSCRIBERS TAB ─────────────────────────────────────────────────────────
+function SubscribersTab() {
+  const [subs, setSubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/subscriptions/tutor')
+      .then(({ data }) => setSubs(data.subscriptions || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const active   = subs.filter(s => s.status === 'active');
+  const inactive = subs.filter(s => s.status !== 'active');
+
+  const STATUS_COLORS = {
+    active:    'bg-green-100 text-green-700',
+    cancelled: 'bg-red-100 text-red-700',
+    expired:   'bg-gray-100 text-gray-500',
+    pending:   'bg-yellow-100 text-yellow-700',
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Subscribers</h2>
+        {active.length > 0 && (
+          <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
+            {active.length} active
+          </span>
+        )}
+      </div>
+
+      {/* Monthly revenue card */}
+      {active.length > 0 && (
+        <div className="bg-gradient-to-r from-green-800 to-green-700 rounded-2xl p-5 text-white">
+          <p className="text-xs text-green-300 font-semibold uppercase tracking-wider mb-1">Monthly Subscription Revenue</p>
+          <p className="text-3xl font-extrabold">
+            ₦{active.reduce((sum, s) => sum + (s.monthlyRate || 0), 0).toLocaleString()}
+          </p>
+          <p className="text-green-300 text-sm mt-1">{active.length} active subscriber{active.length !== 1 ? 's' : ''}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading subscribers…</p>
+        </div>
+      ) : subs.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <Users size={36} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">No subscribers yet</p>
+          <p className="text-gray-400 text-sm mt-1">Students who subscribe after their trial appear here</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {subs.map(sub => (
+            <div key={sub._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0 text-green-700 font-bold text-sm">
+                  {(sub.student?.name || 'S')[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{sub.student?.name || 'Student'}</p>
+                      <p className="text-xs text-gray-400">{sub.student?.email}</p>
+                    </div>
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full capitalize ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-500'}`}>
+                      {sub.status}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">₦{(sub.monthlyRate || 0).toLocaleString()}<span className="font-normal text-gray-400">/mo</span></span>
+                    <span>{sub.timesPerWeek}× per week</span>
+                    <span>{sub.sessionDuration} min sessions</span>
+                    {sub.renewalDate && (
+                      <span>Renews {new Date(sub.renewalDate).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PROFILE TAB ─────────────────────────────────────────────────────────────
+function ProfileTab({ profile, onRefresh }) {
+  const [form, setForm] = useState({
+    headline: profile?.headline || '',
+    bio: profile?.bio || '',
+    yearsExperience: profile?.yearsExperience || '',
+    subjects: profile?.subjects || [],
+    levels: profile?.levels || [],
+    teachingMode: profile?.teachingMode || [],
+    country: profile?.country || 'Nigeria',
+    state: profile?.state || '',
+    city: profile?.city || '',
+    currency: profile?.currency || 'NGN',
+    hourlyRateNaira: profile?.hourlyRateNaira || '',
+    groupRateNaira: profile?.groupRateNaira || '',
+    trialAvailable: profile?.trialAvailable !== false,
+    trialDurationMins: profile?.trialDurationMins || 30,
+    responseTime: profile?.responseTime || 'Within 24 hours',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const toggle = (k, v) => {
+    const arr = form[k];
+    set(k, arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.patch('/tutors/me', {
+        ...form,
+        hourlyRateNaira: form.hourlyRateNaira ? Number(form.hourlyRateNaira) : undefined,
+        groupRateNaira: form.groupRateNaira ? Number(form.groupRateNaira) : undefined,
+        yearsExperience: form.yearsExperience ? Number(form.yearsExperience) : 0,
+      });
+      toast.success('Profile updated!');
+      onRefresh();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white';
+  const labelClass = 'block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide';
+  const sym = CURRENCY_SYMBOLS[form.currency] || '₦';
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">My Profile</h2>
+        <button onClick={handleSave} disabled={saving}
+          className="flex items-center gap-2 bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-green-800 transition disabled:opacity-60">
+          {saving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</> : <><Save size={14} /> Save Changes</>}
+        </button>
+      </div>
+
+      {/* Basic */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Basic Information</p>
+        <div>
+          <label className={labelClass}>Headline</label>
+          <input value={form.headline} onChange={e => set('headline', e.target.value)} maxLength={120}
+            placeholder="e.g. Expert WAEC Mathematics Tutor with 8 years experience"
+            className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Bio</label>
+          <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={5}
+            placeholder="Tell students about yourself, teaching style, and achievements..."
+            className={`${inputClass} resize-none`} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Years of Experience</label>
+            <input type="number" min="0" value={form.yearsExperience} onChange={e => set('yearsExperience', e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Response Time</label>
+            <select value={form.responseTime} onChange={e => set('responseTime', e.target.value)} className={inputClass}>
+              <option>Within 1 hour</option>
+              <option>Within 3 hours</option>
+              <option>Within 24 hours</option>
+              <option>Within 48 hours</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Subjects */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Subjects ({form.subjects.length} selected)</p>
+        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+          {ALL_SUBJECTS.map(s => (
+            <button key={s} type="button" onClick={() => toggle('subjects', s)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                form.subjects.includes(s) ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400 bg-white'
+              }`}>{s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Levels */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Student Levels</p>
+        <div className="flex flex-wrap gap-2">
+          {ALL_LEVELS.map(({ value, label }) => (
+            <button key={value} type="button" onClick={() => toggle('levels', value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                form.levels.includes(value) ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400 bg-white'
+              }`}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Mode & Location */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Teaching Mode & Location</p>
+        <div className="flex gap-3">
+          {[{ value: 'online', label: '💻 Online' }, { value: 'in-person', label: '📍 In-Person' }].map(({ value, label }) => (
+            <button key={value} type="button" onClick={() => toggle('teachingMode', value)}
+              className={`flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition ${
+                form.teachingMode.includes(value) ? 'bg-green-50 border-green-500 text-green-700' : 'border-gray-200 text-gray-600 hover:border-green-300'
+              }`}>{label}</button>
+          ))}
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className={labelClass}>Country</label>
+            <select value={form.country} onChange={e => set('country', e.target.value)} className={inputClass}>
+              {WORLD_COUNTRIES.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>State / Region</label>
+            <input value={form.state} onChange={e => set('state', e.target.value)} placeholder="e.g. Lagos" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>City</label>
+            <input value={form.city} onChange={e => set('city', e.target.value)} placeholder="e.g. Lekki" className={inputClass} />
+          </div>
+        </div>
+      </div>
+
+      {/* Rates */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rates & Pricing</p>
+        <div>
+          <label className={labelClass}>Currency</label>
+          <select value={form.currency} onChange={e => set('currency', e.target.value)} className={`${inputClass} max-w-xs`}>
+            {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>1-on-1 Rate ({sym}/hr)</label>
+            <input type="number" min="0" value={form.hourlyRateNaira} onChange={e => set('hourlyRateNaira', e.target.value)} className={inputClass} placeholder="e.g. 4000" />
+          </div>
+          <div>
+            <label className={labelClass}>Group Rate ({sym}/hr) <span className="text-gray-300 font-normal normal-case">(optional)</span></label>
+            <input type="number" min="0" value={form.groupRateNaira} onChange={e => set('groupRateNaira', e.target.value)} className={inputClass} placeholder="e.g. 2000" />
+          </div>
+        </div>
+        <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
+          <div>
+            <p className="text-sm font-bold text-gray-900">Free Trial Session</p>
+            <p className="text-xs text-gray-500">Tutors with free trials get 3× more bookings</p>
+          </div>
+          <button type="button" onClick={() => set('trialAvailable', !form.trialAvailable)}
+            className={`relative w-12 h-6 rounded-full transition-colors ${form.trialAvailable ? 'bg-green-600' : 'bg-gray-300'}`}>
+            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.trialAvailable ? 'translate-x-7' : 'translate-x-1'}`} />
+          </button>
+        </div>
+        {form.trialAvailable && (
+          <div className="flex gap-2">
+            {[30, 45, 60].map(m => (
+              <button key={m} type="button" onClick={() => set('trialDurationMins', m)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                  form.trialDurationMins === m ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400'
+                }`}>{m} min</button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <button onClick={handleSave} disabled={saving}
+        className="w-full flex items-center justify-center gap-2 bg-green-700 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-green-800 transition disabled:opacity-60">
+        {saving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</> : <><Save size={14} /> Save All Changes</>}
+      </button>
+    </div>
+  );
+}
+
+// ─── REVIEWS TAB ─────────────────────────────────────────────────────────────
+function ReviewsTab({ profile, reviews, loadingReviews }) {
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-4">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">My Reviews</h2>
+        {profile?.reviewCount > 0 && (
+          <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-100 px-3 py-1.5 rounded-xl">
+            <StarRow rating={profile.rating} size={14} />
+            <span className="font-bold text-gray-900 text-sm">{profile.rating.toFixed(1)}</span>
+            <span className="text-gray-400 text-xs">({profile.reviewCount})</span>
+          </div>
+        )}
+      </div>
+
+      {loadingReviews ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading reviews…</p>
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <Star size={36} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">No reviews yet</p>
+          <p className="text-gray-400 text-sm mt-1">After your first session, ask students to leave a review</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {reviews.map(r => (
+            <div key={r._id} className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-sm shrink-0">
+                    {(r.student?.name || 'S').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{r.student?.name || 'Student'}</p>
+                    {r.subject && <p className="text-xs text-gray-400">{r.subject}</p>}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <StarRow rating={r.rating} size={12} />
+                  <span className="text-xs text-gray-400">{formatDate(r.createdAt)}</span>
+                </div>
+              </div>
+              {r.comment && <p className="text-sm text-gray-600 leading-relaxed">{r.comment}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
+function SettingsTab({ user, profile }) {
+  return (
+    <div className="space-y-5 max-w-2xl">
+      <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Account Settings</h2>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-50">
+          <div className="w-14 h-14 bg-green-700 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shrink-0">
+            {(user?.name || 'T').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="font-bold text-gray-900">{user?.name}</p>
+            <p className="text-sm text-gray-400">{user?.email}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Tutor Account</span>
+              {profile?.isVerified && <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle size={10} /> Verified</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Profile Status</p>
+            <div className={`flex items-center gap-3 p-4 rounded-xl border ${profile?.isActive ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100'}`}>
+              <div className={`w-3 h-3 rounded-full ${profile?.isActive ? 'bg-green-500' : 'bg-orange-400'} animate-pulse`} />
+              <div>
+                <p className={`text-sm font-bold ${profile?.isActive ? 'text-green-800' : 'text-orange-800'}`}>
+                  {profile?.isActive ? 'Profile is Live' : 'Awaiting Review'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {profile?.isActive ? 'Students can find and book you.' : 'Our team reviews profiles within 24–48 hours.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Your Tutor Profile</p>
+            {profile?.isActive ? (
+              <Link to={`/tutors/${profile._id}`} target="_blank"
+                className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition">
+                <span className="text-sm font-semibold text-gray-700">View Public Profile</span>
+                <ExternalLink size={14} className="text-gray-400" />
+              </Link>
+            ) : (
+              <div className="p-4 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">
+                Your public profile will appear here once approved
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CALENDAR TAB ────────────────────────────────────────────────────────────
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function CalendarTab({ bookings: initialBookings, loading }) {
+  const today = new Date();
+  const [current, setCurrent] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selected, setSelected] = useState(null);
+  const [localBookings, setLocalBookings] = useState(initialBookings);
+  const [acting, setActing] = useState(null);
+
+  useEffect(() => { setLocalBookings(initialBookings); }, [initialBookings]);
+
+  const year = current.getFullYear();
+  const month = current.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  const dayKey = (d) => `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+  const byDate = useMemo(() => {
+    const map = {};
+    localBookings.forEach(b => {
+      if (!b.date) return;
+      const d = new Date(b.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!map[key]) map[key] = [];
+      map[key].push(b);
+    });
+    return map;
+  }, [localBookings]);
+
+  const days = [];
+  for (let i = 0; i < firstDayOfWeek; i++) days.push(null);
+  for (let d = 1; d <= daysInMonth; d++) days.push(d);
+
+  const selectedBookings = selected ? [...(byDate[selected] || [])].sort((a, b) => (a.timeSlot || '').localeCompare(b.timeSlot || '')) : [];
+
+  const handleAction = async (bookingId, action) => {
+    setActing(bookingId);
+    try {
+      const { data } = await api.patch(`/bookings/${bookingId}/tutor-action`, { action });
+      setLocalBookings(prev => prev.map(b => b._id === bookingId ? data.booking : b));
+      toast.success(action === 'confirm' ? 'Session confirmed — student notified!' : 'Session declined.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setActing(null);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Booking Calendar</h2>
+
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading calendar…</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          {/* ── Monthly grid ── */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-5">
+              <button onClick={() => setCurrent(new Date(year, month - 1, 1))}
+                className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-600">
+                <ChevronLeft size={16} />
+              </button>
+              <h3 className="font-extrabold text-gray-900 text-base">{MONTH_NAMES[month]} {year}</h3>
+              <button onClick={() => setCurrent(new Date(year, month + 1, 1))}
+                className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-600">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-7 mb-1">
+              {DAY_NAMES.map(d => (
+                <div key={d} className="text-center text-[11px] font-bold text-gray-400 py-1">{d}</div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, i) => {
+                if (!day) return <div key={`blank-${i}`} />;
+                const key = dayKey(day);
+                const dayBookings = byDate[key] || [];
+                const isToday = key === todayStr;
+                const isSelected = key === selected;
+                const trialCount = dayBookings.filter(b => b.isTrial).length;
+                const paidCount  = dayBookings.filter(b => !b.isTrial).length;
+
+                return (
+                  <button key={key} onClick={() => setSelected(isSelected ? null : key)}
+                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-[44px]
+                      ${isSelected ? 'bg-green-700 border-green-700 text-white' : isToday ? 'border-green-500 bg-green-50 text-green-700' : 'border-transparent hover:bg-gray-50 text-gray-700'}
+                    `}>
+                    <span className="leading-none text-sm">{day}</span>
+                    {dayBookings.length > 0 && (
+                      <div className="flex gap-0.5 flex-wrap justify-center">
+                        {trialCount > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none ${isSelected ? 'bg-amber-300/60 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                            {trialCount}T
+                          </span>
+                        )}
+                        {paidCount > 0 && (
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full leading-none ${isSelected ? 'bg-white/25 text-white' : 'bg-green-100 text-green-700'}`}>
+                            {paidCount}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50 flex-wrap">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="w-4 h-4 rounded-lg border-2 border-green-500 bg-green-50 inline-block" /> Today
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">2T</span> Trial sessions
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold">3</span> Paid sessions
+              </div>
+            </div>
+          </div>
+
+          {/* ── Day detail panel ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+            {!selected ? (
+              <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] p-6 text-center">
+                <CalendarCheck size={36} className="text-gray-200 mb-3" />
+                <p className="text-sm font-semibold text-gray-400">Tap a day to see sessions</p>
+                <p className="text-xs text-gray-300 mt-1">Days with bookings show a number badge</p>
+              </div>
+            ) : (
+              <>
+                <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
+                  <p className="font-extrabold text-gray-900 text-sm">
+                    {new Date(selected + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {selectedBookings.length === 0 ? 'No sessions' : `${selectedBookings.length} session${selectedBookings.length !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-gray-50 overflow-y-auto flex-1" style={{ maxHeight: 460 }}>
+                  {selectedBookings.length === 0 ? (
+                    <div className="px-5 py-10 text-center text-sm text-gray-400">
+                      <Clock size={24} className="text-gray-200 mx-auto mb-2" />
+                      No sessions on this day
+                    </div>
+                  ) : (
+                    selectedBookings.map(b => (
+                      <div key={b._id} className={`px-5 py-4 ${b.status === 'pending' ? 'bg-amber-50' : ''}`}>
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0 text-green-700 font-bold text-sm">
+                            {(b.user?.name || b.name || 'S')[0].toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="text-sm font-bold text-gray-900 truncate">{b.user?.name || b.name || 'Student'}</p>
+                              {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Trial</span>}
+                              {b.subscriptionId && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                              <Clock size={10} className="text-gray-300" /> {b.timeSlot || 'Time TBD'}
+                            </p>
+                            <div className="mt-1.5">
+                              <StatusBadge status={b.status} />
+                            </div>
+                            {b.status === 'pending' && (
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={() => handleAction(b._id, 'decline')} disabled={acting === b._id}
+                                  className="px-3 py-1 text-[11px] font-bold text-red-600 border border-red-200 hover:bg-red-50 rounded-lg transition disabled:opacity-50">
+                                  Decline
+                                </button>
+                                <button onClick={() => handleAction(b._id, 'confirm')} disabled={acting === b._id}
+                                  className="px-3 py-1 text-[11px] font-bold bg-green-700 text-white hover:bg-green-800 rounded-lg transition disabled:opacity-50 flex items-center gap-1">
+                                  {acting === b._id ? '…' : <><CheckCircle size={10} /> Confirm</>}
+                                </button>
+                              </div>
+                            )}
+                            {b.status === 'confirmed' && b.callLink && (
+                              <a href={b.callLink} target="_blank" rel="noreferrer"
+                                className="mt-2 flex items-center gap-1.5 px-3 py-1 bg-green-700 text-white text-[11px] font-bold rounded-lg hover:bg-green-800 transition w-fit">
+                                <Video size={10} /> Start Class
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+export default function TutorDashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [profile, setProfile] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  const fetchProfile = async () => {
+    setLoadingProfile(true);
+    try {
+      const { data } = await api.get('/tutors/me');
+      setProfile(data.profile);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        toast.error('No tutor profile found. Please register as a tutor first.');
+        navigate('/become-a-tutor');
+      }
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    setLoadingBookings(true);
+    try {
+      const { data } = await api.get('/tutors/me/bookings');
+      setBookings(data.bookings || []);
+    } catch {
+      // silently ignore
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  const fetchReviews = async (profileId) => {
+    if (!profileId) return;
+    setLoadingReviews(true);
+    try {
+      const { data } = await api.get(`/tutors/${profileId}`);
+      setReviews(data.reviews || []);
+    } catch {
+      // silently ignore
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+    fetchBookings();
+  }, []);
+
+  useEffect(() => {
+    if (profile?._id) fetchReviews(profile._id);
+  }, [profile?._id]);
+
+  const handleLogout = () => { logout(); navigate('/'); toast.success('Logged out'); };
+
+  const handleTabChange = id => { setActiveTab(id); setSidebarOpen(false); };
+
+  const renderContent = () => {
+    if (loadingProfile) return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
+      </div>
+    );
+
+    switch (activeTab) {
+      case 'overview':  return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
+      case 'bookings':     return <BookingsTab bookings={bookings} loading={loadingBookings} />;
+      case 'subscribers':  return <SubscribersTab />;
+      case 'calendar':     return <CalendarTab bookings={bookings} loading={loadingBookings} />;
+      case 'profile':      return <ProfileTab profile={profile} onRefresh={fetchProfile} />;
+      case 'reviews':   return <ReviewsTab profile={profile} reviews={reviews} loadingReviews={loadingReviews} />;
+      case 'settings':  return <SettingsTab user={user} profile={profile} />;
+      default:          return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
+    }
+  };
+
+  const SidebarContent = () => (
+    <aside className="w-64 bg-gray-950 text-white min-h-full flex flex-col shrink-0">
+      <div className="p-5 border-b border-gray-800">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-green-700 rounded-xl flex items-center justify-center shrink-0">
+            <GraduationCap size={17} className="text-white" />
+          </div>
+          <div>
+            <p className="font-extrabold text-white text-sm leading-tight">Tutor Dashboard</p>
+            <p className="text-gray-400 text-xs truncate max-w-[120px]">{user?.name || 'Tutor'}</p>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-0.5">
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => handleTabChange(id)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${
+              activeTab === id ? 'bg-green-700 text-white shadow-lg shadow-green-900/30' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}>
+            <Icon size={16} />
+            {label}
+            {activeTab === id && <div className="ml-auto w-1.5 h-1.5 bg-green-400 rounded-full" />}
+          </button>
+        ))}
+
+        <div className="pt-4 mt-4 border-t border-gray-800">
+          <button
+            onClick={() => {
+              const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+              window.open(`/classroom/${roomId}`, '_blank');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-green-400 hover:text-white hover:bg-green-700/40 transition">
+            <Video size={16} /> Start a Class
+          </button>
+          <Link to="/learning"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-purple-400 hover:text-white hover:bg-purple-700/40 transition">
+            <GraduationCap size={16} /> Learning Hub
+          </Link>
+          <Link to="/schedule"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-teal-400 hover:text-white hover:bg-teal-700/40 transition">
+            <CalendarCheck size={16} /> Schedule
+          </Link>
+          <Link to="/find-tutoring"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-white hover:bg-gray-800 transition">
+            <ExternalLink size={16} /> Find Tutoring Page
+          </Link>
+          <Link to="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-white hover:bg-gray-800 transition">
+            <ExternalLink size={16} /> Back to Site
+          </Link>
+        </div>
+      </nav>
+
+      <div className="p-4 border-t border-gray-800">
+        <div className="bg-gray-900 rounded-xl p-3 flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+            {(user?.name || 'T').charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-gray-500">Logged in as</p>
+            <p className="text-sm text-white font-semibold truncate">{user?.name?.split(' ')[0]}</p>
+          </div>
+          <button onClick={handleLogout} className="text-gray-500 hover:text-red-400 transition p-1 rounded-lg hover:bg-gray-800" title="Logout">
+            <LogOut size={15} />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex lg:w-64 lg:shrink-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile sidebar */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="relative w-64 flex flex-col h-full"><SidebarContent /></div>
+          <button onClick={() => setSidebarOpen(false)}
+            className="absolute top-4 right-4 z-10 w-9 h-9 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-700 transition">
+            <X size={17} />
+          </button>
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+
+        {/* Mobile top bar */}
+        <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-3.5 flex items-center justify-between sticky top-0 z-30">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition">
+            <Menu size={21} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-green-700 rounded-lg flex items-center justify-center">
+              <GraduationCap size={14} className="text-white" />
+            </div>
+            <span className="font-bold text-gray-900 text-sm">Tutor Dashboard</span>
+          </div>
+          <div className="w-9 h-9 bg-green-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            {(user?.name || 'T').charAt(0).toUpperCase()}
+          </div>
+        </div>
+
+        {/* Desktop header */}
+        <div className="hidden lg:flex bg-white border-b border-gray-100 px-8 py-5 items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900">
+              {TABS.find(t => t.id === activeTab)?.label || 'Overview'}
+            </h1>
+            <p className="text-gray-400 text-sm mt-0.5">
+              {activeTab === 'overview'  && `Welcome back, ${user?.name?.split(' ')[0] || 'Tutor'}`}
+              {activeTab === 'bookings'     && 'Track all session bookings from students'}
+              {activeTab === 'subscribers' && 'Students subscribed to recurring sessions with you'}
+              {activeTab === 'calendar'   && 'View all your sessions by date — confirm or decline pending bookings'}
+              {activeTab === 'profile'     && 'Update your tutor profile and rates'}
+              {activeTab === 'reviews'   && 'Reviews left by your students'}
+              {activeTab === 'settings'  && 'Manage your account settings'}
+            </p>
+          </div>
+          {profile?.isActive && (
+            <Link to={`/tutors/${profile._id}`} target="_blank"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-600 border border-gray-200 px-4 py-2 rounded-xl hover:border-green-300 hover:text-green-700 transition">
+              <ExternalLink size={14} /> View Public Profile
+            </Link>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+          {renderContent()}
+        </div>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex">
+        {BOTTOM_TABS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => handleTabChange(id)}
+            className={`flex-1 flex flex-col items-center gap-0.5 py-3 px-1 transition-colors ${activeTab === id ? 'text-green-700' : 'text-gray-400 hover:text-gray-600'}`}>
+            <Icon size={20} strokeWidth={activeTab === id ? 2.5 : 1.8} />
+            <span className={`text-[10px] font-semibold ${activeTab === id ? 'text-green-700' : 'text-gray-400'}`}>{label}</span>
+            {activeTab === id && <span className="absolute bottom-0 w-6 h-0.5 bg-green-600 rounded-full" />}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

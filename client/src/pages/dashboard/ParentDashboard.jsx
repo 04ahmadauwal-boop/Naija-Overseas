@@ -507,6 +507,7 @@ export default function ParentDashboard() {
               onCancel={handleCancelVisit}
               user={user}
               onBookingCreated={fetchVisits}
+              savedSchools={savedSchools}
             />
           )}
           {activeTab === 'children' && (
@@ -555,6 +556,7 @@ export default function ParentDashboard() {
 }
 
 // ─── Overview Tab ────────────────────────────────────────────────────────────
+
 function OverviewTab({
   firstName, savedSchools, visits, quickState, setQuickState,
   quickType, setQuickType, handleQuickSearch, onRemoveSaved, onNavigate,
@@ -1051,9 +1053,20 @@ function CompareTab({ selectedForCompare, setSelectedForCompare, handleCompareNa
 // ─── Visits Tab ───────────────────────────────────────────────────────────────
 const EMPTY_BOOKING_FORM = { schoolName: '', date: '', timeSlot: '', notes: '' };
 
-function VisitsTab({ visits, loading, onCancel, user, onBookingCreated }) {
+function VisitsTab({ visits, loading, onCancel, user, onBookingCreated, savedSchools = [] }) {
   const [form, setForm] = useState(EMPTY_BOOKING_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedSchoolId, setSelectedSchoolId] = useState(null);
+
+  const handleSelectSavedSchool = (school) => {
+    if (selectedSchoolId === school._id) {
+      setSelectedSchoolId(null);
+      setForm((p) => ({ ...p, schoolName: '' }));
+    } else {
+      setSelectedSchoolId(school._id);
+      setForm((p) => ({ ...p, schoolName: school.name }));
+    }
+  };
 
   const handleBookVisit = async (e) => {
     e.preventDefault();
@@ -1069,9 +1082,11 @@ function VisitsTab({ visits, loading, onCancel, user, onBookingCreated }) {
         date: form.date,
         timeSlot: form.timeSlot,
         notes: form.schoolName + (form.notes ? ` — ${form.notes}` : ''),
+        ...(selectedSchoolId ? { schoolId: selectedSchoolId } : {}),
       });
       toast.success('Visit booked successfully!');
       setForm(EMPTY_BOOKING_FORM);
+      setSelectedSchoolId(null);
       onBookingCreated();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to book visit. Please try again.');
@@ -1096,10 +1111,35 @@ function VisitsTab({ visits, loading, onCancel, user, onBookingCreated }) {
           <h3 className="font-bold text-gray-900 text-sm">Book a School Visit</h3>
         </div>
         <form onSubmit={handleBookVisit} className="space-y-3">
+          {/* Saved school quick-select */}
+          {savedSchools.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">Quick-select from saved schools</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-0.5 px-0.5">
+                {savedSchools.map((school) => (
+                  <button
+                    key={school._id}
+                    type="button"
+                    onClick={() => handleSelectSavedSchool(school)}
+                    className={`flex-shrink-0 text-left px-3 py-2 rounded-xl border text-xs font-medium transition ${
+                      selectedSchoolId === school._id
+                        ? 'bg-green-700 text-white border-green-700'
+                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-green-400 hover:bg-green-50'
+                    }`}
+                  >
+                    <div className="font-semibold max-w-[130px] truncate">{school.name}</div>
+                    <div className={`text-[10px] mt-0.5 ${selectedSchoolId === school._id ? 'text-green-200' : 'text-gray-400'}`}>
+                      {school.city ? `${school.city}, ` : ''}{school.state}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <input
             type="text"
             value={form.schoolName}
-            onChange={(e) => setForm((p) => ({ ...p, schoolName: e.target.value }))}
+            onChange={(e) => { setForm((p) => ({ ...p, schoolName: e.target.value })); setSelectedSchoolId(null); }}
             placeholder="School name *"
             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />

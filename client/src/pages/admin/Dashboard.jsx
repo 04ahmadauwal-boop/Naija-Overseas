@@ -11,6 +11,7 @@ import api from '../../utils/api';
 const NAV_ITEMS = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { to: '/admin/schools', icon: School, label: 'Schools' },
+  { to: '/admin/tutors', icon: GraduationCap, label: 'Tutors' },
   { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
   { to: '/admin/applications', icon: Globe, label: 'Study Abroad' },
   { to: '/admin/users', icon: Users, label: 'Users' },
@@ -162,12 +163,13 @@ export function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [schools, bookings, applications, messages, users] = await Promise.all([
+        const [schools, bookings, applications, messages, users, tutors] = await Promise.all([
           api.get('/schools/admin/all'),
           api.get('/bookings'),
           api.get('/study-abroad'),
           api.get('/contact'),
           api.get('/users'),
+          api.get('/tutors/admin/all'),
         ]);
         setStats({
           totalSchools: schools.data.schools.length,
@@ -178,6 +180,9 @@ export function Dashboard() {
           totalApplications: applications.data.applications.length,
           unreadMessages: messages.data.messages.filter((m) => !m.isRead).length,
           totalUsers: users.data.total,
+          totalTutors: tutors.data.tutors.length,
+          pendingTutors: tutors.data.tutors.filter((t) => !t.isActive).length,
+          activeTutors: tutors.data.tutors.filter((t) => t.isActive).length,
         });
       } catch {
         setStats({});
@@ -191,6 +196,7 @@ export function Dashboard() {
   const cards = stats ? [
     { label: 'Total Schools', value: stats.totalSchools, sub: `${stats.pendingSchools} awaiting review`, icon: School, color: 'green', link: '/admin/schools' },
     { label: 'Approved & Live', value: stats.approvedSchools, sub: 'visible on platform', icon: School, color: 'emerald', link: '/admin/schools' },
+    { label: 'Tutors', value: stats.totalTutors, sub: `${stats.pendingTutors} pending approval`, icon: GraduationCap, color: 'purple', link: '/admin/tutors' },
     { label: 'Bookings', value: stats.totalBookings, sub: `${stats.pendingBookings} pending`, icon: CalendarCheck, color: 'blue', link: '/admin/bookings' },
     { label: 'Study Abroad Apps', value: stats.totalApplications, sub: 'total submissions', icon: Globe, color: 'purple', link: '/admin/applications' },
     { label: 'Unread Messages', value: stats.unreadMessages, sub: 'require response', icon: MessageSquare, color: 'red', link: '/admin/messages' },
@@ -236,11 +242,12 @@ export function Dashboard() {
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {[
                 { label: 'Review Pending Schools', to: '/admin/schools', icon: School, color: 'text-green-700 bg-green-50 hover:bg-green-100' },
+                { label: 'Approve Tutors', to: '/admin/tutors', icon: GraduationCap, color: 'text-purple-700 bg-purple-50 hover:bg-purple-100' },
                 { label: 'View All Bookings', to: '/admin/bookings', icon: CalendarCheck, color: 'text-blue-700 bg-blue-50 hover:bg-blue-100' },
-                { label: 'Study Abroad Apps', to: '/admin/applications', icon: Globe, color: 'text-purple-700 bg-purple-50 hover:bg-purple-100' },
+                { label: 'Study Abroad Apps', to: '/admin/applications', icon: Globe, color: 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100' },
                 { label: 'Write Blog Post', to: '/admin/blog', icon: FileText, color: 'text-orange-700 bg-orange-50 hover:bg-orange-100' },
               ].map(({ label, to, icon: Icon, color }) => (
                 <Link key={to} to={to}

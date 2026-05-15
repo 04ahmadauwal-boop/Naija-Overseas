@@ -8,8 +8,13 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6 },
     role: {
       type: String,
-      enum: ['student', 'parent', 'school-owner', 'admin'],
+      enum: ['student', 'parent', 'school-owner', 'admin', 'tutor'],
       default: 'student',
+    },
+    goal: {
+      type: String,
+      enum: ['tutoring', 'study-abroad', 'both'],
+      default: 'both',
     },
     phone: { type: String },
     country: { type: String, default: 'Nigeria' },
@@ -34,6 +39,19 @@ const userSchema = new mongoose.Schema(
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
+    subjects: [{ type: String }],
+    classLevel: { type: String },
+    preferredSchedule: [{ type: String }],
+    tutoringGoal: { type: String },
+    onboardingComplete: { type: Boolean, default: false },
+    preferredLanguage: { type: String },
+    learningStyle: { type: String },
+    // Google Calendar OAuth tokens (tutors only)
+    googleTokens: {
+      accessToken:  { type: String },
+      refreshToken: { type: String },
+      expiresAt:    { type: Date },
+    },
   },
   { timestamps: true }
 );

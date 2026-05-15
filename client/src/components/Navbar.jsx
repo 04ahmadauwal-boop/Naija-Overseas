@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  Menu, X, GraduationCap, ChevronRight, LayoutDashboard,
-  BookOpen, Globe, School, Info, Mail, LogOut, User, Search
+  Menu, X, GraduationCap, ChevronRight, ChevronDown, LayoutDashboard,
+  BookOpen, Globe, School, Info, Mail, LogOut, User, Search, Users
 } from 'lucide-react';
 import SuggestSchoolModal from './SuggestSchoolModal';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: School, end: true },
+  { to: '/find-tutoring', label: 'Find Tutoring', icon: Users, end: false },
   { to: '/study-abroad', label: 'Study Abroad', icon: Globe, end: false },
-  { to: '/list-your-school', label: 'Add your school in 5 minutes', icon: BookOpen, end: false },
-  { to: '/blog', label: 'Blog', icon: BookOpen, end: false },
-  { to: '/about', label: 'About', icon: Info, end: false },
-  { to: '/contact', label: 'Contact', icon: Mail, end: false },
+  { to: '/list-your-school', label: 'Add your school', icon: BookOpen, end: false },
+];
+
+const MORE_ITEMS = [
+  { to: '/become-a-tutor', label: 'Become a Tutor', icon: GraduationCap },
+  { to: '/blog',           label: 'Blog',            icon: BookOpen      },
+  { to: '/about',          label: 'About',           icon: Info          },
+  { to: '/contact',        label: 'Contact',         icon: Mail          },
 ];
 
 function getDashboardLink(role) {
@@ -21,6 +26,7 @@ function getDashboardLink(role) {
   if (role === 'student') return '/dashboard/student';
   if (role === 'parent') return '/dashboard/parent';
   if (role === 'school-owner') return '/dashboard/school-owner';
+  if (role === 'tutor') return '/dashboard/tutor';
   return '/';
 }
 
@@ -29,6 +35,7 @@ function getDashboardLabel(role) {
   if (role === 'student') return 'My Dashboard';
   if (role === 'parent') return 'My Dashboard';
   if (role === 'school-owner') return 'School Dashboard';
+  if (role === 'tutor') return 'Tutor Dashboard';
   return 'Dashboard';
 }
 
@@ -39,6 +46,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showSuggest, setShowSuggest] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -80,6 +89,51 @@ export default function Navbar() {
                   {label}
                 </NavLink>
               ))}
+
+              {/* More dropdown */}
+              <div
+                ref={moreRef}
+                className="relative"
+                onMouseEnter={() => setMoreOpen(true)}
+                onMouseLeave={() => setMoreOpen(false)}
+              >
+                <button
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                    moreOpen ? 'text-gray-900 bg-gray-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  More
+                  <ChevronDown
+                    size={13}
+                    className={`transition-transform duration-200 ${moreOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {/* Dropdown panel */}
+                <div
+                  className={`absolute left-0 top-full pt-1.5 z-50 transition-all duration-200 ${
+                    moreOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-1 pointer-events-none'
+                  }`}
+                >
+                  <div className="w-44 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
+                    {MORE_ITEMS.map(({ to, label, icon: Icon }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                            isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`
+                        }
+                      >
+                        <Icon size={14} className="opacity-60 shrink-0" />
+                        {label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <button onClick={() => setShowSuggest(true)}
                 className="flex items-center gap-1.5 ml-1 px-3 py-2 rounded-lg text-[13px] font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
                 <Search size={13} /> Suggest a School
@@ -166,7 +220,7 @@ export default function Navbar() {
 
           {/* Nav links */}
           <nav className="p-3 space-y-0.5">
-            {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+            {[...NAV_ITEMS, ...MORE_ITEMS].map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}
                 className={({ isActive }) =>
                   `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${

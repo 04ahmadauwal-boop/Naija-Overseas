@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { GraduationCap, Eye, EyeOff, CheckCircle } from 'lucide-react';
@@ -14,6 +14,8 @@ const PERKS = [
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -24,7 +26,18 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      navigate(user.role === 'admin' ? '/admin' : '/');
+      if (redirectTo) {
+        navigate(redirectTo);
+        return;
+      }
+      const dest = {
+        admin:         '/admin',
+        tutor:         '/dashboard/tutor',
+        student:       '/dashboard/student',
+        parent:        '/dashboard/parent',
+        'school-owner':'/dashboard/school-owner',
+      }[user.role] ?? '/';
+      navigate(dest);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {

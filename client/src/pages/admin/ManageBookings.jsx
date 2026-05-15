@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { CalendarCheck, Video, Link as LinkIcon, Check, Clock } from 'lucide-react';
 
 const STATUS_TABS = ['all', 'pending', 'confirmed', 'cancelled'];
+const SERVICE_TABS = ['all', 'tutoring-session', 'school-visit', 'study-abroad-consultation'];
 
 const STATUS_STYLES = {
   confirmed: 'bg-green-100 text-green-700',
@@ -81,6 +82,7 @@ export default function ManageBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [serviceFilter, setServiceFilter] = useState('all');
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -101,7 +103,9 @@ export default function ManageBookings() {
     } catch { toast.error('Action failed'); }
   };
 
-  const filtered = statusFilter === 'all' ? bookings : bookings.filter((b) => b.status === statusFilter);
+  const filtered = bookings
+    .filter(b => statusFilter === 'all' || b.status === statusFilter)
+    .filter(b => serviceFilter === 'all' || b.service === serviceFilter);
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
   return (
@@ -129,6 +133,16 @@ export default function ManageBookings() {
               </button>
             ))}
           </div>
+          <div className="flex gap-2 flex-wrap mt-2">
+            {SERVICE_TABS.map(tab => (
+              <button key={tab} onClick={() => setServiceFilter(tab)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition ${
+                  serviceFilter === tab ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}>
+                {tab === 'all' ? 'All Services' : tab.replace(/-/g, ' ')}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="p-4 md:p-8">
@@ -151,8 +165,11 @@ export default function ManageBookings() {
                   <div key={b._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="min-w-0">
-                        <p className="font-bold text-gray-900 text-sm">{b.name}</p>
-                        <p className="text-xs text-gray-400 truncate">{b.email}</p>
+                        <p className="font-bold text-gray-900 text-sm">{b.name || b.user?.name}</p>
+                        <p className="text-xs text-gray-400 truncate">{b.email || b.user?.email}</p>
+                        {b.tutorId?.displayName && (
+                          <p className="text-xs text-green-700 font-semibold truncate">Tutor: {b.tutorId.displayName}</p>
+                        )}
                       </div>
                       <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_STYLES[b.status] || 'bg-gray-100 text-gray-600'}`}>
                         {b.status}
@@ -160,6 +177,8 @@ export default function ManageBookings() {
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-gray-500">
                       <span className="capitalize">{b.service?.replace(/-/g, ' ')}</span>
+                      {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Trial</span>}
+                      {b.subscriptionId && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Subscribed</span>}
                       <span className="flex items-center gap-1">
                         <CalendarCheck size={11} />
                         {new Date(b.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -198,7 +217,7 @@ export default function ManageBookings() {
                 <table className="w-full text-sm min-w-200">
                   <thead className="bg-gray-50 text-gray-500 text-left border-b border-gray-100">
                     <tr>
-                      {['Name', 'Email', 'Service', 'Date', 'Time', 'Status', 'Call Link', 'Actions'].map((h) => (
+                      {['Name', 'Tutor', 'Email', 'Service', 'Date', 'Time', 'Status', 'Call Link', 'Actions'].map((h) => (
                         <th key={h} className="px-5 py-4 font-semibold text-xs uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
@@ -206,8 +225,9 @@ export default function ManageBookings() {
                   <tbody className="divide-y divide-gray-50">
                     {filtered.map((b) => (
                       <tr key={b._id} className="hover:bg-gray-50 transition">
-                        <td className="px-5 py-4 font-semibold text-gray-900 whitespace-nowrap">{b.name}</td>
-                        <td className="px-5 py-4 text-gray-500 text-xs">{b.email}</td>
+                        <td className="px-5 py-4 font-semibold text-gray-900 whitespace-nowrap">{b.name || b.user?.name}</td>
+                        <td className="px-5 py-4 text-sm text-gray-600">{b.tutorId?.displayName || '—'}</td>
+                        <td className="px-5 py-4 text-gray-500 text-xs">{b.email || b.user?.email}</td>
                         <td className="px-5 py-4 text-gray-500 capitalize text-xs whitespace-nowrap">{b.service?.replace(/-/g, ' ')}</td>
                         <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
                           {new Date(b.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}

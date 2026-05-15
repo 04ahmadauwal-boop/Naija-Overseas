@@ -12,19 +12,21 @@ const signToken = (id) =>
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, phone, country } = req.body;
+    const { name, email, password, role, goal, phone, country } = req.body;
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already registered' });
 
-    const allowedRoles = ['student', 'parent', 'school-owner'];
+    const allowedRoles = ['student', 'parent', 'school-owner', 'tutor'];
     const userRole = allowedRoles.includes(role) ? role : 'student';
+    const allowedGoals = ['tutoring', 'study-abroad', 'both'];
+    const userGoal = allowedGoals.includes(goal) ? goal : 'both';
 
-    const user = await User.create({ name, email, password, role: userRole, phone, country });
+    const user = await User.create({ name, email, password, role: userRole, goal: userGoal, phone, country });
     const token = signToken(user._id);
 
     res.status(201).json({
       token,
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
     });
   } catch (err) {
     console.error('Register error:', err);
@@ -43,7 +45,7 @@ router.post('/login', async (req, res) => {
     const token = signToken(user._id);
     res.json({
       token,
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

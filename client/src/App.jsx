@@ -23,9 +23,20 @@ import ManageApplications from './pages/admin/ManageApplications';
 import ManageBlog from './pages/admin/ManageBlog';
 import ManageMessages from './pages/admin/ManageMessages';
 import ManageUsers from './pages/admin/ManageUsers';
+import ManageTutors from './pages/admin/ManageTutors';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
 import ParentDashboard from './pages/dashboard/ParentDashboard';
 import SchoolOwnerDashboard from './pages/dashboard/SchoolOwnerDashboard';
+import TutorDashboard from './pages/dashboard/TutorDashboard';
+import LearningDashboard from './pages/dashboard/LearningDashboard';
+import FindTutoring from './pages/FindTutoring';
+import TutorDetail from './pages/TutorDetail';
+import BecomeTutor from './pages/BecomeTutor';
+import StudentOnboarding from './pages/StudentOnboarding';
+import GoClass from './pages/GoClass';
+import BookSession from './pages/schedule/BookSession';
+import SchedulePage from './pages/schedule/SchedulePage';
+import SubscribePage from './pages/schedule/SubscribePage';
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -42,9 +53,25 @@ function DashboardRoute({ children, role }) {
   return children;
 }
 
+function TutorRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-500">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  return children;
+}
+
+function LearningRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-500">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  // Study-abroad-only students cannot access the learning hub
+  if (user.role === 'student' && user.goal === 'study-abroad') return <Navigate to="/dashboard/student" />;
+  return children;
+}
+
 export default function App() {
   const location = useLocation();
-  const isShellless = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
+  const isShellless = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard') || location.pathname === '/dashboard/tutor' || location.pathname === '/student-onboarding' || location.pathname.startsWith('/classroom') || location.pathname.startsWith('/learning') || location.pathname.startsWith('/schedule') || location.pathname.startsWith('/book/') || location.pathname.startsWith('/subscribe/');
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -64,6 +91,11 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/find-tutoring" element={<FindTutoring />} />
+          <Route path="/tutors/:id" element={<TutorDetail />} />
+          <Route path="/become-a-tutor" element={<BecomeTutor />} />
+          <Route path="/student-onboarding" element={<TutorRoute><StudentOnboarding /></TutorRoute>} />
+          <Route path="/classroom/:roomId" element={<TutorRoute><GoClass /></TutorRoute>} />
 
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/schools" element={<AdminRoute><ManageSchools /></AdminRoute>} />
@@ -72,10 +104,21 @@ export default function App() {
           <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
           <Route path="/admin/messages" element={<AdminRoute><ManageMessages /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><ManageUsers /></AdminRoute>} />
+          <Route path="/admin/tutors" element={<AdminRoute><ManageTutors /></AdminRoute>} />
 
           <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/school-owner" element={<DashboardRoute role="school-owner"><SchoolOwnerDashboard /></DashboardRoute>} />
+          <Route path="/dashboard/tutor" element={<TutorRoute><TutorDashboard /></TutorRoute>} />
+
+          <Route path="/learning" element={<LearningRoute><LearningDashboard /></LearningRoute>} />
+
+          {/* Public tutor booking page (trial session) */}
+          <Route path="/book/:tutorId" element={<BookSession />} />
+          {/* Monthly subscription flow */}
+          <Route path="/subscribe/:tutorId" element={<SubscribePage />} />
+          {/* Tutor schedule management (auth required) */}
+          <Route path="/schedule" element={<TutorRoute><SchedulePage /></TutorRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
