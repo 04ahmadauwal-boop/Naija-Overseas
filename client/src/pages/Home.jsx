@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useFadeIn, useSlideIn, useScrollAnimation, useStaggerAnimation, useFloat } from '../hooks/useGsapAnimations';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
@@ -387,6 +388,14 @@ export default function Home() {
     filters.state, filters.type, filters.level, filters.curriculum,
     filters.minFee || filters.maxFee,
   ].filter(Boolean).length;
+
+  // Animation refs
+  const heroHeadingRef = useFadeIn(0.8, 0.2);
+  const statsRef = useSlideIn('up', 0.8, 0.4);
+  const ctaRef = useSlideIn('up', 0.8, 0.5);
+  const statsItemsRef = useScrollAnimation('fadeIn', { duration: 0.8 });
+  const featuresRef = useScrollAnimation('slideUp', { duration: 0.8 });
+  const testimonialsRef = useScrollAnimation('slideUp', { duration: 0.8 });
 
   return (
     <div className="overflow-x-hidden">

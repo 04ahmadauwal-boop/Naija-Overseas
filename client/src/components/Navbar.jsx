@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFadeIn, useSlideIn, useHoverAnimation } from '../hooks/useGsapAnimations';
 import {
   Menu, X, GraduationCap, ChevronRight, ChevronDown, LayoutDashboard,
   BookOpen, Globe, School, Info, Mail, LogOut, User, Search, Users
@@ -49,6 +50,11 @@ export default function Navbar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef(null);
 
+  // GSAP animations
+  const headerRef = useFadeIn(0.6, 0);
+  const logoRef = useSlideIn('right', 0.6, 0);
+  const navRef = useSlideIn('down', 0.8, 0.1);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll);
@@ -63,12 +69,12 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`bg-white sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-lg border-b border-gray-100' : 'border-b border-gray-100'}`}>
+      <header ref={headerRef} className={`bg-white sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-lg border-b border-gray-100' : 'border-b border-gray-100'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 md:h-17">
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
+            <Link ref={logoRef} to="/" className="flex items-center gap-2 shrink-0">
               <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
                 <GraduationCap className="text-white" size={17} />
               </div>
@@ -78,7 +84,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-0.5">
+            <nav ref={navRef} className="hidden lg:flex items-center gap-0.5">
               {NAV_ITEMS.map(({ to, label, end }) => (
                 <NavLink key={to} to={to} end={end}
                   className={({ isActive }) =>

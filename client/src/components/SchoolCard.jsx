@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
 import { MapPin, BookOpen, BarChart3, ArrowRight, CheckCircle } from 'lucide-react';
+import { useHoverAnimation, useScaleIn } from '../hooks/useGsapAnimations';
 
 export default function SchoolCard({ school, onCompare, isSelected }) {
   const href = `/schools/${school.slug || school._id}`;
+  const cardRef = useScaleIn(0.5, 0);
+  const imageRef = useHoverAnimation(1.08, 0.3);
 
   return (
-    <div className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col overflow-hidden shadow-sm ${
+    <div ref={cardRef} className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col overflow-hidden shadow-sm ${
       isSelected
         ? 'border-green-500 shadow-lg ring-2 ring-green-100'
         : 'border-gray-100 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5'
@@ -15,9 +18,10 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
       <Link to={href} className="block relative w-full h-52 bg-gradient-to-br from-green-50 to-emerald-100 overflow-hidden shrink-0">
         {school.images?.[0] ? (
           <img
+            ref={imageRef}
             src={school.images[0]}
             alt={school.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-green-200">

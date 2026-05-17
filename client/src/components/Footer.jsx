@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { useFadeIn, useSlideIn } from '../hooks/useGsapAnimations';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subLoading, setSubLoading] = useState(false);
+
+  // Animation refs
+  const footerRef = useFadeIn(0.6, 0);
+  const brandRef = useSlideIn('right', 0.6, 0);
+  const linksRef = useSlideIn('up', 0.8, 0.2);
 
   const handleNewsletter = async (e) => {
     e.preventDefault();
@@ -54,13 +60,13 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gray-950 text-gray-400 pt-16 pb-8 mt-0">
+    <footer ref={footerRef} className="bg-gray-950 text-gray-400 pt-16 pb-8 mt-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Top row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           {/* Brand */}
-          <div className="lg:col-span-2">
+          <div ref={brandRef} className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                 <GraduationCap className="text-white" size={17} />
