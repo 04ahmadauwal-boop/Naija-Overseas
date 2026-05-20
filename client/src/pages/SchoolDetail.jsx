@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useFadeIn, useSlideIn, useScrollAnimation } from '../hooks/useGsapAnimations';
 import {
   MapPin, Phone, Mail, Globe, ArrowLeft,
   CheckCircle, Building2, GraduationCap, DollarSign,
@@ -313,14 +314,14 @@ export default function SchoolDetail() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="animate-pulse space-y-5">
-          <div className="h-[40vh] bg-gray-100 rounded-2xl" />
-          <div className="h-6 bg-gray-100 rounded w-2/3" />
+        <div className="space-y-5">
+          <div className="h-[40vh] skeleton-shimmer rounded-2xl" />
+          <div className="h-6 skeleton-shimmer rounded w-2/3" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-gray-100 rounded-xl" />)}
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 skeleton-shimmer rounded-xl" />)}
           </div>
-          <div className="h-28 bg-gray-100 rounded-xl" />
-          <div className="h-28 bg-gray-100 rounded-xl" />
+          <div className="h-28 skeleton-shimmer rounded-xl" />
+          <div className="h-28 skeleton-shimmer rounded-xl" />
         </div>
       </div>
     );

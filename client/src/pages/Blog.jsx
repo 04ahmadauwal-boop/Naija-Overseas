@@ -16,13 +16,13 @@ const CAT_COLORS = {
 
 function SkeletonCard({ large }) {
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse ${large ? 'md:col-span-3' : ''}`}>
-      <div className={`bg-gray-100 ${large ? 'h-72' : 'h-48'}`} />
+    <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden ${large ? 'md:col-span-3' : ''}`}>
+      <div className={`skeleton-shimmer ${large ? 'h-72' : 'h-48'}`} />
       <div className="p-5 space-y-3">
-        <div className="h-3 bg-gray-100 rounded w-20" />
-        <div className="h-5 bg-gray-100 rounded w-3/4" />
-        <div className="h-3 bg-gray-100 rounded w-full" />
-        <div className="h-3 bg-gray-100 rounded w-2/3" />
+        <div className="h-3 skeleton-shimmer rounded w-20" />
+        <div className="h-5 skeleton-shimmer rounded w-3/4" />
+        <div className="h-3 skeleton-shimmer rounded w-full" />
+        <div className="h-3 skeleton-shimmer rounded w-2/3" />
       </div>
     </div>
   );

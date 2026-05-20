@@ -75,11 +75,11 @@ function StatusBadge({ status }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse">
-      <div className="h-36 bg-gray-100 rounded-xl mb-3" />
-      <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
-      <div className="h-3 bg-gray-100 rounded w-1/2 mb-3" />
-      <div className="h-8 bg-gray-100 rounded-xl" />
+    <div className="bg-white rounded-2xl border border-gray-100 p-4">
+      <div className="h-36 skeleton-shimmer rounded-xl mb-3" />
+      <div className="h-4 skeleton-shimmer rounded w-3/4 mb-2" />
+      <div className="h-3 skeleton-shimmer rounded w-1/2 mb-3" />
+      <div className="h-8 skeleton-shimmer rounded-xl" />
     </div>
   );
 }

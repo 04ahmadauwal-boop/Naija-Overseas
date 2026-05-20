@@ -273,6 +273,70 @@ export const usePulse = (duration = 2) => {
   return ref;
 };
 
+/**
+ * Hook for input placeholder focus animation
+ * Smoothly animates placeholder when input is focused
+ */
+export const useInputAnimation = () => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const handleFocus = () => {
+      gsap.to(ref.current, {
+        boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1), 0 0 0 6px rgba(34, 197, 94, 0.05)',
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    };
+
+    const handleBlur = () => {
+      gsap.to(ref.current, {
+        boxShadow: '0 0 0 0px rgba(34, 197, 94, 0)',
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    };
+
+    ref.current.addEventListener('focus', handleFocus);
+    ref.current.addEventListener('blur', handleBlur);
+
+    return () => {
+      ref.current?.removeEventListener('focus', handleFocus);
+      ref.current?.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  return ref;
+};
+
+/**
+ * Hook for skeleton loading animation
+ * Creates staggered shimmer effect for multiple skeleton items
+ */
+export const useSkeletonAnimation = (itemCount = 1) => {
+  const refs = useRef([]);
+
+  useEffect(() => {
+    const validRefs = refs.current.filter(Boolean);
+    if (!validRefs.length) return;
+
+    gsap.to(validRefs, {
+      opacity: [0.6, 1],
+      duration: 1.5,
+      stagger: 0.2,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+  }, [itemCount]);
+
+  return (index) => (el) => {
+    if (el) refs.current[index] = el;
+  };
+};
+
 export default {
   useFadeIn,
   useSlideIn,
@@ -283,4 +347,6 @@ export default {
   useStaggerAnimation,
   useFloat,
   usePulse,
+  useInputAnimation,
+  useSkeletonAnimation,
 };

@@ -35,6 +35,8 @@ export default {
         'scale-in': 'scaleIn 0.5s ease-out',
         'float': 'float 3s ease-in-out infinite',
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'shimmer': 'shimmer 2s infinite',
+        'placeholder-shine': 'placeholderShine 1.5s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -68,6 +70,14 @@ export default {
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
+        },
+        placeholderShine: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
         },
       },
       screens: {

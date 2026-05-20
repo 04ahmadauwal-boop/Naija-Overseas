@@ -78,7 +78,7 @@ const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ou
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 
 function Skeleton({ className = '' }) {
-  return <div className={`bg-gray-200 animate-pulse rounded-xl ${className}`} />;
+  return <div className={`skeleton-shimmer rounded-xl ${className}`} />;
 }
 
 function LoadingSkeleton() {
@@ -1329,7 +1329,7 @@ function GalleryTab({ school }) {
           <p className="text-gray-400 text-xs">Upload photos of your school to attract more parents</p>
           <div className="grid grid-cols-3 gap-3 mt-6 max-w-xs mx-auto">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-square bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="aspect-square bg-gray-100 rounded-xl skeleton-shimmer" />
             ))}
           </div>
         </div>
@@ -1470,7 +1470,7 @@ function VisitRequestsTab() {
     return (
       <div className="space-y-3 max-w-2xl">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse h-28" />
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 skeleton-shimmer h-28" />
         ))}
       </div>
     );

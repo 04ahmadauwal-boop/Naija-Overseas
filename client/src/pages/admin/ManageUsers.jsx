@@ -162,7 +162,7 @@ export default function ManageUsers() {
             {loading ? (
               <div className="space-y-px">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-50 animate-pulse" />
+                  <div key={i} className="h-14 bg-gray-50 skeleton-shimmer" />
                 ))}
               </div>
             ) : users.length === 0 ? (

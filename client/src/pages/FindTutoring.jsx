@@ -707,7 +707,7 @@ export default function FindTutoring() {
           {loading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-36 animate-pulse border border-gray-100" />
+                <div key={i} className="bg-white rounded-2xl h-36 skeleton-shimmer border border-gray-100" />
               ))}
             </div>
           ) : tutors.length === 0 ? (

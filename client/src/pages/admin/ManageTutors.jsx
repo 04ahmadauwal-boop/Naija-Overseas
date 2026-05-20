@@ -170,7 +170,7 @@ export default function ManageTutors() {
             <div className="lg:col-span-3 space-y-3">
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 h-24 animate-pulse" />
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 h-24 skeleton-shimmer" />
                 ))
               ) : filtered.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">

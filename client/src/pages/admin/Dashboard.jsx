@@ -230,7 +230,7 @@ export function Dashboard() {
           {loading ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-36 animate-pulse border border-gray-100" />
+                <div key={i} className="bg-white rounded-2xl h-36 skeleton-shimmer border border-gray-100" />
               ))}
             </div>
           ) : (

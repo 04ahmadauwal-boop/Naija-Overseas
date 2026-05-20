@@ -159,7 +159,7 @@ export default function ManageBlog() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-16 animate-pulse border border-gray-100" />
+                <div key={i} className="bg-white rounded-2xl h-16 skeleton-shimmer border border-gray-100" />
               ))}
             </div>
           ) : posts.length === 0 ? (
