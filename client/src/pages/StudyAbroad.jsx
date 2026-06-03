@@ -34,8 +34,6 @@ const HERO_SLIDES = [
       { name: 'University of Oxford', rank: '#1 World Ranking' },
       { name: 'University of Cambridge', rank: '#2 World Ranking' },
       { name: 'Imperial College London', rank: 'Top 10 Globally' },
-      { name: 'University College London', rank: 'Top 15 Globally' },
-      { name: 'London School of Economics', rank: 'Top Social Sciences' },
     ],
     stats: ['130+ Universities', '3-Year Degrees', 'Post-Study Work Visa'],
     intakes: 'September & January',
@@ -52,8 +50,6 @@ const HERO_SLIDES = [
       { name: 'University of Toronto', rank: '#21 World Ranking' },
       { name: 'UBC Vancouver', rank: '#34 World Ranking' },
       { name: 'McGill University', rank: '#37 World Ranking' },
-      { name: 'McMaster University', rank: 'Top 100 Globally' },
-      { name: 'University of Waterloo', rank: 'Top Tech School' },
     ],
     stats: ['100+ Universities', 'PGWP up to 3 Years', 'PR Pathway'],
     intakes: 'January, May & September',
@@ -70,8 +66,6 @@ const HERO_SLIDES = [
       { name: 'Harvard University', rank: '#3 World Ranking' },
       { name: 'Massachusetts Institute of Technology', rank: '#1 World Ranking' },
       { name: 'Stanford University', rank: '#5 World Ranking' },
-      { name: 'Yale University', rank: 'Top 20 Globally' },
-      { name: 'Columbia University', rank: 'Top 25 Globally' },
     ],
     stats: ['4,000+ Universities', 'OPT/CPT Work', 'F-1 Student Visa'],
     intakes: 'August & January',
@@ -241,7 +235,7 @@ export default function StudyAbroad() {
           SECTION 1 — HERO SLIDER
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="relative min-h-screen flex flex-col overflow-hidden"
+        className="relative min-h-[90vh] flex flex-col overflow-hidden"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}>
 
@@ -258,17 +252,9 @@ export default function StudyAbroad() {
 
         {/* Content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="max-w-7xl mx-auto px-6 py-20 w-full grid lg:grid-cols-2 gap-12 items-center">
-
+          <div className="max-w-7xl mx-auto px-6 pt-12 pb-5 w-full grid lg:grid-cols-2 gap-12 items-center">
             {/* LEFT: Country info */}
             <div>
-              {/* <div className="flex items-center gap-3 mb-6">
-                <FlagImg code={current.code} w={80} className="h-12 rounded-md shadow-lg" />
-                <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                  <Globe size={12} /> Studying in {current.country}
-                </div>
-              </div> */}
-
               <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.06] mb-5 drop-shadow-lg">
                 Study in<br />
                 <span className="text-green-400">{current.country}</span>
@@ -286,9 +272,9 @@ export default function StudyAbroad() {
                     <CheckCircle size={11} className="text-green-400" /> {stat}
                   </span>
                 ))}
-                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                {/* <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                   <Clock size={11} className="text-yellow-400" /> Intakes: {current.intakes}
-                </span>
+                </span> */}
               </div>
 
               <div className="flex flex-wrap gap-4">
@@ -311,9 +297,9 @@ export default function StudyAbroad() {
                 <p className="text-xs uppercase tracking-[0.2em] text-green-300 font-bold mb-5">
                   Top Universities in {current.country}
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   {current.universities.map(({ name, rank }, i) => (
-                    <div key={name} className="flex items-center gap-4 bg-white/10 rounded-xl px-4 py-3">
+                    <div key={name} className="flex items-center gap-4 bg-white/10 rounded-xl px-3 py-2">
                       <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-extrabold text-xs shrink-0">
                         {i + 1}
                       </div>

@@ -150,8 +150,8 @@ const HERO_SLIDES = [
     headline: 'Find the perfect school\nfor your child.',
     highlight: 'Compare & decide.',
     subtitle: "Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools across Nigeria and West Africa.",
-    bg: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=800&q=80',
+    bg: 'https://images.unsplash.com/photo-1427504494785-cdba676d0444?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1510995111209-1c3ba86b5e4f?auto=format&fit=crop&w=800&q=80',
     accent: 'from-gray-900/85 via-gray-800/60',
     bottomFade: 'from-gray-50/80',
     accentRight: 'to-black/25',
@@ -180,8 +180,8 @@ const HERO_SLIDES = [
     headline: 'Get your school in front\nof thousands of parents.',
     highlight: 'Grow your enrolment.',
     subtitle: "List your school on Nigeria's fastest-growing education platform. Reach parents actively searching for schools in your area — starting from ₦15,000.",
-    bg: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+    bg: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1552699126-5444d5b5c5ed?auto=format&fit=crop&w=800&q=80',
     accent: 'from-blue-950/90 via-blue-900/65',
     bottomFade: 'from-blue-800/85',
     accentRight: 'to-black/30',
@@ -210,8 +210,8 @@ const HERO_SLIDES = [
     headline: 'Get into a top university\nabroad.',
     highlight: 'Your future starts here.',
     subtitle: "Expert guidance for Nigerian students seeking admission in the UK, Canada, USA, Australia, Germany and more. 95% visa success rate — end-to-end support.",
-    bg: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
+    bg: 'https://images.unsplash.com/photo-1491841573634-28276674d425?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80',
     accent: 'from-red-950/90 via-red-900/65',
     bottomFade: 'from-red-600/85',
     accentRight: 'to-black/30',
@@ -432,15 +432,9 @@ export default function Home() {
 
         {/* Main content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="w-full px-4 sm:px-8 py-8 sm:py-12 lg:py-16 lg:w-[55%] lg:ml-[4%]">
+          <div className="w-full px-5 sm:px-8 py-10 sm:py-12 lg:py-16 lg:w-[55%] lg:ml-[4%]">
 
-            {/* Step badge */}
-            {/* <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wide">
-              <span className="text-green-400">{HERO_SLIDES[slide].step}.</span>
-              {HERO_SLIDES[slide].label}
-            </div> */}
-
-            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.1] mb-3 sm:mb-4 drop-shadow-lg">
+            <h1 ref={heroHeadingRef} className="text-[2rem] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.12] mb-3 sm:mb-4 drop-shadow-lg">
               {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
                 <span key={i}>{line}{i === 0 && <br />}</span>
               ))}
@@ -448,12 +442,12 @@ export default function Home() {
               <span className="text-green-400">{HERO_SLIDES[slide].highlight}</span>
             </h1>
 
-            <p className="text-white/75 text-sm sm:text-base max-w-lg mb-4 sm:mb-6 leading-relaxed line-clamp-3 sm:line-clamp-none">
+            <p className="text-white/80 text-sm sm:text-base max-w-lg mb-4 sm:mb-6 leading-relaxed hidden sm:block">
               {HERO_SLIDES[slide].subtitle}
             </p>
 
-            {/* Stats chips */}
-            <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+            {/* Stats chips — hidden on mobile to keep hero clean */}
+            <div ref={statsRef} className="hidden sm:flex flex-wrap gap-2 mb-4 sm:mb-6">
               {HERO_SLIDES[slide].stats.map((stat) => (
                 <span key={stat} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                   <CheckCircle size={11} className="text-green-400" /> {stat}
@@ -464,7 +458,32 @@ export default function Home() {
             {/* Slide 0 — Search bar */}
             {slide === 0 && (
               <div ref={heroRef} className="relative max-w-xl mb-4 sm:mb-5">
-                <div className="flex flex-col sm:flex-row gap-2">
+                {/* Mobile: single pill bar */}
+                <div className="flex sm:hidden items-center bg-white rounded-full shadow-lg px-4 py-2.5 gap-2">
+                  <Search className="text-gray-400 shrink-0" size={17} />
+                  <input
+                    type="text"
+                    value={heroQuery}
+                    onChange={(e) => setHeroQuery(e.target.value)}
+                    onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
+                    placeholder="Search schools, locations..."
+                    className="flex-1 text-gray-800 text-sm border-0 focus:outline-none bg-transparent placeholder-gray-400 min-w-0"
+                  />
+                  {heroQuery ? (
+                    <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
+                      className="text-gray-400 hover:text-gray-600 shrink-0">
+                      <X size={15} />
+                    </button>
+                  ) : null}
+                  <button
+                    onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' }); }}
+                    className="bg-green-600 text-white rounded-full p-2 hover:bg-green-700 transition shrink-0">
+                    <Search size={14} />
+                  </button>
+                </div>
+                <p className="sm:hidden text-white/60 text-xs mt-2 pl-1">Schools across Nigeria &amp; West Africa</p>
+                {/* Desktop: split layout */}
+                <div className="hidden sm:flex gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                     <input
@@ -531,8 +550,34 @@ export default function Home() {
               </div>
             )}
 
-            {/* CTA buttons — stacked on mobile, side-by-side on sm+ */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            {/* Mobile-only CTA row — slide 0 uses search as primary, slides 1+ show pill CTAs */}
+            {slide === 0 ? (
+              <div className="flex sm:hidden gap-2 mt-3 mb-2">
+                <Link to="/#browse"
+                  onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex items-center justify-center gap-1.5 bg-green-600 text-white font-bold px-5 py-2.5 rounded-full hover:bg-green-700 transition shadow text-sm">
+                  Browse Schools <ArrowRight size={14} />
+                </Link>
+                <Link to="/compare"
+                  className="flex items-center justify-center gap-1.5 border border-white/30 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-white/10 transition text-sm">
+                  Compare
+                </Link>
+              </div>
+            ) : (
+              <div className="flex sm:hidden gap-2 mb-2">
+                <Link to={HERO_SLIDES[slide].cta.href}
+                  className="flex items-center justify-center gap-1.5 bg-green-600 text-white font-bold px-5 py-2.5 rounded-full hover:bg-green-700 transition shadow text-sm flex-1">
+                  {HERO_SLIDES[slide].cta.label} <ArrowRight size={14} />
+                </Link>
+                <Link to={HERO_SLIDES[slide].cta2.href}
+                  className="flex items-center justify-center gap-1.5 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-full hover:bg-white/10 transition text-sm">
+                  Learn More
+                </Link>
+              </div>
+            )}
+
+            {/* CTA buttons — desktop only */}
+            <div ref={ctaRef} className="hidden sm:flex sm:flex-row gap-2 sm:gap-3">
               {slide === 0 ? (
                 <>
                   <Link to="/#browse"
@@ -640,8 +685,8 @@ export default function Home() {
       </section>
 
       {/* ── STATS ─────────────────────────────────────────────────── */}
-      <section className="border-y border-gray-100 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* <section className="border-y border-gray-100 bg-gray-50">
+        <div ref={statsItemsRef} className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
           {STATS.map(({ value, label }) => (
             <div key={label} className="text-center">
               <div className="text-3xl font-extrabold text-gray-900 mb-0.5">{value}</div>
@@ -649,7 +694,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── EXPLORE TOP SCHOOLS ───────────────────────────────────── */}
       <section className="py-10 md:py-16 px-4 bg-white border-b border-gray-100">
@@ -684,25 +729,6 @@ export default function Home() {
                   <p className="text-xs text-gray-400 mt-0.5 truncate">{sub}</p>
                 </div>
                 <ArrowRight size={14} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
-              </Link>
-            ))}
-          </div>
-
-          {/* Quick-filter chips */}
-          <div className="flex flex-wrap gap-2.5 justify-center">
-            {[
-              { label: 'Top Private Schools',        href: '/?type=private'       },
-              { label: 'Federal Gov\'t Colleges',    href: '/?type=federal'       },
-              { label: 'IGCSE Schools',              href: '/?curriculum=IGCSE'   },
-              { label: 'Cambridge Curriculum',       href: '/?curriculum=Cambridge'},
-              { label: 'IB Schools',                 href: '/?curriculum=IB'      },
-              { label: 'Primary Schools',            href: '/?level=primary'      },
-              { label: 'Secondary Schools',          href: '/?level=secondary'    },
-              { label: 'International Schools',      href: '/?type=international' },
-            ].map(({ label, href }) => (
-              <Link key={href} to={href}
-                className="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 text-gray-600 hover:border-green-500 hover:text-green-700 hover:bg-green-50 bg-white transition">
-                {label}
               </Link>
             ))}
           </div>
@@ -1016,7 +1042,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div ref={featuresRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="group p-6 rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-md transition bg-white">
                 <div className="w-11 h-11 bg-green-50 group-hover:bg-green-100 rounded-xl flex items-center justify-center mb-4 transition">
@@ -1075,7 +1101,7 @@ export default function Home() {
             <p className="text-gray-500 max-w-xl mx-auto">Real stories from parents, students and school owners who used Naija & Overseas.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div ref={testimonialsRef} className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
             {TESTIMONIALS.map(({ name, role, text, rating, initials, color }) => (
               <div key={name} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
                 <div className="flex gap-0.5">

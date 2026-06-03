@@ -15,7 +15,7 @@ export const useFadeIn = (duration = 0.8, delay = 0) => {
     gsap.fromTo(
       ref.current,
       { opacity: 0 },
-      { opacity: 1, duration, delay, ease: 'power2.out' }
+      { opacity: 1, duration, delay, ease: 'power2.out', clearProps: 'opacity' }
     );
   }, [duration, delay]);
 
@@ -50,7 +50,7 @@ export const useSlideIn = (direction = 'up', duration = 0.8, delay = 0) => {
     gsap.fromTo(
       ref.current,
       getTransform(),
-      { x: 0, y: 0, opacity: 1, duration, delay, ease: 'power3.out' }
+      { x: 0, y: 0, opacity: 1, duration, delay, ease: 'power3.out', clearProps: 'transform,opacity' }
     );
   }, [duration, delay, direction]);
 
@@ -142,24 +142,24 @@ export const useScrollAnimation = (animationType = 'fadeIn', options = {}) => {
         toConfig = { ...toConfig, opacity: 1 };
     }
 
-    gsap.fromTo(
-      ref.current,
-      fromConfig,
-      {
-        ...toConfig,
-        scrollTrigger: {
-          trigger: ref.current,
-          start: triggerStart,
-          end: triggerEnd,
-          toggleActions: 'play none none none',
-          markers,
-        },
-      }
-    );
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ref.current,
+        fromConfig,
+        {
+          ...toConfig,
+          scrollTrigger: {
+            trigger: ref.current,
+            start: triggerStart,
+            end: triggerEnd,
+            toggleActions: 'play none none none',
+            markers,
+          },
+        }
+      );
+    });
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
+    return () => ctx.revert();
   }, [animationType, duration, delay, triggerStart, triggerEnd, markers]);
 
   return ref;
