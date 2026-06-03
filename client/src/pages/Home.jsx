@@ -146,15 +146,16 @@ const HERO_SLIDES = [
     cardBg: 'bg-white',
     cardText: 'text-gray-900',
     cardDesc2: 'text-gray-500',
-    cardBadge: 'bg-red-600 text-white',
+    cardBadge: 'bg-emerald-700 text-white',
     headline: 'Find the perfect school\nfor your child.',
     highlight: 'Compare & decide.',
     subtitle: "Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools across Nigeria and West Africa.",
-    bg: 'https://images.unsplash.com/photo-1427504494785-cdba676d0444?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1510995111209-1c3ba86b5e4f?auto=format&fit=crop&w=800&q=80',
-    accent: 'from-gray-900/85 via-gray-800/60',
-    bottomFade: 'from-gray-50/80',
-    accentRight: 'to-black/25',
+    // Warm, inviting classroom — children learning, bright natural light
+    bg: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
+    // Deep forest-green gradient left → transparent right
+    accent: 'from-emerald-950 via-green-900/75',
+    bottomFade: 'from-emerald-950/60',
     stats: ['500+ Schools', '4 Countries', 'Free to Use'],
     cta: { label: 'Browse Schools', href: '#browse' },
     cta2: { label: 'Compare Schools', href: '/compare' },
@@ -173,18 +174,19 @@ const HERO_SLIDES = [
     step: '02',
     label: 'Students Focused',
     cardDesc: 'We guide school owners and parents through the listing, discovery, and enrolment process — putting students at the centre of every decision we make on this platform.',
-    cardBg: 'bg-blue-800',
+    cardBg: 'bg-blue-900',
     cardText: 'text-white',
     cardDesc2: 'text-blue-200',
-    cardBadge: 'bg-red-600 text-white',
+    cardBadge: 'bg-blue-500 text-white',
     headline: 'Get your school in front\nof thousands of parents.',
     highlight: 'Grow your enrolment.',
     subtitle: "List your school on Nigeria's fastest-growing education platform. Reach parents actively searching for schools in your area — starting from ₦15,000.",
-    bg: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1552699126-5444d5b5c5ed?auto=format&fit=crop&w=800&q=80',
-    accent: 'from-blue-950/90 via-blue-900/65',
-    bottomFade: 'from-blue-800/85',
-    accentRight: 'to-black/30',
+    // Prestigious school building exterior — architecture, blue sky, sunlight
+    bg: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=80',
+    // Deep navy gradient left → transparent right
+    accent: 'from-slate-950 via-blue-950/80',
+    bottomFade: 'from-slate-950/60',
     stats: ['500+ Schools Listed', '₦15,000 One-Time', 'Live in 48 hrs'],
     cta: { label: 'List Your School', href: '/list-your-school' },
     cta2: { label: 'See How It Works', href: '#how' },
@@ -203,18 +205,19 @@ const HERO_SLIDES = [
     step: '03',
     label: 'Global Sourcing',
     cardDesc: 'We are the pioneers in overseas education consultancy for West Africa, placing students in leading universities across the UK, Canada, USA, Australia, Germany, and more.',
-    cardBg: 'bg-red-600',
+    cardBg: 'bg-violet-900',
     cardText: 'text-white',
-    cardDesc2: 'text-red-100',
-    cardBadge: 'bg-white text-red-600',
+    cardDesc2: 'text-violet-200',
+    cardBadge: 'bg-amber-400 text-violet-950',
     headline: 'Get into a top university\nabroad.',
     highlight: 'Your future starts here.',
     subtitle: "Expert guidance for Nigerian students seeking admission in the UK, Canada, USA, Australia, Germany and more. 95% visa success rate — end-to-end support.",
-    bg: 'https://images.unsplash.com/photo-1491841573634-28276674d425?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80',
-    accent: 'from-red-950/90 via-red-900/65',
-    bottomFade: 'from-red-600/85',
-    accentRight: 'to-black/30',
+    // World-class university campus — grand architecture, aspirational
+    bg: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80',
+    personImg: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80',
+    // Deep royal violet/indigo gradient left → transparent right
+    accent: 'from-violet-950 via-indigo-950/80',
+    bottomFade: 'from-violet-950/60',
     stats: ['2,000+ Students Placed', '95% Visa Success', '8 Countries'],
     cta: { label: 'Start Your Application', href: '/study-abroad' },
     cta2: { label: 'View Destinations', href: '/study-abroad#destinations' },
@@ -402,109 +405,92 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden min-h-[100svh] sm:min-h-[92vh]"
+        className="relative flex flex-col overflow-hidden h-screen"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
-        {/* Background slides */}
+        {/* Background — cinematic multi-layer */}
         {HERO_SLIDES.map((s, i) => (
-          <div key={i} className={`absolute inset-0 transition-opacity duration-1000 ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('${s.bg}')` }} />
+          <div key={i} className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+            {/* Photo */}
+            <div className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${i === slide ? 'hero-bg-animate' : ''}`} style={{ backgroundImage: `url('${s.bg}')` }} />
+            {/* Base dark scrim — let photo breathe a bit */}
+            <div className="absolute inset-0 bg-black/40" />
+            {/* Rich colour gradient from left — full strength, no opacity reduction */}
             <div className={`absolute inset-0 bg-gradient-to-r ${s.accent} to-transparent`} />
-            <div className={`absolute inset-0 bg-gradient-to-t ${s.bottomFade} via-transparent to-black/10`} />
+            {/* Strong bottom fade for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            {/* Subtle radial vignette for editorial depth */}
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 90% at 15% 55%, transparent 35%, rgba(0,0,0,0.35) 100%)' }} />
           </div>
         ))}
 
-        {/* Foreground person image — desktop only */}
-        <div className="absolute inset-y-0 right-0 w-[45%] z-20 hidden lg:block pointer-events-none overflow-hidden">
+        {/* Foreground person — desktop XL only */}
+        <div className="absolute inset-y-0 right-0 w-[40%] z-20 hidden xl:block pointer-events-none overflow-hidden">
           {HERO_SLIDES.map((s, i) => (
             <img
               key={i}
               src={s.personImg}
               alt=""
-              className={`absolute bottom-0 right-0 h-full w-full object-cover object-top transition-opacity duration-1000 ${
-                i === slide ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)' }}
+              className={`absolute bottom-0 right-0 h-full w-full object-cover object-top transition-opacity duration-1000 ${i === slide ? 'opacity-90' : 'opacity-0'}`}
+              style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 32%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 32%)' }}
             />
           ))}
         </div>
 
         {/* Main content */}
         <div className="relative z-20 flex-1 flex items-center">
-          <div className="w-full px-5 sm:px-8 py-10 sm:py-12 lg:py-16 lg:w-[55%] lg:ml-[4%]">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-5 sm:px-8 lg:px-14 xl:px-0 py-6 sm:py-10 lg:py-12">
 
-            <h1 ref={heroHeadingRef} className="text-[2rem] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.12] mb-3 sm:mb-4 drop-shadow-lg">
+            {/* Eyebrow
+            <div ref={statsRef} className="flex items-center gap-3 mb-3 sm:mb-4">
+              <span className="w-7 h-px bg-green-400 block shrink-0" />
+              <span className="text-green-400 text-[10px] sm:text-[11px] font-bold tracking-[0.22em] uppercase">
+                {HERO_SLIDES[slide].label}
+              </span>
+            </div> */}
+
+            {/* Headline — Playfair Display via base CSS */}
+            <h1
+              ref={heroHeadingRef}
+              className="text-[1.9rem] sm:text-[2.75rem] lg:text-[3.25rem] xl:text-[3.6rem] font-bold text-white leading-[1.1] mb-3 sm:mb-4"
+              style={{ textShadow: '0 2px 30px rgba(0,0,0,0.35)' }}
+            >
               {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
-                <span key={i}>{line}{i === 0 && <br />}</span>
+                <span key={i} className="block">{line}</span>
               ))}
-              <br />
-              <span className="text-green-400">{HERO_SLIDES[slide].highlight}</span>
+              <span className="text-green-400 italic">{HERO_SLIDES[slide].highlight}</span>
             </h1>
 
-            <p className="text-white/80 text-sm sm:text-base max-w-lg mb-4 sm:mb-6 leading-relaxed hidden sm:block">
+            {/* Subtitle */}
+            <p className="text-white/65 text-[12px] sm:text-[14px] max-w-[480px] mb-4 sm:mb-5 leading-relaxed">
               {HERO_SLIDES[slide].subtitle}
             </p>
 
-            {/* Stats chips — hidden on mobile to keep hero clean */}
-            <div ref={statsRef} className="hidden sm:flex flex-wrap gap-2 mb-4 sm:mb-6">
-              {HERO_SLIDES[slide].stats.map((stat) => (
-                <span key={stat} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                  <CheckCircle size={11} className="text-green-400" /> {stat}
-                </span>
-              ))}
-            </div>
-
-            {/* Slide 0 — Search bar */}
+            {/* Search bar — glass morphism (slide 0) */}
             {slide === 0 && (
               <div ref={heroRef} className="relative max-w-xl mb-4 sm:mb-5">
-                {/* Mobile: single pill bar */}
-                <div className="flex sm:hidden items-center bg-white rounded-full shadow-lg px-4 py-2.5 gap-2">
-                  <Search className="text-gray-400 shrink-0" size={17} />
+                <div className="flex items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-inset ring-white/5">
+                  <Search className="text-white/50 shrink-0 ml-4" size={16} />
                   <input
                     type="text"
                     value={heroQuery}
                     onChange={(e) => setHeroQuery(e.target.value)}
                     onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
-                    placeholder="Search schools, locations..."
-                    className="flex-1 text-gray-800 text-sm border-0 focus:outline-none bg-transparent placeholder-gray-400 min-w-0"
+                    placeholder="Search schools, cities, curriculum..."
+                    className="flex-1 px-3 py-3 bg-transparent text-white placeholder-white/40 text-[13px] border-0 focus:outline-none hero-input"
                   />
-                  {heroQuery ? (
+                  {heroQuery && (
                     <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
-                      className="text-gray-400 hover:text-gray-600 shrink-0">
-                      <X size={15} />
+                      className="text-white/40 hover:text-white/70 transition mr-2 shrink-0">
+                      <X size={14} />
                     </button>
-                  ) : null}
+                  )}
+                  <div className="w-px h-5 bg-white/15 shrink-0 mx-1" />
                   <button
                     onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    className="bg-green-600 text-white rounded-full p-2 hover:bg-green-700 transition shrink-0">
-                    <Search size={14} />
-                  </button>
-                </div>
-                <p className="sm:hidden text-white/60 text-xs mt-2 pl-1">Schools across Nigeria &amp; West Africa</p>
-                {/* Desktop: split layout */}
-                <div className="hidden sm:flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
-                    <input
-                      type="text"
-                      value={heroQuery}
-                      onChange={(e) => setHeroQuery(e.target.value)}
-                      onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
-                      placeholder="Search by school name or location..."
-                      className="w-full pl-11 pr-9 py-3.5 rounded-xl text-gray-800 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg"
-                    />
-                    {heroQuery && (
-                      <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        <X size={15} />
-                      </button>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); }}
-                    className="bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg whitespace-nowrap text-sm">
-                    Search →
+                    className="bg-green-600 hover:bg-green-500 transition text-white font-semibold px-5 sm:px-7 py-3 text-[13px] whitespace-nowrap flex items-center gap-2 shrink-0">
+                    Search <ArrowRight size={13} />
                   </button>
                 </div>
                 {showDropdown && (
@@ -550,54 +536,39 @@ export default function Home() {
               </div>
             )}
 
-            {/* Mobile-only CTA row — slide 0 uses search as primary, slides 1+ show pill CTAs */}
-            {slide === 0 ? (
-              <div className="flex sm:hidden gap-2 mt-3 mb-2">
-                <Link to="/#browse"
-                  onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="flex items-center justify-center gap-1.5 bg-green-600 text-white font-bold px-5 py-2.5 rounded-full hover:bg-green-700 transition shadow text-sm">
-                  Browse Schools <ArrowRight size={14} />
-                </Link>
-                <Link to="/compare"
-                  className="flex items-center justify-center gap-1.5 border border-white/30 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-white/10 transition text-sm">
-                  Compare
-                </Link>
-              </div>
-            ) : (
-              <div className="flex sm:hidden gap-2 mb-2">
-                <Link to={HERO_SLIDES[slide].cta.href}
-                  className="flex items-center justify-center gap-1.5 bg-green-600 text-white font-bold px-5 py-2.5 rounded-full hover:bg-green-700 transition shadow text-sm flex-1">
-                  {HERO_SLIDES[slide].cta.label} <ArrowRight size={14} />
-                </Link>
-                <Link to={HERO_SLIDES[slide].cta2.href}
-                  className="flex items-center justify-center gap-1.5 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-full hover:bg-white/10 transition text-sm">
-                  Learn More
-                </Link>
-              </div>
-            )}
+            {/* Stats row — inline with dividers */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5 mb-4 sm:mb-5">
+              {HERO_SLIDES[slide].stats.map((stat, i) => (
+                <div key={stat} className="flex items-center gap-2">
+                  {i > 0 && <span className="w-px h-3.5 bg-white/20 block shrink-0" />}
+                  <CheckCircle size={11} className="text-green-400 shrink-0" />
+                  <span className="text-white/70 text-[12px] sm:text-[13px] font-medium">{stat}</span>
+                </div>
+              ))}
+            </div>
 
-            {/* CTA buttons — desktop only */}
-            <div ref={ctaRef} className="hidden sm:flex sm:flex-row gap-2 sm:gap-3">
+            {/* CTA buttons — consistent across breakpoints */}
+            <div ref={ctaRef} className="flex flex-wrap gap-3">
               {slide === 0 ? (
                 <>
                   <Link to="/#browse"
                     onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="flex items-center justify-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
-                    Browse Schools <ArrowRight size={15} />
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-900/30 text-[13px]">
+                    Browse Schools <ArrowRight size={14} />
                   </Link>
                   <Link to="/compare"
-                    className="flex items-center justify-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl transition text-[13px]">
                     Compare Schools
                   </Link>
                 </>
               ) : (
                 <>
                   <Link to={HERO_SLIDES[slide].cta.href}
-                    className="flex items-center justify-center gap-2 bg-green-600 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg text-sm">
-                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={15} />
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-900/30 text-[13px]">
+                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={14} />
                   </Link>
                   <Link to={HERO_SLIDES[slide].cta2.href}
-                    className="flex items-center justify-center gap-2 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition text-sm">
+                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl transition text-[13px]">
                     {HERO_SLIDES[slide].cta2.label}
                   </Link>
                 </>
@@ -607,76 +578,50 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Slide progress + arrow controls */}
-        <div className="relative z-20 px-4 sm:px-8 pb-3 sm:pb-5 w-full flex items-center justify-between">
-          <div className="flex items-center gap-2.5 sm:gap-4">
+        {/* Slide navigation — label + progress bar */}
+        <div className="relative z-20 px-5 sm:px-8 lg:px-14 pb-3 w-full flex items-center justify-between">
+          <div className="flex items-center gap-5 sm:gap-8">
             {HERO_SLIDES.map((s, i) => (
-              <button key={i} onClick={() => goToSlide(i)}
-                className={`relative h-1 rounded-full overflow-hidden transition-all ${i === slide ? 'w-10 sm:w-16 bg-white/30' : 'w-5 sm:w-8 bg-white/20 hover:bg-white/40'}`}>
-                {i === slide && (
-                  <div className="absolute inset-y-0 left-0 bg-green-400 rounded-full"
-                    style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
-                )}
+              <button key={i} onClick={() => goToSlide(i)} className="flex flex-col gap-1.5 group text-left">
+                <span className={`text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase transition-colors leading-none ${i === slide ? 'text-white' : 'text-white/30 group-hover:text-white/55'}`}>
+                  {s.label}
+                </span>
+                <div className={`h-px rounded-full overflow-hidden transition-all duration-300 ${i === slide ? 'w-10 sm:w-14 bg-white/30' : 'w-5 sm:w-7 bg-white/15'}`}>
+                  {i === slide && (
+                    <div className="h-full bg-green-400" style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
+                  )}
+                </div>
               </button>
             ))}
-            <span className="text-white/50 text-xs ml-1">{slide + 1} / {HERO_SLIDES.length}</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={heroPrev}
-              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white hover:bg-white/25 transition">
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/15 transition backdrop-blur-sm">
               <ChevronLeft size={15} />
             </button>
             <button onClick={heroNext}
-              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-700 transition">
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 hover:bg-green-500 text-white transition shadow-lg">
               <ChevronRight size={15} />
             </button>
           </div>
         </div>
 
-        {/* Bottom cards — compact tab strip on mobile, full cards on md+ */}
-        <div className="relative z-20 mx-3 mb-3 rounded-xl overflow-hidden grid grid-cols-3 shadow-lg md:hidden">
+        {/* Bottom feature strip — unified frosted glass for all breakpoints */}
+        <div className="relative z-20 mx-3 sm:mx-6 lg:mx-10 mb-3 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-2xl bg-black/30 shadow-2xl">
           {HERO_SLIDES.map((s, i) => (
             <button
               key={i}
               onClick={() => goToSlide(i)}
-              className={`text-left px-3 py-3 transition-all duration-300 relative
-                ${i === slide ? s.cardBg : 'bg-black/50 backdrop-blur-sm'}
-                ${i < HERO_SLIDES.length - 1 ? 'border-r border-white/10' : ''}
-              `}
+              className={`relative text-left px-3 sm:px-5 lg:px-7 py-2.5 sm:py-4 transition-all duration-300 border-r border-white/10 last:border-0 ${i === slide ? 'bg-white/10' : 'hover:bg-white/5'}`}
             >
-              <span className={`inline-block text-[10px] font-extrabold px-1.5 py-0.5 rounded mb-1 ${i === slide ? s.cardBadge : 'bg-white/20 text-white'}`}>
-                {s.step}.
+              <span className={`block text-[9px] sm:text-[10px] font-extrabold tracking-[0.2em] uppercase mb-1 transition-colors ${i === slide ? 'text-green-400' : 'text-white/35'}`}>
+                {s.step}
               </span>
-              {i === slide && (
-                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              )}
-              <h3 className={`font-bold text-[11px] leading-tight ${i === slide ? s.cardText : 'text-white/75'}`}>
+              {i === slide && <span className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+              <h3 className={`font-semibold text-[11px] sm:text-[13px] leading-tight transition-colors ${i === slide ? 'text-white' : 'text-white/45'}`}>
                 {s.label}
               </h3>
-            </button>
-          ))}
-        </div>
-
-        <div className="relative z-20 mx-6 lg:mx-10 mb-6 rounded-2xl overflow-hidden hidden md:grid grid-cols-3 shadow-xl">
-          {HERO_SLIDES.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => goToSlide(i)}
-              className={`${s.cardBg} text-left px-6 lg:px-8 py-6 sm:py-7 transition-all duration-300 relative
-                ${i === slide ? 'opacity-100' : 'opacity-80 hover:opacity-95'}
-                ${i < HERO_SLIDES.length - 1 ? 'border-r border-white/10' : ''}
-              `}
-            >
-              <span className={`inline-block text-xs font-extrabold px-2 py-0.5 rounded mb-2 sm:mb-3 ${s.cardBadge}`}>
-                {s.step}.
-              </span>
-              {i === slide && (
-                <span className="absolute top-4 right-4 sm:top-5 sm:right-5 w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              )}
-              <h3 className={`font-extrabold text-sm sm:text-base md:text-lg leading-snug mb-1.5 sm:mb-2 ${s.cardText}`}>
-                {s.label}
-              </h3>
-              <p className={`text-xs sm:text-sm leading-relaxed line-clamp-3 lg:line-clamp-4 ${s.cardDesc2}`}>
+              <p className={`hidden md:block text-[11px] leading-snug mt-1.5 line-clamp-2 transition-colors ${i === slide ? 'text-white/55' : 'text-white/25'}`}>
                 {s.cardDesc}
               </p>
             </button>
