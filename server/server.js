@@ -61,13 +61,28 @@ app.use('/api/learning', require('./routes/learning'));
 app.use('/api/schedule', require('./routes/schedule'));
 app.use('/api/gcalendar', require('./routes/gcalendar'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/videos', require('./routes/videos'));
 
 app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
 
+async function seedDemoVideos() {
+  try {
+    const Video = require('./models/Video');
+    const count = await Video.countDocuments();
+    if (count > 0) return;
+    const DEMO_VIDEOS = require('./seedVideos').DEMO_VIDEOS;
+    await Video.insertMany(DEMO_VIDEOS);
+    console.log(`✅ ${DEMO_VIDEOS.length} demo videos seeded`);
+  } catch (err) {
+    console.warn('Video seed skipped:', err.message);
+  }
+}
+
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('MongoDB connected');
+    await seedDemoVideos();
     // Start reminder cron job (sends 24h and 1h email reminders for sessions)
     require('./jobs/reminders').initReminders();
     server.listen(process.env.PORT || 5000, () =>

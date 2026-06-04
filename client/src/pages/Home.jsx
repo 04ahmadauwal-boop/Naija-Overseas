@@ -256,6 +256,14 @@ export default function Home() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Review videos for the scrolling section
+  const [reviewVideos, setReviewVideos] = useState([]);
+  useEffect(() => {
+    api.get('/videos', { params: { limit: 12 } })
+      .then(({ data }) => setReviewVideos(data.videos || []))
+      .catch(() => {});
+  }, []);
+
   // Hero slider
   const [slide, setSlide] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
@@ -636,74 +644,169 @@ export default function Home() {
       </section> */}
 
       {/* ── EXPLORE TOP SCHOOLS ───────────────────────────────────── */}
-      <section className="py-10 md:py-16 px-4 bg-white border-b border-gray-100">
+      <section className="py-8 sm:py-10 md:py-16 px-4 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Explore Schools</p>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <div className="text-center mb-6 sm:mb-10">
+            <p className="text-green-600 font-semibold text-[11px] sm:text-sm uppercase tracking-widest mb-2 sm:mb-3">Explore Schools</p>
+            <h2 className="text-lg sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2 sm:mb-4">
               Nigeria's Top 100 Schools
             </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
+            <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
               Browse by state, type, or curriculum — updated from verified listings across Nigeria and West Africa.
             </p>
           </div>
 
           {/* State cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
-            {[
-              { state: 'Lagos',   emoji: '🏙️', title: 'Best in Lagos',        sub: "Nigeria's education capital" },
-              { state: 'FCT',     emoji: '🏛️', title: 'Abuja Schools',        sub: 'Federal Capital Territory'   },
-              { state: 'Kano',    emoji: '🌾', title: 'Kano Top Schools',     sub: 'Northern Nigeria\'s finest'   },
-              { state: 'Rivers',  emoji: '🛢️', title: 'Port Harcourt',        sub: 'South-South excellence'       },
-              { state: 'Ogun',    emoji: '🌲', title: 'Ogun Schools',         sub: 'Gateway to quality edu'       },
-              { state: 'Enugu',   emoji: '⛏️', title: 'Enugu Schools',        sub: 'Coal City\'s top picks'       },
-              { state: 'Oyo',     emoji: '🏯', title: 'Ibadan & Oyo',         sub: 'South-West academic hub'      },
-              { state: 'Delta',   emoji: '🌊', title: 'Delta State',          sub: 'Niger Delta excellence'       },
-            ].map(({ state, emoji, title, sub }) => (
-              <Link key={state} to={`/?state=${state}`}
-                className="group flex items-center gap-3 p-4 rounded-2xl border border-gray-100 bg-white hover:border-green-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <span className="text-3xl shrink-0">{emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 text-sm leading-tight group-hover:text-green-700 transition truncate">{title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">{sub}</p>
-                </div>
-                <ArrowRight size={14} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Simple Process</p>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Find your ideal school in 3 steps
-            </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">No more guessing. Our structured comparison process gives you the full picture before you make any decision.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connector line */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.66%+1rem)] right-[calc(16.66%+1rem)] h-px bg-linear-to-r from-green-200 via-green-400 to-green-200" />
-
-            {HOW_IT_WORKS.map(({ step, title, desc, icon: Icon }) => (
-              <div key={step} className="relative text-center">
-                <div className="relative inline-flex w-20 h-20 items-center justify-center rounded-2xl bg-green-700 text-white mb-5 mx-auto shadow-lg">
-                  <Icon size={28} />
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-green-900 text-[11px] font-black flex items-center justify-center shadow">
-                    {step}
-                  </span>
-                </div>
-                <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+          {(() => {
+            const states = [
+              { state: 'Lagos',   emoji: '🏙️', title: 'Best in Lagos',    sub: "Nigeria's education capital", color: 'from-orange-50 to-amber-50',   border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100' },
+              { state: 'FCT',     emoji: '🏛️', title: 'Abuja Schools',    sub: 'Federal Capital Territory',   color: 'from-blue-50 to-sky-50',       border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'   },
+              { state: 'Kano',    emoji: '🌾', title: 'Kano Schools',     sub: "Northern Nigeria's finest",   color: 'from-yellow-50 to-lime-50',    border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'},
+              { state: 'Rivers',  emoji: '🛢️', title: 'Port Harcourt',   sub: 'South-South excellence',      color: 'from-teal-50 to-emerald-50',   border: 'border-teal-100',    hover: 'hover:border-teal-300 hover:shadow-teal-100'   },
+              { state: 'Ogun',    emoji: '🌲', title: 'Ogun Schools',    sub: 'Gateway to quality edu',      color: 'from-green-50 to-emerald-50',  border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100' },
+              { state: 'Enugu',   emoji: '⛏️', title: 'Enugu Schools',   sub: "Coal City's top picks",       color: 'from-stone-50 to-gray-50',     border: 'border-stone-100',   hover: 'hover:border-stone-300 hover:shadow-stone-100' },
+              { state: 'Oyo',     emoji: '🏯', title: 'Ibadan & Oyo',    sub: 'South-West academic hub',     color: 'from-purple-50 to-violet-50',  border: 'border-purple-100',  hover: 'hover:border-purple-300 hover:shadow-purple-100'},
+              { state: 'Delta',   emoji: '🌊', title: 'Delta State',     sub: 'Niger Delta excellence',      color: 'from-cyan-50 to-blue-50',      border: 'border-cyan-100',    hover: 'hover:border-cyan-300 hover:shadow-cyan-100'   },
+            ];
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 sm:mb-8">
+                {states.map(({ state, emoji, title, sub, color, border, hover }, idx) => (
+                  <Link
+                    key={state}
+                    to={`/schools/state/${state}`}
+                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-gradient-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${idx >= 4 ? 'hidden sm:flex' : 'flex'}`}
+                  >
+                    <span className="text-2xl sm:text-3xl leading-none">{emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-[13px] sm:text-sm leading-snug group-hover:text-green-700 transition">{title}</p>
+                      <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">{sub}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">{state}</span>
+                      <ArrowRight size={12} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
+                    </div>
+                  </Link>
+                ))}
               </div>
-            ))}
+            );
+          })()}
+
+          {/* View all link on mobile */}
+          <div className="flex justify-center sm:hidden">
+            <Link to="/#browse" onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })} className="flex items-center gap-1.5 text-green-700 font-semibold text-sm border border-green-200 bg-green-50 px-5 py-2.5 rounded-full hover:bg-green-100 transition">
+              View all states <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </section>
+
+      {/* ── PARENT REVIEWS & INSIGHTS ─────────────────────────────── */}
+      {(() => {
+        const getThumb = (v) => {
+          if (v.thumbnail) return v.thumbnail;
+          try {
+            let id = null;
+            const url = v.videoUrl || '';
+            if (url.includes('youtu.be/')) id = url.split('youtu.be/')[1]?.split('?')[0];
+            else if (url.includes('youtube.com/embed/')) id = url.split('youtube.com/embed/')[1]?.split('?')[0];
+            else if (url.includes('youtube.com/watch')) id = new URL(url).searchParams.get('v');
+            if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+          } catch {}
+          return null;
+        };
+        const cards = reviewVideos.length > 0 ? reviewVideos : [];
+        const fill = (arr) => arr.length >= 3 ? arr : [...arr, ...arr, ...arr].slice(0, Math.max(3, arr.length));
+        const row1 = fill(cards.slice(0, 4));
+        const row2 = fill(cards.slice(4, 8));
+        const row3 = fill(cards.slice(8, 12));
+        const badgeColor = (cat) => {
+          if (cat === 'Parent Review') return 'bg-green-500 text-white';
+          if (cat === 'Principal Interview') return 'bg-emerald-700 text-white';
+          if (cat === 'Study Abroad') return 'bg-blue-600 text-white';
+          if (cat === 'School Review') return 'bg-green-200 text-green-900';
+          return 'bg-gray-600 text-white';
+        };
+        const CardItem = ({ card }) => {
+          const thumb = getThumb(card);
+          return (
+            <Link to="/videos" className="relative rounded-xl overflow-hidden shrink-0 w-44 sm:w-56 group cursor-pointer shadow-xl border border-white/5 block">
+              {thumb
+                ? <img src={thumb} alt={card.title} className="w-full h-24 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-500" />
+                : <div className="w-full h-24 sm:h-32 bg-gray-800 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-gray-600"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+              }
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="w-9 h-9 rounded-full bg-green-600/90 flex items-center justify-center shadow-lg">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+              <div className="absolute top-2 left-2">
+                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeColor(card.category)}`}>{card.category}</span>
+              </div>
+              {card.duration && (
+                <div className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{card.duration}</div>
+              )}
+              <div className="absolute bottom-2 left-2 right-10">
+                <p className="text-white font-bold text-[11px] leading-tight truncate">{card.school || card.title}</p>
+              </div>
+            </Link>
+          );
+        };
+        return (
+          <section className="bg-gray-950 overflow-hidden">
+            {/* Section title with green accent line */}
+            <div className="flex flex-col items-center pt-5 pb-4 px-4 gap-1.5">
+              <span className="w-8 h-0.5 bg-green-500 rounded-full block" />
+              <p className="text-center text-white font-extrabold text-sm sm:text-base md:text-xl tracking-tight">
+                Parent Reviews &amp; Educator Perspectives
+              </p>
+            </div>
+            <div className="flex flex-col lg:flex-row">
+              {/* Left panel */}
+              <div className="relative lg:w-[38%] shrink-0 flex flex-col justify-center px-6 sm:px-10 py-5 lg:py-8 z-10"
+                style={{ background: 'linear-gradient(to right, #030712 60%, transparent 100%)' }}>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="w-5 h-px bg-green-500 block" />
+                  <span className="text-green-400 text-[11px] font-bold tracking-[0.2em] uppercase">Verified Reviews</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-tight mb-3 max-w-sm">
+                  Honest reviews on schools and insights from <span className="text-green-400">educators.</span>
+                </h2>
+                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-xs">
+                  Real parents. Real principals. Unfiltered stories about Nigerian schools — so you can choose with confidence.
+                </p>
+                <Link
+                  to="/videos"
+                  className="self-start flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full text-sm transition shadow-lg shadow-green-900/40"
+                >
+                  Watch Videos <ArrowRight size={13} />
+                </Link>
+              </div>
+
+              {/* Right — scrolling card rows */}
+              <div className="flex-1 min-w-0 flex flex-col gap-2.5 py-4 lg:py-6 overflow-hidden">
+                {row1.length > 0 && (
+                  <div className="flex gap-3 animate-[scroll-left_28s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row1, ...row1].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+                {row2.length > 0 && (
+                  <div className="flex gap-3 animate-[scroll-right_32s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row2, ...row2].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+                {row3.length > 0 && (
+                  <div className="hidden sm:flex gap-3 animate-[scroll-left_36s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row3, ...row3].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── SCHOOL SEARCH SECTION ─────────────────────────────────── */}
       <section id="browse" className="bg-gray-50 py-8 md:py-16 px-4">
@@ -927,9 +1030,11 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {schools.map((school) => (
-                <SchoolCard key={school._id} school={school} onCompare={handleCompare}
-                  isSelected={!!selected.find((s) => s._id === school._id)} />
+              {schools.map((school, idx) => (
+                <div key={school._id} className={idx >= 4 ? 'hidden sm:block' : ''}>
+                  <SchoolCard school={school} onCompare={handleCompare}
+                    isSelected={!!selected.find((s) => s._id === school._id)} />
+                </div>
               ))}
             </div>
           )}
