@@ -405,7 +405,7 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden h-[50dvh] sm:h-dvh"
+        className="relative flex flex-col overflow-hidden h-[60dvh] sm:h-dvh"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
