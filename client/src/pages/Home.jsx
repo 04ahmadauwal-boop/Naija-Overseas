@@ -412,8 +412,15 @@ export default function Home() {
         {/* Background — cinematic multi-layer */}
         {HERO_SLIDES.map((s, i) => (
           <div key={i} className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            {/* Photo */}
-            <div className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${i === slide ? 'hero-bg-animate' : ''}`} style={{ backgroundImage: `url('${s.bg}')` }} />
+            {/* Photo — portrait crop on mobile, landscape on desktop */}
+            <div
+              className={`absolute inset-0 bg-cover bg-top bg-no-repeat sm:hidden ${i === slide ? 'hero-bg-animate' : ''}`}
+              style={{ backgroundImage: `url('${s.bg.split('?')[0]}?auto=format&fit=crop&w=600&h=900&crop=focalpoint&q=80')` }}
+            />
+            <div
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block ${i === slide ? 'hero-bg-animate' : ''}`}
+              style={{ backgroundImage: `url('${s.bg}')` }}
+            />
             {/* Base dark scrim — let photo breathe a bit */}
             <div className="absolute inset-0 bg-black/40" />
             {/* Rich colour gradient from left — full strength, no opacity reduction */}
@@ -439,8 +446,8 @@ export default function Home() {
         </div>
 
         {/* Main content */}
-        <div className="relative z-20 flex-1 flex items-center">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-5 sm:px-8 lg:px-14 xl:px-0 py-6 sm:py-10 lg:py-12">
+        <div className="relative z-20 flex-1 flex items-start sm:items-center">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-5 sm:px-8 lg:px-14 xl:px-0 pt-10 pb-4 sm:py-10 lg:py-12">
 
             {/* Eyebrow
             <div ref={statsRef} className="flex items-center gap-3 mb-3 sm:mb-4">
