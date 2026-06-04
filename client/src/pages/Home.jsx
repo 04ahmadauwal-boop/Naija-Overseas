@@ -405,7 +405,7 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden h-screen"
+        className="relative flex flex-col overflow-hidden h-dvh"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -446,21 +446,13 @@ export default function Home() {
         </div>
 
         {/* Main content */}
-        <div className="relative z-20 flex-1 flex items-start sm:items-center">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-5 sm:px-8 lg:px-14 xl:px-0 pt-10 pb-4 sm:py-10 lg:py-12">
+        <div className="relative z-20 flex-1 flex items-center">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 py-6 sm:py-10 lg:py-14 flex flex-col items-center sm:items-start">
 
-            {/* Eyebrow
-            <div ref={statsRef} className="flex items-center gap-3 mb-3 sm:mb-4">
-              <span className="w-7 h-px bg-green-400 block shrink-0" />
-              <span className="text-green-400 text-[10px] sm:text-[11px] font-bold tracking-[0.22em] uppercase">
-                {HERO_SLIDES[slide].label}
-              </span>
-            </div> */}
-
-            {/* Headline — Playfair Display via base CSS */}
+            {/* Headline */}
             <h1
               ref={heroHeadingRef}
-              className="text-[1.9rem] sm:text-[2.75rem] lg:text-[3.25rem] xl:text-[3.6rem] font-bold text-white leading-[1.1] mb-3 sm:mb-4"
+              className="text-[1.85rem] xs:text-[2.1rem] sm:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.6rem] font-bold text-white leading-[1.12] mb-3 sm:mb-4 text-center sm:text-left"
               style={{ textShadow: '0 2px 30px rgba(0,0,0,0.35)' }}
             >
               {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
@@ -469,35 +461,29 @@ export default function Home() {
               <span className="text-green-400 italic">{HERO_SLIDES[slide].highlight}</span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-white/65 text-[12px] sm:text-[14px] max-w-[480px] mb-4 sm:mb-5 leading-relaxed">
-              {HERO_SLIDES[slide].subtitle}
-            </p>
-
-            {/* Search bar — glass morphism (slide 0) */}
+            {/* Search bar — glass morphism (slide 0), centered on mobile */}
             {slide === 0 && (
-              <div ref={heroRef} className="relative max-w-xl mb-4 sm:mb-5">
-                <div className="flex items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-inset ring-white/5">
-                  <Search className="text-white/50 shrink-0 ml-4" size={16} />
+              <div ref={heroRef} className="relative w-full max-w-xl mb-3 sm:mb-5">
+                <div className="flex items-center bg-white rounded-full sm:rounded-xl overflow-hidden shadow-2xl">
+                  <Search className="text-gray-400 shrink-0 ml-4" size={16} />
                   <input
                     type="text"
                     value={heroQuery}
                     onChange={(e) => setHeroQuery(e.target.value)}
                     onFocus={() => dropdownResults.length > 0 && setShowDropdown(true)}
                     placeholder="Search schools, cities, curriculum..."
-                    className="flex-1 px-3 py-3 bg-transparent text-white placeholder-white/40 text-[13px] border-0 focus:outline-none hero-input"
+                    className="flex-1 px-3 py-3.5 sm:py-3 bg-transparent text-gray-800 placeholder-gray-400 text-[13px] border-0 focus:outline-none min-w-0"
                   />
                   {heroQuery && (
                     <button onClick={() => { setHeroQuery(''); setDropdownResults([]); setShowDropdown(false); }}
-                      className="text-white/40 hover:text-white/70 transition mr-2 shrink-0">
-                      <X size={14} />
+                      className="text-gray-400 hover:text-gray-600 transition mr-1 shrink-0">
+                      <X size={13} />
                     </button>
                   )}
-                  <div className="w-px h-5 bg-white/15 shrink-0 mx-1" />
                   <button
                     onClick={() => { const f = { ...filters, search: heroQuery }; setFilters(f); doFetch(1, f); setShowDropdown(false); document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    className="bg-green-600 hover:bg-green-500 transition text-white font-semibold px-5 sm:px-7 py-3 text-[13px] whitespace-nowrap flex items-center gap-2 shrink-0">
-                    Search <ArrowRight size={13} />
+                    className="bg-green-600 hover:bg-green-500 transition text-white font-semibold px-4 py-3.5 sm:py-3 text-[13px] whitespace-nowrap flex items-center gap-1.5 shrink-0 rounded-full sm:rounded-none mr-0.5 sm:mr-0">
+                    <Search size={15} />
                   </button>
                 </div>
                 {showDropdown && (
@@ -543,39 +529,39 @@ export default function Home() {
               </div>
             )}
 
-            {/* Stats row — inline with dividers */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-5 mb-4 sm:mb-5">
+            {/* Stats row — simplified on mobile */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-5 mb-3 sm:mb-5">
               {HERO_SLIDES[slide].stats.map((stat, i) => (
-                <div key={stat} className="flex items-center gap-2">
-                  {i > 0 && <span className="w-px h-3.5 bg-white/20 block shrink-0" />}
-                  <CheckCircle size={11} className="text-green-400 shrink-0" />
-                  <span className="text-white/70 text-[12px] sm:text-[13px] font-medium">{stat}</span>
+                <div key={stat} className="flex items-center gap-1.5">
+                  {i > 0 && <span className="w-px h-3 bg-white/20 block shrink-0 hidden sm:block" />}
+                  <CheckCircle size={10} className="text-green-400 shrink-0" />
+                  <span className="text-white/80 text-[11px] sm:text-[13px] font-medium">{stat}</span>
                 </div>
               ))}
             </div>
 
-            {/* CTA buttons — consistent across breakpoints */}
-            <div ref={ctaRef} className="flex flex-wrap gap-3">
+            {/* CTA buttons — full-width pair on mobile, auto on sm+ */}
+            <div ref={ctaRef} className="flex gap-2 sm:gap-3 w-full sm:w-auto">
               {slide === 0 ? (
                 <>
                   <Link to="/#browse"
                     onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-900/30 text-[13px]">
-                    Browse Schools <ArrowRight size={14} />
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
+                    Browse Schools <ArrowRight size={13} />
                   </Link>
                   <Link to="/compare"
-                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl transition text-[13px]">
-                    Compare Schools
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
+                    Compare
                   </Link>
                 </>
               ) : (
                 <>
                   <Link to={HERO_SLIDES[slide].cta.href}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-900/30 text-[13px]">
-                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={14} />
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
+                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={13} />
                   </Link>
                   <Link to={HERO_SLIDES[slide].cta2.href}
-                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl transition text-[13px]">
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
                     {HERO_SLIDES[slide].cta2.label}
                   </Link>
                 </>
@@ -585,15 +571,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Slide navigation — label + progress bar */}
-        <div className="relative z-20 px-5 sm:px-8 lg:px-14 pb-3 w-full flex items-center justify-between">
-          <div className="flex items-center gap-5 sm:gap-8">
+        {/* Slide navigation */}
+        <div className="relative z-20 px-4 sm:px-8 lg:px-14 pb-2 sm:pb-3 w-full flex items-center justify-between">
+          <div className="flex items-center gap-4 sm:gap-8">
             {HERO_SLIDES.map((s, i) => (
-              <button key={i} onClick={() => goToSlide(i)} className="flex flex-col gap-1.5 group text-left">
-                <span className={`text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase transition-colors leading-none ${i === slide ? 'text-white' : 'text-white/30 group-hover:text-white/55'}`}>
+              <button key={i} onClick={() => goToSlide(i)} className="flex flex-col gap-1 sm:gap-1.5 group text-left">
+                {/* Label hidden on mobile, visible sm+ */}
+                <span className={`hidden sm:block text-[11px] font-semibold tracking-wider uppercase transition-colors leading-none ${i === slide ? 'text-white' : 'text-white/30 group-hover:text-white/55'}`}>
                   {s.label}
                 </span>
-                <div className={`h-px rounded-full overflow-hidden transition-all duration-300 ${i === slide ? 'w-10 sm:w-14 bg-white/30' : 'w-5 sm:w-7 bg-white/15'}`}>
+                <div className={`h-px rounded-full overflow-hidden transition-all duration-300 ${i === slide ? 'w-8 sm:w-14 bg-white/30' : 'w-4 sm:w-7 bg-white/15'}`}>
                   {i === slide && (
                     <div className="h-full bg-green-400" style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
                   )}
@@ -601,34 +588,34 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button onClick={heroPrev}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/15 transition backdrop-blur-sm">
-              <ChevronLeft size={15} />
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/15 transition backdrop-blur-sm">
+              <ChevronLeft size={14} />
             </button>
             <button onClick={heroNext}
-              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 hover:bg-green-500 text-white transition shadow-lg">
-              <ChevronRight size={15} />
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 hover:bg-green-500 text-white transition shadow-lg">
+              <ChevronRight size={14} />
             </button>
           </div>
         </div>
 
-        {/* Bottom feature strip — unified frosted glass for all breakpoints */}
-        <div className="relative z-20 mx-3 sm:mx-6 lg:mx-10 mb-3 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-2xl bg-black/30 shadow-2xl">
+        {/* Bottom feature strip */}
+        <div className="relative z-20 mx-2 sm:mx-6 lg:mx-10 mb-2 sm:mb-3 grid grid-cols-3 overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-2xl bg-black/30 shadow-2xl">
           {HERO_SLIDES.map((s, i) => (
             <button
               key={i}
               onClick={() => goToSlide(i)}
-              className={`relative text-left px-3 sm:px-5 lg:px-7 py-2.5 sm:py-4 transition-all duration-300 border-r border-white/10 last:border-0 ${i === slide ? 'bg-white/10' : 'hover:bg-white/5'}`}
+              className={`relative text-left px-2.5 sm:px-5 lg:px-7 py-2 sm:py-4 transition-all duration-300 border-r border-white/10 last:border-0 ${i === slide ? 'bg-white/10' : 'hover:bg-white/5'}`}
             >
-              <span className={`block text-[9px] sm:text-[10px] font-extrabold tracking-[0.2em] uppercase mb-1 transition-colors ${i === slide ? 'text-green-400' : 'text-white/35'}`}>
+              <span className={`block text-[8px] sm:text-[10px] font-extrabold tracking-[0.18em] uppercase mb-0.5 sm:mb-1 transition-colors ${i === slide ? 'text-green-400' : 'text-white/35'}`}>
                 {s.step}
               </span>
-              {i === slide && <span className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
-              <h3 className={`font-semibold text-[11px] sm:text-[13px] leading-tight transition-colors ${i === slide ? 'text-white' : 'text-white/45'}`}>
+              {i === slide && <span className="absolute top-2 right-2 w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-400 animate-pulse" />}
+              <h3 className={`font-semibold text-[10px] sm:text-[13px] leading-tight transition-colors ${i === slide ? 'text-white' : 'text-white/45'}`}>
                 {s.label}
               </h3>
-              <p className={`hidden md:block text-[11px] leading-snug mt-1.5 line-clamp-2 transition-colors ${i === slide ? 'text-white/55' : 'text-white/25'}`}>
+              <p className={`hidden lg:block text-[11px] leading-snug mt-1.5 line-clamp-2 transition-colors ${i === slide ? 'text-white/55' : 'text-white/25'}`}>
                 {s.cardDesc}
               </p>
             </button>
