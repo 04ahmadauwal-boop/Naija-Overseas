@@ -405,7 +405,7 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden h-dvh"
+        className="relative flex flex-col overflow-hidden h-[50dvh] sm:h-dvh"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -414,8 +414,8 @@ export default function Home() {
           <div key={i} className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
             {/* Photo — portrait crop on mobile, landscape on desktop */}
             <div
-              className={`absolute inset-0 bg-cover bg-top bg-no-repeat sm:hidden ${i === slide ? 'hero-bg-animate' : ''}`}
-              style={{ backgroundImage: `url('${s.bg.split('?')[0]}?auto=format&fit=crop&w=600&h=900&crop=focalpoint&q=80')` }}
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden ${i === slide ? 'hero-bg-animate' : ''}`}
+              style={{ backgroundImage: `url('${s.bg.split('?')[0]}?auto=format&fit=crop&w=800&h=600&crop=focalpoint&q=80')` }}
             />
             <div
               className={`absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block ${i === slide ? 'hero-bg-animate' : ''}`}
