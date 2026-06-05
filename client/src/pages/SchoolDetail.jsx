@@ -244,7 +244,7 @@ function ReportSlideshow({ items, renderCard }) {
   const [cols, setCols] = useState(1);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)');
+    const mq = window.matchMedia('(min-width: 640px)');
     setCols(mq.matches ? 2 : 1);
     const handler = (e) => { setCols(e.matches ? 2 : 1); setIdx(0); };
     mq.addEventListener('change', handler);
@@ -280,8 +280,8 @@ function ReportSlideshow({ items, renderCard }) {
 
   const dots = maxIdx + 1;
 
-  // card width: 75% on mobile so the next card peeks in; half on md+
-  const cardWidth = cols === 2 ? 'calc(50% - 0.375rem)' : '75%';
+  // card width: full-width on mobile (1 card at a time, clear on small screens); half on sm+
+  const cardWidth = cols === 2 ? 'calc(50% - 0.375rem)' : '100%';
 
   return (
     <div>

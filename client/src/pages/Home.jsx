@@ -5,7 +5,7 @@ import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
   Users, BarChart3, Shield, Zap, Award, X,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -21,12 +21,72 @@ const NIGERIAN_STATES = [
 
 
 const FEATURES = [
-  { icon: BarChart3, title: 'Smart Comparison Tool', desc: 'Compare multiple schools across 10+ criteria. No guesswork — just clear, structured data to help you decide.' },
-  { icon: Globe, title: 'Study Abroad Placement', desc: 'Expert guidance for Nigerian students seeking admission in universities across UK, Canada, USA, Australia and Europe.' },
-  { icon: Shield, title: 'Verified School Listings', desc: 'Every school on our platform is reviewed and verified by our team before it goes live. No fake or outdated listings.' },
-  { icon: Zap, title: 'Instant Results', desc: 'Real-time search with live filters. Find schools matching your criteria in seconds — not hours of browsing.' },
-  { icon: Users, title: 'Multi-Country Coverage', desc: 'Serving students and families across Nigeria, Ghana, The Gambia and Cameroon with locally relevant information.' },
-  { icon: Award, title: 'Admission Support', desc: 'From school selection to international visa guidance — our counsellors are with you at every step of the journey.' },
+  {
+    num: '01', icon: BarChart3,
+    title: 'Smart Comparison Tool',
+    desc: 'Compare multiple schools side-by-side across fees, curriculum, WAEC results, facilities and more — clear data, zero guesswork.',
+    badge: '10+ comparison criteria',
+    accent: 'from-emerald-500 to-teal-500',
+    card: 'from-emerald-50/80 to-teal-50/60',
+    border: 'border-emerald-100 hover:border-emerald-300',
+    iconBg: 'bg-emerald-100', iconFg: 'text-emerald-700',
+    numFg: 'text-emerald-100', badgeBg: 'bg-emerald-100 text-emerald-700',
+  },
+  {
+    num: '02', icon: Globe,
+    title: 'Study Abroad Placement',
+    desc: 'We place Nigerian students in leading universities in the UK, Canada, USA, Australia and Germany — with a 95% visa success rate.',
+    badge: '8 countries covered',
+    accent: 'from-blue-500 to-indigo-500',
+    card: 'from-blue-50/80 to-indigo-50/60',
+    border: 'border-blue-100 hover:border-blue-300',
+    iconBg: 'bg-blue-100', iconFg: 'text-blue-700',
+    numFg: 'text-blue-100', badgeBg: 'bg-blue-100 text-blue-700',
+  },
+  {
+    num: '03', icon: Shield,
+    title: 'Verified School Listings',
+    desc: 'Every school is manually reviewed by our team before going live. No fake listings, no outdated profiles — guaranteed.',
+    badge: '500+ verified schools',
+    accent: 'from-violet-500 to-purple-500',
+    card: 'from-violet-50/80 to-purple-50/60',
+    border: 'border-violet-100 hover:border-violet-300',
+    iconBg: 'bg-violet-100', iconFg: 'text-violet-700',
+    numFg: 'text-violet-100', badgeBg: 'bg-violet-100 text-violet-700',
+  },
+  {
+    num: '04', icon: LayoutDashboard,
+    title: 'Parent Tools',
+    desc: 'Save schools, compare shortlists, set fee alerts and get tailored school recommendations — all in your personal dashboard.',
+    badge: 'Free for all parents',
+    accent: 'from-orange-500 to-amber-500',
+    card: 'from-orange-50/80 to-amber-50/60',
+    border: 'border-orange-100 hover:border-orange-300',
+    iconBg: 'bg-orange-100', iconFg: 'text-orange-700',
+    numFg: 'text-orange-100', badgeBg: 'bg-orange-100 text-orange-700',
+  },
+  {
+    num: '05', icon: MessageSquare,
+    title: 'Consultation with Expert',
+    desc: 'Book a one-on-one session with our certified education counsellors — for school selection, study abroad decisions or visa guidance.',
+    badge: 'Free 30-min session',
+    accent: 'from-rose-500 to-pink-500',
+    card: 'from-rose-50/80 to-pink-50/60',
+    border: 'border-rose-100 hover:border-rose-300',
+    iconBg: 'bg-rose-100', iconFg: 'text-rose-700',
+    numFg: 'text-rose-100', badgeBg: 'bg-rose-100 text-rose-700',
+  },
+  {
+    num: '06', icon: GraduationCap,
+    title: 'Admission Placement',
+    desc: 'From school selection to final offer letter — our admissions team handles every step, for both local Nigerian schools and overseas universities.',
+    badge: 'End-to-end support',
+    accent: 'from-sky-500 to-cyan-500',
+    card: 'from-sky-50/80 to-cyan-50/60',
+    border: 'border-sky-100 hover:border-sky-300',
+    iconBg: 'bg-sky-100', iconFg: 'text-sky-700',
+    numFg: 'text-sky-100', badgeBg: 'bg-sky-100 text-sky-700',
+  },
 ];
 
 const TESTIMONIALS = [
@@ -763,7 +823,7 @@ export default function Home() {
                   </div>
                 )}
                 {row2.length > 0 && (
-                  <div className="flex gap-3 animate-[scroll-right_32s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                  <div className="hidden sm:flex gap-3 animate-[scroll-right_32s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
                     {[...row2, ...row2].map((c, i) => <CardItem key={i} card={c} />)}
                   </div>
                 )}
@@ -1044,26 +1104,54 @@ export default function Home() {
       )}
 
       {/* ── FEATURES GRID ─────────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Why Naija & Overseas</p>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Everything you need to make the right choice
+      <section className="py-14 md:py-24 px-4 bg-white relative overflow-hidden">
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(#f3f4f6_1px,transparent_1px),linear-gradient(to_right,#f3f4f6_1px,transparent_1px)] bg-[size:36px_36px] opacity-60 pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
+              Why Naija &amp; Overseas
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">
+              Everything you need,<br className="hidden sm:block" /> in one platform.
             </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
-              Built specifically for West African families — combining local school knowledge with international university expertise.
+            <p className="text-gray-500 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+              Built for West African families — powerful tools for parents, students, and school owners all under one roof.
             </p>
           </div>
 
-          <div ref={featuresRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group p-6 rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-md transition bg-white">
-                <div className="w-11 h-11 bg-green-50 group-hover:bg-green-100 rounded-xl flex items-center justify-center mb-4 transition">
-                  <Icon size={20} className="text-green-700" />
+          <div ref={featuresRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, card, border, iconBg, iconFg, numFg, badgeBg }) => (
+              <div
+                key={title}
+                className={`group relative overflow-hidden rounded-2xl border ${border} bg-gradient-to-br ${card} p-5 sm:p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}
+              >
+                {/* Gradient accent bar on hover */}
+                <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                {/* Large faded number in background */}
+                <span className={`absolute -top-3 -right-1 text-[80px] leading-none font-black select-none pointer-events-none ${numFg} opacity-60`}>
+                  {num}
+                </span>
+
+                {/* Icon */}
+                <div className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${iconBg} flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-105 transition-transform duration-200 shadow-sm`}>
+                  <Icon size={20} className={iconFg} />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-1.5">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+
+                {/* Title */}
+                <h3 className="font-extrabold text-gray-900 text-[15px] sm:text-base mb-2 leading-snug pr-10">{title}</h3>
+
+                {/* Description */}
+                <p className="text-gray-500 text-[13px] sm:text-sm leading-relaxed mb-4 sm:mb-5">{desc}</p>
+
+                {/* Badge */}
+                <span className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${badgeBg}`}>
+                  <CheckCircle size={10} />
+                  {badge}
+                </span>
               </div>
             ))}
           </div>
@@ -1127,26 +1215,31 @@ export default function Home() {
           </div>
 
           {/* Right scrolling review columns */}
-          <div className="flex-1 overflow-hidden relative flex gap-2.5 px-3 sm:px-4 pt-0 pb-6 lg:py-8" style={{ height: 'clamp(260px, 55vw, 520px)' }}>
-            {/* Top fade */}
-            <div className="absolute top-0 left-0 right-0 h-10 sm:h-14 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
-            {/* Bottom fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-14 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+          <div
+            className="flex-1 overflow-hidden relative flex gap-2 sm:gap-2.5 px-3 sm:px-4 pt-0 pb-5 lg:py-8"
+            style={{ height: 'clamp(160px, 40vw, 520px)' }}
+          >
+            {/* Top / bottom fades */}
+            <div className="absolute top-0 left-0 right-0 h-8 sm:h-12 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-8 sm:h-12 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
 
             {[0, 1, 2, 3].map((colIdx) => {
               const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
               const isDown = colIdx % 2 === 1;
-              /* On mobile show only 2 cols, tablet 3, desktop all 4 */
-              const colClass = colIdx === 2 ? 'hidden sm:block flex-1 overflow-hidden min-w-0'
-                             : colIdx === 3 ? 'hidden lg:block flex-1 overflow-hidden min-w-0'
-                             : 'flex-1 overflow-hidden min-w-0';
+              /* mobile → 1 col | sm → 2 cols | md → 3 cols | lg → 4 cols */
+              const colClass =
+                colIdx === 1 ? 'hidden sm:block flex-1 overflow-hidden min-w-0'
+              : colIdx === 2 ? 'hidden md:block flex-1 overflow-hidden min-w-0'
+              : colIdx === 3 ? 'hidden lg:block flex-1 overflow-hidden min-w-0'
+              : 'flex-1 overflow-hidden min-w-0';
+
               return (
                 <div key={colIdx} className={colClass}>
                   <div className={isDown ? 'marquee-down' : 'marquee-up'}>
                     {[...col, ...col].map((t, j) => (
                       <div
                         key={j}
-                        className="bg-white rounded-xl p-3 sm:p-3.5 mb-2.5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white rounded-xl p-3 sm:p-3.5 mb-2 sm:mb-2.5 border border-gray-100 shadow-sm"
                       >
                         <div className="flex items-start gap-2">
                           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${t.color} text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shrink-0`}>
@@ -1155,16 +1248,12 @@ export default function Home() {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-0.5 mb-0.5">
                               {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={9}
-                                  className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'}
-                                />
+                                <Star key={i} size={8} className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'} />
                               ))}
                             </div>
                             <p className="font-bold text-gray-900 text-[10px] sm:text-[11px] leading-tight">{t.category}</p>
-                            <p className="text-gray-500 text-[9px] sm:text-[10px] leading-snug mt-0.5 line-clamp-3">{t.text}</p>
-                            <p className="text-gray-400 text-[8px] sm:text-[9px] mt-1.5 font-medium">{t.name} · {t.role}</p>
+                            <p className="text-gray-500 text-[9px] sm:text-[10px] leading-snug mt-0.5 line-clamp-2 sm:line-clamp-3">{t.text}</p>
+                            <p className="text-gray-400 text-[8px] sm:text-[9px] mt-1 font-medium truncate">{t.name} · {t.role}</p>
                           </div>
                         </div>
                       </div>
