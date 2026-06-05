@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -9,7 +9,7 @@ import {
   Video, VideoOff, Mic, MicOff, PenLine, FolderOpen, BookOpen, PhoneOff,
   Eraser, Type, RotateCcw, RotateCw, Download, Upload,
   CheckCircle, Clock, Plus, Trash2, Star, GraduationCap,
-  Users, X, ChevronRight, FileText, ExternalLink,
+  Users, X, ChevronRight, FileText,
 } from 'lucide-react';
 
 const SERVER_URL = import.meta.env.VITE_API_URL?.replace('/api', '') ?? '';
@@ -152,7 +152,7 @@ function Whiteboard({ roomId, isTutor }) {
       socket.emit('board:leave', roomId);
       socket.disconnect();
     };
-  }, [roomId, isTutor]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [roomId, isTutor]);
 
   // ── Emit helper for tutor only ───────────────────────────────────────────
   const emit = (ev, data = {}) => {
@@ -384,7 +384,7 @@ function Whiteboard({ roomId, isTutor }) {
 
 // ─── Video Panel (PeerJS WebRTC) ─────────────────────────────────────────────
 
-function VideoPanel({ roomId, userName }) {
+function VideoPanel({ roomId, userName: _userName }) {
   const localRef  = useRef(null);
   const remoteRef = useRef(null);
   const peerRef   = useRef(null);
@@ -625,7 +625,7 @@ function FilesPanel({ roomId, files, onFileUploaded }) {
 
 // ─── Homework Panel ───────────────────────────────────────────────────────────
 
-function HomeworkPanel({ roomId, userRole, userId }) {
+function HomeworkPanel({ roomId, userRole, userId: _userId }) {
   const [homeworks,     setHomeworks]     = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [showCreate,    setShowCreate]    = useState(false);

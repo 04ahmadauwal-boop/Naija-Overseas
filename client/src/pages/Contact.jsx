@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, MessageSquare, Clock, Send, CheckCircle, Zap, Lock, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageSquare, Clock, Send, CheckCircle } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 

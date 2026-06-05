@@ -62,6 +62,7 @@ app.use('/api/schedule', require('./routes/schedule'));
 app.use('/api/gcalendar', require('./routes/gcalendar'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/videos', require('./routes/videos'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
 

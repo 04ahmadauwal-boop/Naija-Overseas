@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, School, CalendarCheck, Globe,
   FileText, MessageSquare, ExternalLink, GraduationCap,
-  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video
+  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video, Star
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/blog', icon: FileText, label: 'Blog Posts' },
   { to: '/admin/videos', icon: Video, label: 'Videos' },
+  { to: '/admin/reviews', icon: Star, label: 'Reviews' },
   { to: '/admin/messages', icon: MessageSquare, label: 'Messages' },
 ];
 

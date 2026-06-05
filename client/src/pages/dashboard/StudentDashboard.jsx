@@ -230,7 +230,6 @@ function formatDate(dateStr) {
 
 // Derive progress steps from the most recent application's status
 function deriveProgressSteps(applications) {
-  const ORDER = ['submitted', 'in-review', 'documents-requested', 'admitted'];
   const latest = applications[0];
   const currentStatus = latest?.status || null;
 
@@ -1478,7 +1477,7 @@ function DocumentsTab({ applications, uploadedDocs, userProfile, onRefresh }) {
                   )}
                   <input
                     type="file"
-                    ref={(el) => { inputRefs[doc.name].current = el; }}
+                    ref={(el) => { if (inputRefs[doc.name]) inputRefs[doc.name].current = el; }}
                     className="hidden"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(doc.name, f); e.target.value = ''; }}
@@ -1706,12 +1705,7 @@ function SettingsTab({ user: userProp }) {
 // ---------------------------------------------------------------------------
 // TUTORING TAB
 // ---------------------------------------------------------------------------
-const CURRENCY_SYMBOLS = {
-  NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: 'GH₵',
-  KES: 'KSh', ZAR: 'R', CAD: 'CA$', AUD: 'A$', INR: '₹',
-};
-
-function TutoringTab({ user }) {
+function TutoringTab({ user: _user }) {
   const [sessions, setSessions] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1966,7 +1960,7 @@ function TutoringTab({ user }) {
 const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const CAL_DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-function StudentCalendarTab({ user }) {
+function StudentCalendarTab({ user: _user }) {
   const today = new Date();
   const [current, setCurrent] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(null);
@@ -2247,7 +2241,7 @@ export default function StudentDashboard() {
     try {
       const { data } = await api.get('/study-abroad/my');
       setApplications(data.applications || []);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load applications');
     } finally {
       setLoadingApps(false);
@@ -2259,7 +2253,7 @@ export default function StudentDashboard() {
     try {
       const { data } = await api.get('/bookings/my?service=study-abroad-consultation');
       setConsultations(data.bookings || []);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load consultations');
     } finally {
       setLoadingConsults(false);
@@ -2274,12 +2268,6 @@ export default function StudentDashboard() {
     } catch {
       // silently ignore — documents just show as not uploaded
     }
-  };
-
-  const refreshAll = () => {
-    fetchApplications();
-    fetchConsultations();
-    fetchDocuments();
   };
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import {
   CheckCircle, ChevronRight, ChevronLeft, School,
-  MapPin, DollarSign, Phone, Upload, Star, Clock, Users,
+  DollarSign, Phone, Upload, Star, Clock, Users,
   Camera, X as XIcon, Zap, Gift, ShieldCheck, BarChart3,
   SlidersHorizontal, Play
 } from 'lucide-react';

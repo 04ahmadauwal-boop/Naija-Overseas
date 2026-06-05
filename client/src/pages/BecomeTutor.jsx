@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   GraduationCap, CheckCircle, ChevronRight, ChevronLeft,
-  Plus, Trash2, ArrowRight, Banknote, Users, Globe, Shield,
+  Plus, Trash2, ArrowRight, Banknote, Globe, Shield,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';

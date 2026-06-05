@@ -37,6 +37,8 @@ import GoClass from './pages/GoClass';
 import StateSchools from './pages/StateSchools';
 import Videos from './pages/Videos';
 import ManageVideos from './pages/admin/ManageVideos';
+import ManageReviews from './pages/admin/ManageReviews';
+import AllReviews from './pages/AllReviews';
 import BookSession from './pages/schedule/BookSession';
 import SchedulePage from './pages/schedule/SchedulePage';
 import SubscribePage from './pages/schedule/SubscribePage';
@@ -91,6 +93,7 @@ export default function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/schools/state/:state" element={<StateSchools />} />
           <Route path="/videos" element={<Videos />} />
+          <Route path="/reviews" element={<AllReviews />} />
           <Route path="/schools/:identifier" element={<SchoolDetail />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/login" element={<Login />} />
@@ -111,6 +114,7 @@ export default function App() {
           <Route path="/admin/users" element={<AdminRoute><ManageUsers /></AdminRoute>} />
           <Route path="/admin/tutors" element={<AdminRoute><ManageTutors /></AdminRoute>} />
           <Route path="/admin/videos" element={<AdminRoute><ManageVideos /></AdminRoute>} />
+          <Route path="/admin/reviews" element={<AdminRoute><ManageReviews /></AdminRoute>} />
 
           <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />

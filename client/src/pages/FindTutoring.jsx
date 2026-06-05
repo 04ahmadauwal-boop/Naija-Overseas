@@ -360,7 +360,7 @@ export default function FindTutoring() {
     };
     setFilters(init);
     doFetch(1, init, 'featured');
-  }, [location.search]); // eslint-disable-line
+  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const update = (key, val) => {
     const next = { ...filters, [key]: val };
@@ -893,7 +893,7 @@ export default function FindTutoring() {
                   tagline: 'Results you can see',
                   bullets: ['Auto-booked monthly sessions', '24h email reminders', 'WAEC / JAMB / IELTS ready'],
                 },
-              ].map(({ n, icon: Icon, color, ring, title, tagline, bullets }, i) => (
+              ].map(({ n, icon: Icon, color, ring, title, tagline, bullets }) => (
                 <div key={n} className="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center group pl-14 md:pl-0 pb-8 md:pb-0 last:pb-0 relative">
 
                   {/* Step bubble */}

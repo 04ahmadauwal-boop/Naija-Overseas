@@ -48,7 +48,7 @@ function StatusBadge({ status }) {
 
 // ── Sessions tab (calendar of booked sessions) ───────────────────────────────
 
-function SessionsTab({ tutorProfile }) {
+function SessionsTab() {
   const [sessions, setSessions] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [filter,   setFilter]   = useState('upcoming');

@@ -12,7 +12,7 @@ export default function Footer() {
   // Animation refs
   const footerRef = useFadeIn(0.6, 0);
   const brandRef = useSlideIn('right', 0.6, 0);
-  const linksRef = useSlideIn('up', 0.8, 0.2);
+  useSlideIn('up', 0.8, 0.2);
 
   const handleNewsletter = async (e) => {
     e.preventDefault();

@@ -16,7 +16,7 @@ function getYoutubeThumbnail(url) {
     else if (url.includes('youtube.com/embed/')) id = url.split('youtube.com/embed/')[1]?.split('?')[0];
     else if (url.includes('youtube.com/watch')) id = new URL(url).searchParams.get('v');
     if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-  } catch {}
+  } catch { /* invalid URL */ }
   return null;
 }
 

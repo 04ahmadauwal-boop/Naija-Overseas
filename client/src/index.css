@@ -132,7 +132,7 @@
     animation: kenburns 10s ease-out forwards;
   }
 
-  /* Review cards infinite scroll */
+  /* Review cards infinite scroll — horizontal */
   @keyframes scroll-left {
     0%   { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -140,6 +140,25 @@
   @keyframes scroll-right {
     0%   { transform: translateX(-50%); }
     100% { transform: translateX(0); }
+  }
+  /* Review cards infinite scroll — vertical */
+  @keyframes scroll-up {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  @keyframes scroll-down {
+    0%   { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+  }
+  .marquee-up {
+    animation: scroll-up 22s linear infinite;
+  }
+  .marquee-down {
+    animation: scroll-down 22s linear infinite;
+  }
+  .marquee-up:hover,
+  .marquee-down:hover {
+    animation-play-state: paused;
   }
 }
 

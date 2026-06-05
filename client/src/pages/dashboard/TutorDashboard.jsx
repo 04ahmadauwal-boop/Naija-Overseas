@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 import {
   LayoutDashboard, BookOpen, Star, Settings, Menu, X,
   LogOut, ExternalLink, CheckCircle, Clock, Video, MapPin,
-  Plus, Trash2, ChevronLeft, ChevronRight, Users, User, TrendingUp, GraduationCap,
-  Globe, Banknote, Shield, Edit2, Save, AlertCircle, CalendarCheck, Camera,
+  ChevronLeft, ChevronRight, Users, User, TrendingUp, GraduationCap,
+  Edit2, Save, AlertCircle, CalendarCheck, Camera,
 } from 'lucide-react';
 
 const CURRENCY_SYMBOLS = {
@@ -113,11 +113,8 @@ function StatusBadge({ status }) {
 }
 
 // ─── OVERVIEW TAB ────────────────────────────────────────────────────────────
-function OverviewTab({ profile, bookings, reviews, setActiveTab }) {
-  const sym = CURRENCY_SYMBOLS[profile?.currency] || '₦';
-  const rate = profile?.hourlyRateNaira;
+function OverviewTab({ profile, bookings, setActiveTab }) {
   const upcomingBookings = bookings.filter(b => !['completed','cancelled'].includes(b.status));
-  const totalRevenue = bookings.filter(b => b.status === 'completed').length * (rate || 0);
 
   return (
     <div className="space-y-6">
@@ -441,8 +438,7 @@ function SubscribersTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  const active   = subs.filter(s => s.status === 'active');
-  const inactive = subs.filter(s => s.status !== 'active');
+  const active = subs.filter(s => s.status === 'active');
 
   const STATUS_COLORS = {
     active:    'bg-green-100 text-green-700',

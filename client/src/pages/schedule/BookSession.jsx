@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -16,7 +16,6 @@ const inp = 'w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 tex
 
 export default function BookSession() {
   const { tutorId } = useParams();
-  const navigate    = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const studentTz   = Intl.DateTimeFormat().resolvedOptions().timeZone;
 

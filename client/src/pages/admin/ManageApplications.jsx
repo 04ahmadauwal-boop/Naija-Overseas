@@ -3,9 +3,8 @@ import { AdminNav } from './Dashboard';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
-  Globe, X, ExternalLink, CheckCircle, Clock, Circle,
-  AlertCircle, FileText, User, Phone, Mail, GraduationCap,
-  MapPin, Calendar, ChevronRight
+  Globe, X, ExternalLink, CheckCircle, Circle,
+  User, ChevronRight
 } from 'lucide-react';
 
 const STATUSES = ['submitted', 'in-review', 'documents-requested', 'admitted', 'rejected'];

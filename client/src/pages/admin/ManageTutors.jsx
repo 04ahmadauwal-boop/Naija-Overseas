@@ -4,7 +4,7 @@ import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
   GraduationCap, CheckCircle, XCircle, Search, Clock,
-  Star, Globe, MapPin, BookOpen, Eye, RefreshCw,
+  Star, Globe, BookOpen, Eye, RefreshCw,
 } from 'lucide-react';
 
 const STATUS_TABS = [

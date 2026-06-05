@@ -1,14 +1,93 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useFadeIn, useSlideIn, useScrollAnimation } from '../hooks/useGsapAnimations';
 import {
   MapPin, Phone, Mail, Globe, ArrowLeft,
   CheckCircle, Building2, GraduationCap, DollarSign,
   Users, Calendar, Share2, BarChart3, Award,
-  ChevronLeft, ChevronRight, Play, X
+  ChevronLeft, ChevronRight, Play, X, Star, MessageSquare, Trash2
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+
+const SECTION_LINKS = [
+  { label: 'About',      id: 'sd-about'     },
+  { label: 'Gallery',    id: 'sd-gallery'   },
+  { label: 'Results',    id: 'sd-results'   },
+  { label: 'Facilities', id: 'sd-facilities'},
+  { label: 'Fees',       id: 'sd-fees'      },
+  { label: 'Reviews',    id: 'sd-reviews'   },
+];
+
+function SchoolNav({ school, active }) {
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 56;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="sticky top-0 z-30 shadow-xl" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #0f3d21 100%)' }}>
+      <div className="max-w-5xl mx-auto px-3 sm:px-5 h-12 sm:h-[52px] flex items-center overflow-x-auto scrollbar-hide">
+
+        {/* Section links */}
+        <div className="flex items-center shrink-0 mr-auto">
+          {SECTION_LINKS.map((link, i) => (
+            <span key={link.id} className="flex items-center">
+              <button
+                onClick={() => scrollTo(link.id)}
+                className={`relative text-[11px] sm:text-[13px] font-semibold px-2 sm:px-3.5 py-1.5 transition-all duration-200 whitespace-nowrap group tracking-wide ${
+                  active === link.id ? 'text-emerald-300' : 'text-white/50 hover:text-white/90'
+                }`}
+              >
+                {link.label}
+                <span className={`absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-emerald-400 transition-all duration-300 ${active === link.id ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'}`} style={{ transformOrigin: 'left' }} />
+              </button>
+              {i < SECTION_LINKS.length - 1 && (
+                <span className="text-white/10 text-xs select-none">|</span>
+              )}
+            </span>
+          ))}
+        </div>
+
+        {/* CTA pills */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pl-3 sm:pl-5">
+          {(school?.contact?.email || school?.contact?.phone) && (
+            <a
+              href={school.contact.email ? `mailto:${school.contact.email}` : `tel:${school.contact.phone}`}
+              className="bg-emerald-500 text-white text-[10px] sm:text-[12px] font-bold px-3 sm:px-4 py-1.5 rounded-full hover:bg-emerald-400 active:scale-95 transition-all duration-150 whitespace-nowrap shadow-md shadow-emerald-900/40"
+            >
+              Enquire Now
+            </a>
+          )}
+          <button
+            onClick={() => scrollTo('sd-reviews')}
+            className="border border-white/25 text-white/80 text-[10px] sm:text-[12px] font-semibold px-3 sm:px-4 py-1.5 rounded-full hover:bg-white/10 hover:text-white active:scale-95 transition-all duration-150 whitespace-nowrap"
+          >
+            Reviews
+          </button>
+          {school?.contact?.phone && (
+            <a
+              href={`tel:${school.contact.phone}`}
+              className="hidden sm:flex items-center gap-1.5 bg-white/10 text-white text-[12px] font-semibold px-4 py-1.5 rounded-full hover:bg-white/20 active:scale-95 transition-all duration-150 whitespace-nowrap border border-white/15"
+            >
+              <Phone size={11} strokeWidth={2.5} />
+              {school.contact.phone}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const REVIEW_CATEGORIES = [
+  'General', 'Teaching Quality', 'Communication', 'Fee Structure',
+  'Infrastructure', 'Extracurricular Activities', 'Discipline',
+  'Transport Facilities', 'Student-Teacher Ratio', 'Environment', 'Academic Results',
+];
+
 
 const FACILITY_ICONS = {
   Library: '📚', 'Science Lab': '🔬', 'Computer Lab': '💻', 'Sports Field': '⚽',
@@ -252,10 +331,25 @@ function ReportSlideshow({ items, renderCard }) {
 export default function SchoolDetail() {
   const { identifier } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [school, setSchool] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Reviews state
+  const [reviews, setReviews]           = useState([]);
+  const [reviewTotal, setReviewTotal]   = useState(0);
+  const [reviewDist, setReviewDist]     = useState({ 1:0, 2:0, 3:0, 4:0, 5:0 });
+  const [userReview, setUserReview]     = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewPage, setReviewPage]     = useState(1);
+  const [reviewPages, setReviewPages]   = useState(1);
+  const [submitting, setSubmitting]     = useState(false);
+  const [showForm, setShowForm]         = useState(false);
+  const [form, setForm] = useState({ rating: 5, title: '', text: '', category: 'General', isAnonymous: false });
+  const [activeSection, setActiveSection] = useState('sd-about');
 
   useEffect(() => {
     const fetchSchool = async () => {
@@ -273,6 +367,45 @@ export default function SchoolDetail() {
     fetchSchool();
   }, [identifier]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const fetchReviews = useCallback(async (schoolId, page = 1) => {
+    if (!schoolId) return;
+    setReviewsLoading(true);
+    try {
+      const { data } = await api.get(`/reviews/school/${schoolId}`, { params: { page, limit: 5 } });
+      setReviews(data.reviews);
+      setReviewTotal(data.total);
+      setReviewDist(data.dist || { 1:0, 2:0, 3:0, 4:0, 5:0 });
+      setUserReview(data.userReview || null);
+      setReviewPage(data.page);
+      setReviewPages(data.pages);
+    } catch {
+      // silently fail — reviews are non-critical
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (school?._id) fetchReviews(school._id, 1);
+  }, [school?._id, fetchReviews]);
+
+  // Track active nav section via IntersectionObserver
+  useEffect(() => {
+    if (!school) return;
+    const ids = SECTION_LINKS.map((l) => l.id);
+    const observers = ids.map((id) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { rootMargin: '-30% 0px -60% 0px' }
+      );
+      obs.observe(el);
+      return obs;
+    });
+    return () => observers.forEach((obs) => obs?.disconnect());
+  }, [school]);
+
   useEffect(() => {
     const total = school?.images?.length ?? 0;
     if (total <= 1) return;
@@ -287,6 +420,34 @@ export default function SchoolDetail() {
   const nextImage = useCallback(() => {
     setActiveImage((i) => (i + 1) % (school?.images?.length ?? 1));
   }, [school?.images?.length]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!form.text.trim()) return toast.error('Please write your review.');
+    setSubmitting(true);
+    try {
+      await api.post('/reviews', { ...form, schoolId: school._id });
+      toast.success('Review submitted! Thank you.');
+      setShowForm(false);
+      setForm({ rating: 5, title: '', text: '', category: 'General', isAnonymous: false });
+      fetchReviews(school._id, 1);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit review.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Delete this review?')) return;
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      toast.success('Review deleted.');
+      fetchReviews(school._id, reviewPage);
+    } catch {
+      toast.error('Could not delete review.');
+    }
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -417,7 +578,7 @@ export default function SchoolDetail() {
 
       {/* ── THUMBNAIL STRIP ───────────────────────────────────────── */}
       {images.length > 1 && (
-        <div className="bg-gray-950 border-b border-gray-800">
+        <div id="sd-gallery" className="bg-gray-950 border-b border-gray-800">
           <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2">
             <div className="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide">
               {images.map((src, i) => {
@@ -444,37 +605,8 @@ export default function SchoolDetail() {
         </div>
       )}
 
-      {/* ── MOBILE STICKY QUICK ACTIONS (hidden on lg) ────────────── */}
-      <div className="lg:hidden sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-        <div className="max-w-5xl mx-auto px-3 py-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
-          {school.contact?.phone && (
-            <a href={`tel:${school.contact.phone}`}
-              className="flex items-center gap-1.5 bg-green-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 hover:bg-green-800 active:scale-95 transition">
-              <Phone size={13} /> Call
-            </a>
-          )}
-          {school.contact?.email && (
-            <a href={`mailto:${school.contact.email}`}
-              className="flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 hover:bg-gray-200 active:scale-95 transition">
-              <Mail size={13} /> Email
-            </a>
-          )}
-          <button onClick={handleAddToCompare}
-            className="flex items-center gap-1.5 border border-green-700 text-green-700 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 hover:bg-green-50 active:scale-95 transition">
-            <BarChart3 size={13} /> Compare
-          </button>
-          <button onClick={handleShare}
-            className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 hover:bg-gray-50 active:scale-95 transition">
-            <Share2 size={13} /> Share
-          </button>
-          {school.contact?.website && (
-            <a href={school.contact.website} target="_blank" rel="noreferrer"
-              className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 hover:bg-gray-50 active:scale-95 transition">
-              <Globe size={13} /> Website
-            </a>
-          )}
-        </div>
-      </div>
+      {/* ── STICKY SECTION NAV ────────────────────────────────────── */}
+      {school && <SchoolNav school={school} active={activeSection} />}
 
       {/* ── LIGHTBOX ──────────────────────────────────────────────── */}
       {lightboxOpen && currentMedia && !isYoutube(currentMedia) && (
@@ -495,26 +627,32 @@ export default function SchoolDetail() {
           <div className="lg:col-span-2 space-y-5 sm:space-y-7">
 
             {/* Key Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { icon: Building2,     label: 'Type',    value: school.type,                color: 'text-green-700 bg-green-50'    },
-                { icon: GraduationCap, label: 'Level',   value: school.level,               color: 'text-blue-700 bg-blue-50'      },
-                { icon: Users,         label: 'Country', value: school.country || 'Nigeria', color: 'text-purple-700 bg-purple-50'  },
-                { icon: Calendar,      label: 'Status',  value: 'Verified',                 color: 'text-emerald-700 bg-emerald-50' },
-              ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className={`${color} rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center`}>
-                  <Icon size={18} className="mx-auto mb-1 opacity-70" />
-                  <p className="text-[10px] opacity-60 font-medium uppercase tracking-wider">{label}</p>
-                  <p className="font-bold capitalize text-xs sm:text-sm mt-0.5 leading-tight">{value}</p>
-                </div>
-              ))}
+            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #173d25 100%)' }}>
+              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10 divide-y sm:divide-y-0">
+                {[
+                  { icon: Building2,     label: 'School Type', value: school.type,                 accent: 'bg-emerald-400/20 text-emerald-300' },
+                  { icon: GraduationCap, label: 'Level',       value: school.level,                accent: 'bg-sky-400/20 text-sky-300'         },
+                  { icon: MapPin,        label: 'Location',    value: school.state || 'Nigeria',   accent: 'bg-violet-400/20 text-violet-300'   },
+                  { icon: CheckCircle,   label: 'Status',      value: 'Verified ✓',               accent: 'bg-emerald-400/20 text-emerald-300' },
+                ].map(({ icon: Icon, label, value, accent }) => (
+                  <div key={label} className="flex items-center gap-3 px-4 py-3.5 sm:py-4">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent}`}>
+                      <Icon size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white/40 text-[9px] font-semibold uppercase tracking-widest truncate">{label}</p>
+                      <p className="text-white font-bold text-[13px] capitalize truncate mt-0.5">{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Description */}
             {school.description && (
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2.5">About This School</h2>
-                <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-gray-100">
+              <div id="sd-about">
+                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">About This School</h2>
+                <div className="rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white">
                   <p className="text-gray-600 leading-relaxed text-sm">{school.description}</p>
                 </div>
               </div>
@@ -523,7 +661,7 @@ export default function SchoolDetail() {
             {/* Curriculum */}
             {school.curriculum?.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2.5">Curriculum Offered</h2>
+                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Curriculum Offered</h2>
                 <div className="flex flex-wrap gap-2">
                   {school.curriculum.map((c) => (
                     <div key={c} className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
@@ -537,7 +675,7 @@ export default function SchoolDetail() {
             {/* Achievements */}
             {school.achievements?.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2.5">Achievements &amp; Awards</h2>
+                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Achievements &amp; Awards</h2>
                 <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3">
                   {school.achievements.map((ach, i) => {
                     const catColors = {
@@ -578,7 +716,7 @@ export default function SchoolDetail() {
 
             {/* JAMB Top Scorers */}
             {school.jambReports?.length > 0 && (
-              <div>
+              <div id="sd-results">
                 <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
                     <GraduationCap size={13} className="text-blue-700" />
@@ -616,8 +754,8 @@ export default function SchoolDetail() {
 
             {/* Facilities */}
             {school.facilities?.length > 0 && (
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2.5">Facilities &amp; Amenities</h2>
+              <div id="sd-facilities">
+                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Facilities &amp; Amenities</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {school.facilities.map((f) => (
                     <div key={f} className="flex items-center gap-2.5 bg-gray-50 border border-gray-100 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
@@ -632,31 +770,31 @@ export default function SchoolDetail() {
             )}
 
             {/* Fees */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2.5">School Fees</h2>
+            <div id="sd-fees">
+              <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">School Fees</h2>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="bg-green-50 border border-green-200 rounded-xl sm:rounded-2xl p-4 sm:p-5">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <DollarSign size={16} className="text-green-700" />
-                    <span className="font-semibold text-green-800 text-xs sm:text-sm">Annual Tuition</span>
+                <div className="rounded-xl sm:rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-emerald-900/20" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
+                  <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center mb-3">
+                    <DollarSign size={16} className="text-white" />
                   </div>
-                  <p className="text-xl sm:text-2xl font-extrabold text-green-700">{formatFee(school.fees?.tuition)}</p>
-                  <p className="text-green-600 text-[11px] mt-1">Per academic year</p>
+                  <p className="text-white/60 text-[10px] font-semibold uppercase tracking-widest mb-1">Annual Tuition</p>
+                  <p className="text-xl sm:text-2xl font-extrabold text-white">{formatFee(school.fees?.tuition)}</p>
+                  <p className="text-white/40 text-[10px] mt-1.5">Per academic year</p>
                 </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl p-4 sm:p-5">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Building2 size={16} className="text-blue-700" />
-                    <span className="font-semibold text-blue-800 text-xs sm:text-sm">Boarding Fee</span>
+                <div className="rounded-xl sm:rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-slate-900/20" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)' }}>
+                  <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center mb-3">
+                    <Building2 size={16} className="text-white" />
                   </div>
-                  <p className="text-xl sm:text-2xl font-extrabold text-blue-700">
+                  <p className="text-white/60 text-[10px] font-semibold uppercase tracking-widest mb-1">Boarding Fee</p>
+                  <p className="text-xl sm:text-2xl font-extrabold text-white">
                     {school.fees?.boarding ? formatFee(school.fees.boarding) : 'Day School'}
                   </p>
-                  <p className="text-blue-600 text-[11px] mt-1">
-                    {school.fees?.boarding ? 'Per academic year' : 'No boarding available'}
+                  <p className="text-white/40 text-[10px] mt-1.5">
+                    {school.fees?.boarding ? 'Per academic year' : 'No boarding option'}
                   </p>
                 </div>
               </div>
-              <p className="text-gray-400 text-xs mt-2.5">* Fees are indicative. Contact the school to confirm current rates.</p>
+              <p className="text-gray-400 text-[11px] mt-2.5 italic">* Fees are indicative. Contact the school to confirm current rates.</p>
             </div>
 
             {/* Mobile Contact Info (inline, hidden on lg) */}
@@ -723,34 +861,239 @@ export default function SchoolDetail() {
               </div>
             </div>
 
+            {/* ── REVIEWS ──────────────────────────────────────────── */}
+            <div id="sd-reviews">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+                    <Star size={15} className="text-amber-500 fill-amber-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-xl font-bold text-gray-900 leading-tight">
+                      Reviews {reviewTotal > 0 && <span className="text-gray-400 font-normal text-sm">({reviewTotal})</span>}
+                    </h2>
+                    {school.rating > 0 && (
+                      <p className="text-[11px] text-gray-400">
+                        {school.rating.toFixed(1)} avg · {school.reviewCount} review{school.reviewCount !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {!userReview && user && !showForm && (
+                  <button onClick={() => setShowForm(true)}
+                    className="flex items-center gap-1.5 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm hover:opacity-90 active:scale-95"
+                    style={{ background: 'linear-gradient(135deg, #0d2918, #166534)' }}>
+                    <MessageSquare size={12} /> Write a Review
+                  </button>
+                )}
+                {!user && (
+                  <Link to="/login" className="text-xs text-emerald-600 font-bold hover:text-emerald-700 hover:underline">
+                    Login to review →
+                  </Link>
+                )}
+              </div>
+
+              {/* Rating bar — only when there are real reviews */}
+              {reviewTotal > 0 && (
+                <div className="rounded-2xl p-4 sm:p-5 mb-4 flex gap-5 items-center border border-emerald-100" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
+                  <div className="text-center shrink-0">
+                    <p className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-none">{school.rating?.toFixed(1) || '—'}</p>
+                    <div className="flex gap-0.5 justify-center my-2">
+                      {[1,2,3,4,5].map((s) => (
+                        <Star key={s} size={13} className={s <= Math.round(school.rating||0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300 fill-gray-200'} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 font-medium">{reviewTotal} review{reviewTotal !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    {[5,4,3,2,1].map((star) => (
+                      <div key={star} className="flex items-center gap-2">
+                        <span className="text-[11px] text-gray-500 w-2 shrink-0 font-medium">{star}</span>
+                        <Star size={9} className="text-amber-400 fill-amber-400 shrink-0" />
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: reviewTotal ? `${(reviewDist[star] / reviewTotal) * 100}%` : '0%' }} />
+                        </div>
+                        <span className="text-[10px] text-gray-400 w-4 text-right shrink-0">{reviewDist[star]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Review form */}
+              {showForm && (
+                <form onSubmit={handleSubmitReview} className="rounded-2xl p-5 mb-5 shadow-lg border border-emerald-100" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 60%)' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-gray-900 text-sm">Write Your Review</h3>
+                    <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 transition">
+                      <X size={16} />
+                    </button>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium">Your Rating</p>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map((s) => (
+                        <button key={s} type="button" onClick={() => setForm(f => ({ ...f, rating: s }))}
+                          className="transition hover:scale-110 active:scale-95">
+                          <Star size={24} className={s <= form.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300 fill-gray-100'} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium">Category</p>
+                    <select value={form.category} onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      {REVIEW_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium">Title (optional)</p>
+                    <input type="text" maxLength={100} placeholder="e.g. Great school overall"
+                      value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium">Your Review <span className="text-red-500">*</span></p>
+                    <textarea rows={4} maxLength={1000} required placeholder="Share your honest experience with this school..."
+                      value={form.text} onChange={(e) => setForm(f => ({ ...f, text: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+                    <p className="text-[10px] text-gray-400 text-right mt-0.5">{form.text.length}/1000</p>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-gray-600 mb-4 cursor-pointer select-none">
+                    <input type="checkbox" checked={form.isAnonymous}
+                      onChange={(e) => setForm(f => ({ ...f, isAnonymous: e.target.checked }))}
+                      className="w-4 h-4 rounded accent-green-600" />
+                    Post anonymously
+                  </label>
+                  <button type="submit" disabled={submitting}
+                    className="w-full text-white font-bold py-3 rounded-xl transition text-sm disabled:opacity-60 shadow-md shadow-emerald-900/20 hover:opacity-90 active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
+                    {submitting ? 'Submitting…' : 'Submit Review'}
+                  </button>
+                </form>
+              )}
+
+              {/* Already reviewed notice */}
+              {userReview && (
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-start gap-3">
+                  <CheckCircle size={16} className="text-green-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-green-800 font-medium">You have already reviewed this school.</p>
+                </div>
+              )}
+
+              {/* Review list */}
+              {reviewsLoading ? (
+                <div className="space-y-3">
+                  {[1,2,3].map((i) => (
+                    <div key={i} className="bg-gray-100 rounded-2xl h-28 animate-pulse" />
+                  ))}
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-10 text-gray-400">
+                  <MessageSquare size={32} className="mx-auto mb-2 opacity-30" />
+                  <p className="text-sm font-medium text-gray-500">No reviews yet</p>
+                  <p className="text-xs mt-1">Be the first to share your experience with this school.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reviews.map((r) => {
+                    const reviewerName = r.isAnonymous ? 'Anonymous' : (r.user?.name || r.authorName || 'User');
+                    const initial = r.isAnonymous ? '?' : reviewerName[0].toUpperCase();
+                    return (
+                      <div key={r._id} className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-200 group">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          {/* Avatar */}
+                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white text-sm font-extrabold shadow-sm"
+                            style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
+                            {initial}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div>
+                                <p className="font-bold text-gray-900 text-sm leading-tight">{reviewerName}</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                  {new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+                                  {r.category}
+                                </span>
+                                {(user?._id === r.user?._id || user?.role === 'admin') && (
+                                  <button onClick={() => handleDeleteReview(r._id)}
+                                    className="text-gray-300 hover:text-red-500 transition p-0.5 opacity-0 group-hover:opacity-100">
+                                    <Trash2 size={13} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-0.5 mb-2">
+                              {[1,2,3,4,5].map((s) => (
+                                <Star key={s} size={13} className={s <= r.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-200 fill-gray-200'} />
+                              ))}
+                            </div>
+                            {r.title && <p className="font-bold text-gray-800 text-sm mb-1">{r.title}</p>}
+                            <p className="text-gray-600 text-sm leading-relaxed">{r.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {reviewPages > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                  <button disabled={reviewPage === 1} onClick={() => fetchReviews(school._id, reviewPage - 1)}
+                    className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition flex items-center justify-center">
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-sm text-gray-500 leading-8">Page {reviewPage} of {reviewPages}</span>
+                  <button disabled={reviewPage === reviewPages} onClick={() => fetchReviews(school._id, reviewPage + 1)}
+                    className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition flex items-center justify-center">
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* ── Sidebar (desktop only) ── */}
           <div className="hidden lg:block space-y-5">
 
             {/* Quick Actions */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-2.5">
-              <h3 className="font-bold text-gray-900 mb-1">Quick Actions</h3>
-              {school.contact?.phone && (
-                <a href={`tel:${school.contact.phone}`}
-                  className="flex items-center gap-3 bg-green-700 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-800 transition text-sm">
-                  <Phone size={16} /> Call School
-                </a>
-              )}
-              {school.contact?.email && (
-                <a href={`mailto:${school.contact.email}`}
-                  className="flex items-center gap-3 bg-gray-100 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-200 transition text-sm">
-                  <Mail size={16} /> Email School
-                </a>
-              )}
-              <button onClick={handleAddToCompare}
-                className="w-full flex items-center justify-center gap-2 border border-green-700 text-green-700 px-4 py-3 rounded-xl font-semibold hover:bg-green-50 transition text-sm">
-                <BarChart3 size={16} /> Add to Compare
-              </button>
-              <button onClick={handleShare}
-                className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-600 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
-                <Share2 size={16} /> Share School
-              </button>
+            <div className="rounded-2xl overflow-hidden shadow-lg">
+              <div className="p-4 pb-3" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #1a4731 100%)' }}>
+                <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-3">Quick Actions</p>
+                <div className="space-y-2">
+                  {school.contact?.phone && (
+                    <a href={`tel:${school.contact.phone}`}
+                      className="flex items-center gap-3 bg-emerald-500 text-white px-4 py-3 rounded-xl font-bold hover:bg-emerald-400 transition text-sm shadow-md shadow-emerald-900/30 active:scale-[0.98]">
+                      <Phone size={15} /> Call School
+                    </a>
+                  )}
+                  {school.contact?.email && (
+                    <a href={`mailto:${school.contact.email}`}
+                      className="flex items-center gap-3 bg-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/20 transition text-sm border border-white/10">
+                      <Mail size={15} /> Email School
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="bg-white p-3 space-y-2">
+                <button onClick={handleAddToCompare}
+                  className="w-full flex items-center justify-center gap-2 border-2 border-emerald-600 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-50 transition text-sm">
+                  <BarChart3 size={15} /> Compare Schools
+                </button>
+                <button onClick={handleShare}
+                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-500 px-4 py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
+                  <Share2 size={15} /> Share School
+                </button>
+              </div>
             </div>
 
             {/* Contact Information */}
@@ -803,16 +1146,22 @@ export default function SchoolDetail() {
             </div>
 
             {/* Study Abroad CTA */}
-            <div className="bg-gradient-to-br from-green-700 to-green-800 rounded-2xl p-5 text-white">
-              <GraduationCap size={24} className="text-green-300 mb-3" />
-              <h4 className="font-bold text-base mb-1">Want to study abroad?</h4>
-              <p className="text-green-200 text-xs mb-4 leading-relaxed">
-                Our counsellors can help you get into top universities in the UK, Canada, USA and more.
-              </p>
-              <Link to="/study-abroad"
-                className="block text-center bg-white text-green-800 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-green-50 transition">
-                Explore Study Abroad →
-              </Link>
+            <div className="rounded-2xl p-5 text-white relative overflow-hidden shadow-xl" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #0f3d21 50%, #1a5c30 100%)' }}>
+              <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-400/10 rounded-full -translate-y-10 translate-x-10" />
+              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-8 -translate-x-6" />
+              <div className="relative z-10">
+                <div className="w-10 h-10 bg-emerald-400/20 rounded-xl flex items-center justify-center mb-3">
+                  <GraduationCap size={20} className="text-emerald-300" />
+                </div>
+                <h4 className="font-extrabold text-base mb-1.5 text-white">Study Abroad?</h4>
+                <p className="text-white/60 text-xs mb-4 leading-relaxed">
+                  Our counsellors place students in top universities across the UK, Canada, USA, Australia and more.
+                </p>
+                <Link to="/study-abroad"
+                  className="block text-center bg-emerald-500 text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-emerald-400 transition shadow-md shadow-emerald-900/30">
+                  Explore Study Abroad →
+                </Link>
+              </div>
             </div>
 
           </div>

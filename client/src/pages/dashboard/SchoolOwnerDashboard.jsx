@@ -4,7 +4,7 @@ import {
   LayoutDashboard, School, Edit3, Trophy, Image, BarChart2,
   Menu, X, Eye, MessageCircle, Star, Plus, Trash2, Save,
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
-  GraduationCap, MapPin, Phone, Mail, Globe, DollarSign,
+  GraduationCap, MapPin, Phone, Mail, DollarSign,
   Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload,
   CalendarCheck, XCircle,
 } from 'lucide-react';
@@ -50,6 +50,7 @@ const TABS = [
   { id: 'gallery',      label: 'Gallery',          icon: Image           },
   { id: 'analytics',    label: 'Analytics',        icon: BarChart2       },
   { id: 'visits',       label: 'Visit Requests',   icon: CalendarCheck   },
+  { id: 'reviews',      label: 'Reviews',          icon: Star            },
 ];
 
 const JAMB_SUBJECTS = ['Use of English', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
@@ -1563,6 +1564,139 @@ function VisitRequestsTab() {
   );
 }
 
+// ─── Owner Reviews Tab ────────────────────────────────────────────────────────
+
+function OwnerReviewsTab({ school }) {
+  const [reviews, setReviews] = useState([]);
+  const [page, setPage]       = useState(1);
+  const [pages, setPages]     = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReviews = async (pg = 1) => {
+    if (!school?._id) return;
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/reviews/school/${school._id}`, { params: { page: pg, limit: 10 } });
+      setReviews(data.reviews);
+      setPage(data.page);
+      setPages(data.pages);
+    } catch {
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchReviews(1); }, [school?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!school) return (
+    <div className="text-center py-16 text-gray-400">
+      <Star size={36} className="mx-auto mb-3 opacity-30" />
+      <p className="font-semibold text-gray-500">No school listing found.</p>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-gray-900">Reviews for {school.name}</h2>
+        <p className="text-gray-500 text-sm mt-0.5">
+          {school.rating > 0
+            ? `${school.rating?.toFixed(1)} avg rating · ${school.reviewCount} review${school.reviewCount !== 1 ? 's' : ''}`
+            : 'No reviews yet'}
+        </p>
+      </div>
+
+      {/* Rating overview */}
+      {school.rating > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 mb-6 flex items-center gap-5">
+          <div className="text-center shrink-0">
+            <p className="text-5xl font-extrabold text-yellow-600">{school.rating?.toFixed(1)}</p>
+            <div className="flex gap-0.5 justify-center my-1.5">
+              {[1,2,3,4,5].map((s) => (
+                <Star key={s} size={14}
+                  className={s <= Math.round(school.rating||0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-200'} />
+              ))}
+            </div>
+            <p className="text-xs text-yellow-700 font-medium">{school.reviewCount} review{school.reviewCount !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="text-sm text-yellow-800 max-w-xs">
+            <p className="font-semibold mb-1">Your school&apos;s rating</p>
+            <p className="text-yellow-700 text-xs leading-relaxed">
+              Reviews are submitted by parents and students on your school profile page. Respond to feedback by keeping your listing accurate and up to date.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-2xl h-24 animate-pulse" />
+          ))}
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-14 text-gray-400">
+          <Star size={36} className="mx-auto mb-3 opacity-30" />
+          <p className="font-semibold text-gray-500">No reviews yet</p>
+          <p className="text-xs mt-1">Reviews will appear here once parents and students submit them.</p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+            {reviews.map((r) => (
+              <div key={r._id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center shrink-0">
+                    {r.isAnonymous ? '?' : (r.user?.name?.[0] || 'U').toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className="font-semibold text-gray-900 text-sm">
+                        {r.isAnonymous ? 'Anonymous' : (r.user?.name || 'User')}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-0.5 rounded-full font-medium">
+                          {r.category}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5 my-1.5">
+                      {[1,2,3,4,5].map((s) => (
+                        <Star key={s} size={12}
+                          className={s <= r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'} />
+                      ))}
+                    </div>
+                    {r.title && <p className="font-semibold text-gray-800 text-sm mb-1">{r.title}</p>}
+                    <p className="text-gray-600 text-sm leading-relaxed">{r.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {pages > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <button disabled={page === 1} onClick={() => fetchReviews(page - 1)}
+                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 disabled:opacity-40 hover:bg-gray-50 transition">
+                <ChevronRight size={14} className="rotate-180" />
+              </button>
+              <span className="text-sm text-gray-500 leading-9">Page {page} of {pages}</span>
+              <button disabled={page === pages} onClick={() => fetchReviews(page + 1)}
+                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 disabled:opacity-40 hover:bg-gray-50 transition">
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function SchoolOwnerDashboard() {
@@ -1765,6 +1899,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'gallery' && <GalleryTab school={school} />}
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
               {activeTab === 'visits' && <VisitRequestsTab />}
+              {activeTab === 'reviews' && <OwnerReviewsTab school={school} />}
             </>
           )}
         </div>

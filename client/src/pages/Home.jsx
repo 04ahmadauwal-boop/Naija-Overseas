@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useFadeIn, useSlideIn, useScrollAnimation, useStaggerAnimation, useFloat } from '../hooks/useGsapAnimations';
+import { useFadeIn, useSlideIn, useScrollAnimation } from '../hooks/useGsapAnimations';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
@@ -19,33 +19,6 @@ const NIGERIAN_STATES = [
   'Sokoto','Taraba','Yobe','Zamfara',
 ];
 
-const STATS = [
-  { value: '500+', label: 'Schools Listed' },
-  { value: '10,000+', label: 'Students Helped' },
-  { value: '4', label: 'Countries' },
-  { value: '98%', label: 'Satisfaction Rate' },
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: '01',
-    title: 'Search & Filter',
-    desc: 'Enter your state, budget, curriculum preference or school type. Our smart filters narrow down the best matches instantly.',
-    icon: Search,
-  },
-  {
-    step: '02',
-    title: 'Compare Side by Side',
-    desc: 'Select up to 3 schools and view a detailed side-by-side comparison — fees, facilities, curriculum, contact info and more.',
-    icon: BarChart3,
-  },
-  {
-    step: '03',
-    title: 'Make Your Decision',
-    desc: 'Book a consultation, contact the school directly, or apply for study abroad placement — all in one place.',
-    icon: CheckCircle,
-  },
-];
 
 const FEATURES = [
   { icon: BarChart3, title: 'Smart Comparison Tool', desc: 'Compare multiple schools across 10+ criteria. No guesswork — just clear, structured data to help you decide.' },
@@ -57,38 +30,36 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  {
-    name: 'Mrs. Aisha Bello',
-    role: 'Parent, Abuja',
-    text: 'I spent weeks trying to find the right secondary school for my son. With Naija & Overseas, I compared 5 schools in 10 minutes and made a confident decision. Absolutely brilliant!',
-    rating: 5,
-    initials: 'AB',
-    color: 'bg-green-600',
-  },
-  {
-    name: 'Chukwuemeka Obi',
-    role: 'Student, Lagos',
-    text: 'Their study abroad team helped me secure admission to a university in Canada in just 3 months. They handled everything — application, visa, pre-departure briefing. I highly recommend them.',
-    rating: 5,
-    initials: 'CO',
-    color: 'bg-blue-600',
-  },
-  {
-    name: 'Principal Fatima Danjuma',
-    role: 'School Owner, Kano',
-    text: 'Listing our school on Naija & Overseas tripled our enquiries within the first month. The platform is professional and the admin tools are very easy to use. Worth every kobo.',
-    rating: 5,
-    initials: 'FD',
-    color: 'bg-yellow-600',
-  },
-  {
-    name: 'Mr. Kofi Mensah',
-    role: 'Parent, Accra Ghana',
-    text: 'As a Ghanaian parent, I was surprised to find so many schools listed for Ghana. The comparison tool saved me a lot of time and helped my daughter find a school she loves.',
-    rating: 5,
-    initials: 'KM',
-    color: 'bg-purple-600',
-  },
+  { name: 'Mrs. Aisha Bello',        role: 'Parent · Abuja',              category: 'Teaching Quality',            text: 'The teachers here are exceptional — patient, knowledgeable, and genuinely invested in each child. My son went from struggling in Maths to loving it.',          rating: 5, initials: 'AB', color: 'bg-green-600'   },
+  { name: 'Chukwuemeka Obi',         role: 'Student · Lagos',             category: 'Teaching Quality',            text: 'My Physics teacher makes every lesson feel like a discovery. I scored a B3 in WAEC after years of failing. This school changed everything for me.',              rating: 5, initials: 'CO', color: 'bg-blue-600'    },
+  { name: 'Principal F. Danjuma',    role: 'School Owner · Kano',         category: 'Fee Structure',               text: 'The fees are transparent and well-structured. Parents appreciate that there are no hidden charges, and the instalment plan really helps families manage costs.',  rating: 4, initials: 'FD', color: 'bg-yellow-600'  },
+  { name: 'Mr. Kofi Mensah',         role: 'Parent · Accra, Ghana',       category: 'Communication',               text: 'The school sends weekly updates via WhatsApp and email. I always know exactly how my children are doing — test scores, behaviour, everything.',                  rating: 5, initials: 'KM', color: 'bg-purple-600'  },
+  { name: 'Ngozi Adeyemi',           role: 'Parent · Ibadan',             category: 'Infrastructure',              text: 'The campus is stunning — modern classrooms, a well-stocked library, and a proper ICT lab. Walking in feels like stepping into a university.',                    rating: 5, initials: 'NA', color: 'bg-teal-600'    },
+  { name: 'Emeka Nwosu',             role: 'Student · Port Harcourt',     category: 'Extracurricular Activities',  text: 'I joined the robotics club and the football team. We won two state competitions this year. The school truly supports talents outside the classroom.',             rating: 5, initials: 'EN', color: 'bg-indigo-600'  },
+  { name: 'Hauwa Suleiman',          role: 'Parent · Kaduna',             category: 'Discipline',                  text: 'The school strikes a perfect balance — firm rules but never harsh. My children are respectful, punctual, and responsible in ways I have never seen before.',     rating: 5, initials: 'HS', color: 'bg-rose-600'    },
+  { name: 'Biodun Alabi',            role: 'Parent · Lagos',              category: 'Transport Facilities',        text: 'The school bus arrives within five minutes of schedule every single day. The drivers are vetted, professional, and my daughter feels completely safe.',           rating: 5, initials: 'BA', color: 'bg-cyan-600'    },
+  { name: 'Dr. Tunde Fashola',       role: 'Parent · Abuja',              category: 'Student-Teacher Ratio',       text: 'With only 20 students per class, teachers actually know my kids by name. The one-on-one attention has transformed their confidence and results completely.',      rating: 5, initials: 'TF', color: 'bg-orange-600'  },
+  { name: 'Chidinma Eze',            role: 'Parent · Enugu',              category: 'Environment',                 text: 'The grounds are immaculate, the classrooms are airy, and the school has a genuine sense of community. My children wake up every morning excited to attend.',     rating: 5, initials: 'CE', color: 'bg-lime-600'    },
+  { name: 'Bello Adamu',             role: 'Parent · Kano',               category: 'Academic Results',            text: 'My son improved from the bottom quartile to top 5 in his class in a single term. The teachers identified his learning gaps and addressed them individually.',    rating: 5, initials: 'BA', color: 'bg-sky-600'     },
+  { name: 'Mrs. Olusegun Bright',    role: 'Parent · Abeokuta, Ogun',     category: 'Communication',               text: 'The school portal is brilliant. I track my child\'s attendance, homework submissions, and test scores in real time. Communication is completely transparent.',   rating: 5, initials: 'OB', color: 'bg-gray-700'    },
+  { name: 'James Nkrumah',           role: 'Parent · Kumasi, Ghana',      category: 'Fee Structure',               text: 'Slightly expensive compared to others nearby, but every pesewa is justified. The quality of teaching, facilities, and pastoral care is worth every cedi.',      rating: 4, initials: 'JN', color: 'bg-emerald-600' },
+  { name: 'Seun Okafor',             role: 'SS3 Student · Lagos',         category: 'Academic Results',            text: 'I scored 8 A1s in WAEC and just got offered a scholarship to study Engineering in Canada. My school pushed me to be the best version of myself.',                rating: 5, initials: 'SO', color: 'bg-violet-600'  },
+  { name: 'Mrs. Adeola Taiwo',       role: 'Parent · Ibadan',             category: 'Infrastructure',              text: 'The new science laboratories are world-class. My daughter says every Biology practical lesson feels like real research. The investment in equipment shows.',        rating: 5, initials: 'AT', color: 'bg-fuchsia-600' },
+  { name: 'Musa Garba',              role: 'Parent · Katsina',            category: 'Academic Results',            text: 'Both my daughters secured federal government scholarship placements after sitting JAMB here. The school\'s preparation programme is thorough and effective.',      rating: 5, initials: 'MG', color: 'bg-green-700'   },
+  { name: 'Adaeze Okonkwo',          role: 'Student · Onitsha, Anambra',  category: 'Extracurricular Activities',  text: 'I captained the debate team to a national semifinal this year. The teachers coach us after school hours voluntarily. The support is genuinely overwhelming.',     rating: 5, initials: 'AO', color: 'bg-blue-700'    },
+  { name: 'Deola Bankole',           role: 'Parent · Lekki, Lagos',       category: 'Student-Teacher Ratio',       text: 'The 18:1 class ratio means no child is left behind. My son\'s Form teacher calls me monthly with specific updates. It feels like a partnership, not a service.', rating: 5, initials: 'DB', color: 'bg-teal-700'    },
+  { name: 'Emmanuel Ofori',          role: 'Parent · Accra, Ghana',       category: 'Environment',                 text: 'Security is tight, the grounds are spotless, and the canteen serves healthy food. The school has thought about every detail of the student experience.',          rating: 5, initials: 'EO', color: 'bg-amber-600'   },
+  { name: 'Amina Yusuf',             role: 'Parent · Sokoto',             category: 'Teaching Quality',            text: 'The English and Maths teachers are extraordinary. My daughter reads novels for fun now — something I never imagined possible after her struggles last year.',      rating: 5, initials: 'AY', color: 'bg-pink-600'    },
+  { name: 'Gideon Acheampong',       role: 'Parent · Takoradi, Ghana',    category: 'Fee Structure',               text: 'The school offers a sibling discount that saved our family significantly. The fee schedule is sent in September so we can plan the whole year in advance.',       rating: 4, initials: 'GA', color: 'bg-lime-700'    },
+  { name: 'Blessing Okafor',         role: 'Parent · Owerri, Imo',        category: 'Discipline',                  text: 'My son used to be disruptive in class. Six months here and his behaviour has completely transformed. The pastoral care team is phenomenal.',                     rating: 5, initials: 'BO', color: 'bg-red-600'     },
+  { name: 'Alhaji Sani Umar',        role: 'Parent · Maiduguri, Borno',   category: 'Transport Facilities',        text: 'We live 12 km from school and the bus service has never once let us down. Tracking the bus live on the app gives me peace of mind every single morning.',        rating: 5, initials: 'SU', color: 'bg-sky-700'     },
+  { name: 'Ifeoma Chukwu',           role: 'JS2 Student · Enugu',         category: 'Extracurricular Activities',  text: 'The art and drama club here is incredible. I performed in two school productions this term and discovered I want to study theatre arts at university.',           rating: 5, initials: 'IC', color: 'bg-purple-700'  },
+  { name: 'Mrs. Folake Adegoke',     role: 'Parent · Osogbo, Osun',       category: 'Academic Results',            text: 'My twin boys both made five credits including English and Maths on their first WAEC attempt. This school\'s exam prep is second to none in the state.',          rating: 5, initials: 'FA', color: 'bg-green-800'   },
+  { name: 'Kwame Asante',            role: 'Parent · Cape Coast, Ghana',  category: 'Communication',               text: 'The headmistress calls parents personally when there is an issue — not just a generic letter. That level of personal attention is rare and deeply reassuring.',  rating: 5, initials: 'KA', color: 'bg-indigo-700'  },
+  { name: 'Oluwakemi Adeniyi',       role: 'Parent · Akure, Ondo',        category: 'Infrastructure',              text: 'The school just opened a new 400-seat multipurpose hall and a solar-powered computer lab. They are constantly reinvesting in the student experience.',            rating: 5, initials: 'OA', color: 'bg-teal-800'    },
+  { name: 'Fatima Ibrahim',          role: 'Parent · Ilorin, Kwara',      category: 'Student-Teacher Ratio',       text: 'My daughter\'s class has 22 students and three teachers rotating. The individualised feedback on every piece of written work is astonishing.',                   rating: 5, initials: 'FI', color: 'bg-orange-700'  },
+  { name: 'Victor Nwachukwu',        role: 'Parent · Asaba, Delta',       category: 'Environment',                 text: 'The school recently installed CCTV, a biometric entry system, and a medical bay. My children have never felt safer anywhere else in their lives.',               rating: 5, initials: 'VN', color: 'bg-cyan-700'    },
+  { name: 'Hajiya Ramatu Aliyu',     role: 'Parent · Jos, Plateau',       category: 'Teaching Quality',            text: 'The science department is the best I have seen at secondary level in Nigeria. My son came home explaining concepts I learnt in university. Truly impressive.',    rating: 5, initials: 'RA', color: 'bg-emerald-700' },
 ];
 
 const FAQS = [
@@ -282,7 +253,7 @@ export default function Home() {
       setHeroProgress(0);
     }, SLIDE_DURATION);
     return () => clearTimeout(t);
-  }, [heroPaused, slide]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [heroPaused, slide]);
 
   useEffect(() => {
     if (heroPaused) return;
@@ -402,11 +373,10 @@ export default function Home() {
 
   // Animation refs
   const heroHeadingRef = useFadeIn(0.8, 0.2);
-  const statsRef = useSlideIn('up', 0.8, 0.4);
+  useSlideIn('up', 0.8, 0.4);
   const ctaRef = useSlideIn('up', 0.8, 0.5);
-  const statsItemsRef = useScrollAnimation('fadeIn', { duration: 0.8 });
+  useScrollAnimation('fadeIn', { duration: 0.8 });
   const featuresRef = useScrollAnimation('slideUp', { duration: 0.8 });
-  const testimonialsRef = useScrollAnimation('slideUp', { duration: 0.8 });
 
   return (
     <div className="overflow-x-hidden">
@@ -454,7 +424,7 @@ export default function Home() {
         </div>
 
         {/* Main content */}
-        <div className="relative z-20 flex-1 flex items-center">
+        <div className="relative z-20 flex-1 flex items-center p-0 m-0">
           <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 py-6 sm:py-10 lg:py-14 flex flex-col items-center sm:items-start">
 
             {/* Headline */}
@@ -471,7 +441,7 @@ export default function Home() {
 
             {/* Search bar — glass morphism (slide 0), centered on mobile */}
             {slide === 0 && (
-              <div ref={heroRef} className="relative w-full max-w-xl mb-3 sm:mb-5">
+              <div ref={heroRef} className="relative w-full max-w-xl mb-1 sm:mb-5">
                 <div className="flex items-center bg-white rounded-full sm:rounded-xl overflow-hidden shadow-2xl">
                   <Search className="text-gray-400 shrink-0 ml-4" size={16} />
                   <input
@@ -711,7 +681,7 @@ export default function Home() {
             else if (url.includes('youtube.com/embed/')) id = url.split('youtube.com/embed/')[1]?.split('?')[0];
             else if (url.includes('youtube.com/watch')) id = new URL(url).searchParams.get('v');
             if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-          } catch {}
+          } catch { /* invalid URL */ }
           return null;
         };
         const cards = reviewVideos.length > 0 ? reviewVideos : [];
@@ -1100,7 +1070,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STUDY ABROAD BANNER ───────────────────────────────────── */}
+      {/* ── STUDY ABROAD BANNER ─────────────────────────────────────
       <section className="py-10 md:py-20 px-4 bg-green-700 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_50%,white,transparent_60%)]" />
         <div className="relative max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
@@ -1132,40 +1102,75 @@ export default function Home() {
             <p className="text-green-200 text-xs mt-3 text-center">Free. No commitment required.</p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">Testimonials</p>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Trusted by families across West Africa
+      <section className="overflow-hidden bg-[#0b0f0e]">
+        <div className="flex flex-col lg:flex-row min-h-[520px]">
+
+          {/* Left CTA panel */}
+          <div className="lg:w-[36%] shrink-0 flex flex-col justify-center px-8 sm:px-12 lg:px-14 py-14 lg:py-0 relative z-10">
+            <p className="text-green-400 text-xs font-bold uppercase tracking-widest mb-4">Reviews</p>
+            <h2 className="text-white text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Find <span className="text-yellow-400">Reviews.</span><br />
+              Make the Right Choice
             </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Real stories from parents, students and school owners who used Naija & Overseas.</p>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
+              Real ratings from parents and students across Nigeria and West Africa — on teaching, fees, facilities and more.
+            </p>
+            <Link
+              to="/reviews"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold text-sm px-7 py-3 rounded-full hover:bg-yellow-400 transition-colors w-fit shadow-lg"
+            >
+              View Reviews
+            </Link>
           </div>
 
-          <div ref={testimonialsRef} className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {TESTIMONIALS.map(({ name, role, text, rating, initials, color }) => (
-              <div key={name} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
-                <div className="flex gap-0.5">
-                  {Array.from({ length: rating }).map((_, i) => (
-                    <Star key={i} size={14} className="text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-600 text-sm leading-relaxed flex-1">&ldquo;{text}&rdquo;</p>
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
-                  <div className={`w-9 h-9 rounded-full ${color} text-white flex items-center justify-center text-xs font-bold shrink-0`}>
-                    {initials}
+          {/* Right scrolling review columns */}
+          <div className="flex-1 overflow-hidden relative flex gap-3 px-3 py-8" style={{ maxHeight: 520 }}>
+            {/* Top fade */}
+            <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            {/* Bottom fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+
+            {[0, 1, 2, 3].map((colIdx) => {
+              const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
+              const isDown = colIdx % 2 === 1;
+              return (
+                <div key={colIdx} className="flex-1 overflow-hidden min-w-0">
+                  <div className={isDown ? 'marquee-down' : 'marquee-up'}>
+                    {[...col, ...col].map((t, j) => (
+                      <div
+                        key={j}
+                        className="bg-white rounded-xl p-3.5 mb-3 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className={`w-8 h-8 rounded-full ${t.color} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>
+                            {t.initials}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1 mb-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  size={10}
+                                  className={i < t.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}
+                                />
+                              ))}
+                            </div>
+                            <p className="font-bold text-gray-900 text-[11px] leading-tight">{t.category}</p>
+                            <p className="text-gray-500 text-[10px] leading-snug mt-0.5 line-clamp-3">{t.text}</p>
+                            <p className="text-gray-400 text-[9px] mt-1.5 font-medium">{t.name} · {t.role}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">{name}</p>
-                    <p className="text-gray-400 text-xs">{role}</p>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
         </div>
       </section>
 

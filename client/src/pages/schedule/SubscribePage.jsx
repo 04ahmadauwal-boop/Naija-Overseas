@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import { GraduationCap, Star, Zap, CheckCircle, ChevronLeft, Globe } from 'lucide-react';
 
 const DAYS_LABEL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const inp = 'w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
 
 // Build time options from tutor availability weeklySlots for a given day index
 function timesForDay(weeklySlots, dayIndex, sessionDuration) {

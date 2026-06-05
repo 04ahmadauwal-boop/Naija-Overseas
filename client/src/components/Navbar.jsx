@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useFadeIn, useSlideIn, useHoverAnimation } from '../hooks/useGsapAnimations';
+import { useFadeIn, useSlideIn } from '../hooks/useGsapAnimations';
 import {
   Menu, X, GraduationCap, ChevronRight, ChevronDown, LayoutDashboard,
   BookOpen, Globe, School, Info, Mail, LogOut, User, Search, Users
