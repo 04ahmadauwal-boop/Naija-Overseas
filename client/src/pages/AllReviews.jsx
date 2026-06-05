@@ -52,10 +52,10 @@ const CATEGORIES = [
 
 function StarRow({ rating, size = 14 }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5 shrink-0">
       {[1,2,3,4,5].map((s) => (
         <Star key={s} size={size}
-          className={s <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-500 fill-gray-500'} />
+          className={s <= rating ? 'text-amber-400 fill-amber-400' : 'text-gray-700 fill-gray-700'} />
       ))}
     </div>
   );
@@ -69,40 +69,43 @@ function ReviewCard({ review }) {
   });
 
   return (
-    <div className="bg-[#3a3a3a] rounded-2xl p-5 flex flex-col gap-3">
+    <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 border border-white/5 hover:border-emerald-900/60 transition-colors"
+      style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #222 100%)' }}>
+
       {/* Header row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center shrink-0">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 flex items-center justify-center text-white text-xs font-extrabold shadow"
+            style={{ background: 'linear-gradient(135deg, #0d2918, #166534)' }}>
             {review.user?.profilePhoto
-              ? <img src={review.user.profilePhoto} alt={name} className="w-full h-full object-cover rounded-full" />
-              : <span className="text-xs font-bold text-gray-300">{initials}</span>
+              ? <img src={review.user.profilePhoto} alt={name} className="w-full h-full object-cover rounded-xl" />
+              : initials
             }
           </div>
-          <div>
-            <p className="font-bold text-white text-sm leading-tight">{name}</p>
-            <p className="text-gray-400 text-[10px]">Posted on {date}</p>
+          <div className="min-w-0">
+            <p className="font-bold text-white text-xs sm:text-sm leading-tight truncate">{name}</p>
+            <p className="text-gray-500 text-[9px] sm:text-[10px]">{date}</p>
           </div>
         </div>
-        <StarRow rating={review.rating} size={13} />
+        <StarRow rating={review.rating} size={11} />
       </div>
 
       {/* Review body */}
       {review.title && (
-        <p className="font-semibold text-white text-sm">{review.title}</p>
+        <p className="font-bold text-white text-xs sm:text-sm leading-snug">{review.title}</p>
       )}
-      <p className="text-gray-300 text-sm leading-relaxed line-clamp-4">{review.text}</p>
+      <p className="text-gray-400 text-[11px] sm:text-sm leading-relaxed line-clamp-4">{review.text}</p>
 
       {/* School + category footer */}
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/10">
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/8">
         {review.school ? (
           <Link to={`/schools/${review.school.slug || review.school._id}`}
-            className="text-yellow-400 text-xs font-medium hover:underline truncate">
+            className="text-emerald-400 text-[10px] sm:text-xs font-semibold hover:text-emerald-300 hover:underline truncate">
             {review.school.name}
             {review.school.state ? ` · ${review.school.state}` : ''}
           </Link>
         ) : <span />}
-        <span className="text-[10px] text-gray-500 bg-gray-700 px-2 py-0.5 rounded-full shrink-0">
+        <span className="text-[9px] sm:text-[10px] text-gray-500 bg-white/5 px-2 py-0.5 rounded-full shrink-0 border border-white/10">
           {review.category}
         </span>
       </div>
@@ -182,27 +185,28 @@ export default function AllReviews() {
     <div className="min-h-screen bg-white">
 
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden bg-gray-900" style={{ minHeight: 340 }}>
-        {/* Background image with overlay */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1400&q=60')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gray-900/75" />
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #071a0e 0%, #0d2918 50%, #0f3d21 100%)', minHeight: 'clamp(240px, 40vw, 360px)' }}>
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_30%_50%,#10b981,transparent_60%)]" />
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,#34d399,transparent_50%)]" />
 
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-16 sm:py-20">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6 leading-tight">
-            Find Reviews. Make the Right Choice
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-10 sm:py-14 md:py-18" style={{ minHeight: 'clamp(240px, 40vw, 360px)' }}>
+          <p className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3">Naija &amp; Overseas</p>
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 sm:mb-5 leading-tight max-w-xl">
+            Find Reviews. Make the Right Choice.
           </h1>
+          <p className="text-white/50 text-xs sm:text-sm mb-5 sm:mb-7 max-w-md">Real experiences shared by parents and students across Nigeria and West Africa.</p>
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="w-full max-w-xl relative">
+          <form onSubmit={handleSearch} className="w-full max-w-lg relative">
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search school reviews..."
-              className="w-full bg-white text-gray-900 rounded-full px-5 py-3.5 pr-14 text-sm focus:outline-none shadow-lg"
+              placeholder="Search school reviews…"
+              className="w-full bg-white text-gray-900 rounded-full px-4 sm:px-5 py-3 sm:py-3.5 pr-12 sm:pr-14 text-sm focus:outline-none shadow-xl"
             />
             <button type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center hover:bg-green-700 transition">
-              <Search size={15} className="text-white" />
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 bg-emerald-600 rounded-full flex items-center justify-center hover:bg-emerald-500 transition">
+              <Search size={14} className="text-white" />
             </button>
           </form>
         </div>
@@ -210,30 +214,30 @@ export default function AllReviews() {
 
       {/* ── CONTENT ───────────────────────────────────────────────────── */}
       <div className="bg-gray-950 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-3 sm:px-5 py-5 sm:py-8">
 
           {/* Title row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-extrabold text-white">School Reviews</h2>
+          <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-base sm:text-xl font-extrabold text-white">School Reviews</h2>
               {!loading && (
-                <span className="inline-block mt-1 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="bg-emerald-500 text-white text-[10px] sm:text-xs font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
                   {displayTotal.toLocaleString()} Review{displayTotal !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
 
             {/* Sort dropdown */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button onClick={() => setSortOpen((o) => !o)}
-                className="flex items-center gap-2 border border-gray-700 text-gray-300 bg-gray-900 text-sm px-4 py-2 rounded-xl hover:bg-gray-800 transition">
-                {currentSortLabel} <ChevronDown size={14} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+                className="flex items-center gap-1.5 sm:gap-2 border border-gray-700 text-gray-300 bg-gray-900 text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:bg-gray-800 transition">
+                {currentSortLabel} <ChevronDown size={13} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
               </button>
               {sortOpen && (
-                <div className="absolute right-0 top-full mt-1.5 bg-gray-900 border border-gray-700 rounded-xl shadow-xl z-30 w-44 overflow-hidden">
+                <div className="absolute right-0 top-full mt-1.5 bg-gray-900 border border-gray-700 rounded-xl shadow-xl z-30 w-40 sm:w-44 overflow-hidden">
                   {SORT_OPTIONS.map((o) => (
                     <button key={o.value} onClick={() => { setSort(o.value); setSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition hover:bg-gray-800 ${sort === o.value ? 'text-yellow-400 font-semibold' : 'text-gray-300'}`}>
+                      className={`w-full text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm transition hover:bg-gray-800 ${sort === o.value ? 'text-emerald-400 font-semibold' : 'text-gray-300'}`}>
                       {o.label}
                     </button>
                   ))}
@@ -242,13 +246,13 @@ export default function AllReviews() {
             </div>
           </div>
 
-          {/* Category filter pills */}
-          <div className="flex gap-2 flex-wrap mb-6">
+          {/* Category filter pills — horizontally scrollable on mobile */}
+          <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto scrollbar-hide pb-1">
             {CATEGORIES.map((c) => (
               <button key={c} onClick={() => setCategory(c)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                className={`text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border whitespace-nowrap transition flex-shrink-0 ${
                   category === c
-                    ? 'bg-yellow-400 text-gray-900 border-yellow-400'
+                    ? 'bg-emerald-500 text-white border-emerald-500'
                     : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
                 }`}>
                 {c}
@@ -258,21 +262,21 @@ export default function AllReviews() {
 
           {/* Grid */}
           {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="bg-[#3a3a3a] rounded-2xl h-48 animate-pulse" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-2xl h-40 sm:h-48 animate-pulse bg-white/5" />
               ))}
             </div>
           ) : displayReviews.length === 0 ? (
-            <div className="text-center py-24">
-              <MessageSquare size={40} className="mx-auto mb-3 text-gray-600" />
-              <p className="text-gray-400 font-semibold">No reviews found</p>
-              <p className="text-gray-600 text-sm mt-1">
+            <div className="text-center py-16 sm:py-24">
+              <MessageSquare size={36} className="mx-auto mb-3 text-gray-600" />
+              <p className="text-gray-400 font-semibold text-sm sm:text-base">No reviews found</p>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1">
                 No results for &ldquo;{search}&rdquo;. Try a different keyword.
               </p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {displayReviews.map((r) => <ReviewCard key={r._id} review={r} />)}
             </div>
           )}

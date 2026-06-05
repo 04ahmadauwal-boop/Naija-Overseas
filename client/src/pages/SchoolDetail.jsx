@@ -29,50 +29,50 @@ function SchoolNav({ school, active }) {
 
   return (
     <div className="sticky top-0 z-30 shadow-xl" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #0f3d21 100%)' }}>
-      <div className="max-w-5xl mx-auto px-3 sm:px-5 h-12 sm:h-[52px] flex items-center overflow-x-auto scrollbar-hide">
+      <div className="max-w-5xl mx-auto px-0 sm:px-2 h-11 sm:h-[52px] flex items-stretch overflow-x-auto scrollbar-hide">
 
-        {/* Section links */}
-        <div className="flex items-center shrink-0 mr-auto">
+        {/* Section links — scroll independently on mobile */}
+        <div className="flex items-center shrink-0 mr-auto px-2 sm:px-3">
           {SECTION_LINKS.map((link, i) => (
             <span key={link.id} className="flex items-center">
               <button
                 onClick={() => scrollTo(link.id)}
-                className={`relative text-[11px] sm:text-[13px] font-semibold px-2 sm:px-3.5 py-1.5 transition-all duration-200 whitespace-nowrap group tracking-wide ${
+                className={`relative text-[10px] sm:text-[12px] font-semibold px-1.5 sm:px-3 py-1 transition-all duration-200 whitespace-nowrap group tracking-wide ${
                   active === link.id ? 'text-emerald-300' : 'text-white/50 hover:text-white/90'
                 }`}
               >
                 {link.label}
-                <span className={`absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-emerald-400 transition-all duration-300 ${active === link.id ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'}`} style={{ transformOrigin: 'left' }} />
+                <span className={`absolute bottom-0 left-1 right-1 sm:left-2 sm:right-2 h-[2px] rounded-full bg-emerald-400 transition-all duration-300 ${active === link.id ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'}`} style={{ transformOrigin: 'left' }} />
               </button>
               {i < SECTION_LINKS.length - 1 && (
-                <span className="text-white/10 text-xs select-none">|</span>
+                <span className="text-white/10 text-[10px] select-none">|</span>
               )}
             </span>
           ))}
         </div>
 
-        {/* CTA pills */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pl-3 sm:pl-5">
+        {/* CTA pills — always visible, compact on mobile */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 px-2 sm:px-3 border-l border-white/10">
           {(school?.contact?.email || school?.contact?.phone) && (
             <a
               href={school.contact.email ? `mailto:${school.contact.email}` : `tel:${school.contact.phone}`}
-              className="bg-emerald-500 text-white text-[10px] sm:text-[12px] font-bold px-3 sm:px-4 py-1.5 rounded-full hover:bg-emerald-400 active:scale-95 transition-all duration-150 whitespace-nowrap shadow-md shadow-emerald-900/40"
+              className="bg-emerald-500 text-white text-[9px] sm:text-[11px] font-bold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-emerald-400 active:scale-95 transition-all duration-150 whitespace-nowrap shadow-sm"
             >
-              Enquire Now
+              Enquire
             </a>
           )}
           <button
             onClick={() => scrollTo('sd-reviews')}
-            className="border border-white/25 text-white/80 text-[10px] sm:text-[12px] font-semibold px-3 sm:px-4 py-1.5 rounded-full hover:bg-white/10 hover:text-white active:scale-95 transition-all duration-150 whitespace-nowrap"
+            className="border border-white/20 text-white/70 text-[9px] sm:text-[11px] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full hover:bg-white/10 hover:text-white active:scale-95 transition-all duration-150 whitespace-nowrap"
           >
             Reviews
           </button>
           {school?.contact?.phone && (
             <a
               href={`tel:${school.contact.phone}`}
-              className="hidden sm:flex items-center gap-1.5 bg-white/10 text-white text-[12px] font-semibold px-4 py-1.5 rounded-full hover:bg-white/20 active:scale-95 transition-all duration-150 whitespace-nowrap border border-white/15"
+              className="hidden md:flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full hover:bg-white/20 active:scale-95 transition-all whitespace-nowrap border border-white/10"
             >
-              <Phone size={11} strokeWidth={2.5} />
+              <Phone size={10} strokeWidth={2.5} />
               {school.contact.phone}
             </a>
           )}
@@ -863,41 +863,43 @@ export default function SchoolDetail() {
 
             {/* ── REVIEWS ──────────────────────────────────────────── */}
             <div id="sd-reviews">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
-                    <Star size={15} className="text-amber-500 fill-amber-400" />
+                    <Star size={14} className="text-amber-500 fill-amber-400" />
                   </div>
                   <div>
-                    <h2 className="text-base sm:text-xl font-bold text-gray-900 leading-tight">
-                      Reviews {reviewTotal > 0 && <span className="text-gray-400 font-normal text-sm">({reviewTotal})</span>}
+                    <h2 className="text-sm sm:text-base font-extrabold text-gray-900 leading-tight mb-0">
+                      Reviews {reviewTotal > 0 && <span className="text-gray-400 font-normal text-xs">({reviewTotal})</span>}
                     </h2>
                     {school.rating > 0 && (
-                      <p className="text-[11px] text-gray-400">
+                      <p className="text-[10px] text-gray-400 mt-0.5">
                         {school.rating.toFixed(1)} avg · {school.reviewCount} review{school.reviewCount !== 1 ? 's' : ''}
                       </p>
                     )}
                   </div>
                 </div>
-                {!userReview && user && !showForm && (
-                  <button onClick={() => setShowForm(true)}
-                    className="flex items-center gap-1.5 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm hover:opacity-90 active:scale-95"
-                    style={{ background: 'linear-gradient(135deg, #0d2918, #166534)' }}>
-                    <MessageSquare size={12} /> Write a Review
-                  </button>
-                )}
-                {!user && (
-                  <Link to="/login" className="text-xs text-emerald-600 font-bold hover:text-emerald-700 hover:underline">
-                    Login to review →
-                  </Link>
-                )}
+                <div className="flex items-center gap-2">
+                  {!userReview && user && !showForm && (
+                    <button onClick={() => setShowForm(true)}
+                      className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition shadow-sm hover:opacity-90 active:scale-95 whitespace-nowrap"
+                      style={{ background: 'linear-gradient(135deg, #0d2918, #166534)' }}>
+                      <MessageSquare size={11} /> Write a Review
+                    </button>
+                  )}
+                  {!user && (
+                    <Link to="/login" className="text-[11px] sm:text-xs text-emerald-600 font-bold hover:text-emerald-700 hover:underline whitespace-nowrap">
+                      Login to review →
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* Rating bar — only when there are real reviews */}
               {reviewTotal > 0 && (
-                <div className="rounded-2xl p-4 sm:p-5 mb-4 flex gap-5 items-center border border-emerald-100" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
+                <div className="rounded-2xl p-3 sm:p-5 mb-4 flex gap-3 sm:gap-5 items-center border border-emerald-100" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
                   <div className="text-center shrink-0">
-                    <p className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-none">{school.rating?.toFixed(1) || '—'}</p>
+                    <p className="text-3xl sm:text-5xl font-extrabold text-gray-900 leading-none">{school.rating?.toFixed(1) || '—'}</p>
                     <div className="flex gap-0.5 justify-center my-2">
                       {[1,2,3,4,5].map((s) => (
                         <Star key={s} size={13} className={s <= Math.round(school.rating||0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300 fill-gray-200'} />

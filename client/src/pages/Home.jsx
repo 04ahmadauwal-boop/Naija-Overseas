@@ -1106,61 +1106,65 @@ export default function Home() {
 
       {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
       <section className="overflow-hidden bg-[#0b0f0e]">
-        <div className="flex flex-col lg:flex-row min-h-[520px]">
+        <div className="flex flex-col lg:flex-row">
 
           {/* Left CTA panel */}
-          <div className="lg:w-[36%] shrink-0 flex flex-col justify-center px-8 sm:px-12 lg:px-14 py-14 lg:py-0 relative z-10">
-            <p className="text-green-400 text-xs font-bold uppercase tracking-widest mb-4">Reviews</p>
-            <h2 className="text-white text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              Find <span className="text-yellow-400">Reviews.</span><br />
+          <div className="lg:w-[36%] shrink-0 flex flex-col justify-center px-6 sm:px-10 lg:px-14 pt-10 pb-6 sm:pt-12 sm:pb-8 lg:py-16 relative z-10">
+            <p className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3">Reviews</p>
+            <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Find <span className="text-emerald-400">Reviews.</span><br />
               Make the Right Choice
             </h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
+            <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-6 max-w-xs">
               Real ratings from parents and students across Nigeria and West Africa — on teaching, fees, facilities and more.
             </p>
             <Link
               to="/reviews"
-              className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold text-sm px-7 py-3 rounded-full hover:bg-yellow-400 transition-colors w-fit shadow-lg"
+              className="inline-flex items-center gap-2 bg-emerald-500 text-white font-bold text-sm px-6 py-3 rounded-full hover:bg-emerald-400 transition-colors w-fit shadow-lg shadow-emerald-900/30"
             >
               View Reviews
             </Link>
           </div>
 
           {/* Right scrolling review columns */}
-          <div className="flex-1 overflow-hidden relative flex gap-3 px-3 py-8" style={{ maxHeight: 520 }}>
+          <div className="flex-1 overflow-hidden relative flex gap-2.5 px-3 sm:px-4 pt-0 pb-6 lg:py-8" style={{ height: 'clamp(260px, 55vw, 520px)' }}>
             {/* Top fade */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-10 sm:h-14 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
             {/* Bottom fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-14 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
 
             {[0, 1, 2, 3].map((colIdx) => {
               const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
               const isDown = colIdx % 2 === 1;
+              /* On mobile show only 2 cols, tablet 3, desktop all 4 */
+              const colClass = colIdx === 2 ? 'hidden sm:block flex-1 overflow-hidden min-w-0'
+                             : colIdx === 3 ? 'hidden lg:block flex-1 overflow-hidden min-w-0'
+                             : 'flex-1 overflow-hidden min-w-0';
               return (
-                <div key={colIdx} className="flex-1 overflow-hidden min-w-0">
+                <div key={colIdx} className={colClass}>
                   <div className={isDown ? 'marquee-down' : 'marquee-up'}>
                     {[...col, ...col].map((t, j) => (
                       <div
                         key={j}
-                        className="bg-white rounded-xl p-3.5 mb-3 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white rounded-xl p-3 sm:p-3.5 mb-2.5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
                       >
-                        <div className="flex items-start gap-2.5">
-                          <div className={`w-8 h-8 rounded-full ${t.color} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>
+                        <div className="flex items-start gap-2">
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${t.color} text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shrink-0`}>
                             {t.initials}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1 mb-0.5">
+                            <div className="flex items-center gap-0.5 mb-0.5">
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                   key={i}
-                                  size={10}
-                                  className={i < t.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}
+                                  size={9}
+                                  className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'}
                                 />
                               ))}
                             </div>
-                            <p className="font-bold text-gray-900 text-[11px] leading-tight">{t.category}</p>
-                            <p className="text-gray-500 text-[10px] leading-snug mt-0.5 line-clamp-3">{t.text}</p>
-                            <p className="text-gray-400 text-[9px] mt-1.5 font-medium">{t.name} · {t.role}</p>
+                            <p className="font-bold text-gray-900 text-[10px] sm:text-[11px] leading-tight">{t.category}</p>
+                            <p className="text-gray-500 text-[9px] sm:text-[10px] leading-snug mt-0.5 line-clamp-3">{t.text}</p>
+                            <p className="text-gray-400 text-[8px] sm:text-[9px] mt-1.5 font-medium">{t.name} · {t.role}</p>
                           </div>
                         </div>
                       </div>
