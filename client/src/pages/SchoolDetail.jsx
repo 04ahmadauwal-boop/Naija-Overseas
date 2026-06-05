@@ -113,13 +113,13 @@ const getYoutubeThumbnail = (url) => {
 // ── Shared student photo ──────────────────────────────────────────────────────
 function StudentPhoto({ photo, name, borderColor = 'border-yellow-400', placeholderBorder = 'border-yellow-400/40' }) {
   return photo ? (
-    <div className={`w-12 h-[3.5rem] sm:w-16 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden border-2 ${borderColor} shadow shrink-0`}>
+    <div className={`w-8 h-10 sm:w-12 sm:h-[3.5rem] md:w-16 md:h-20 rounded-lg sm:rounded-xl overflow-hidden border-2 ${borderColor} shadow shrink-0`}>
       <img src={photo} alt={name} className="w-full h-full object-cover" />
     </div>
   ) : (
-    <div className={`w-12 h-[3.5rem] sm:w-16 sm:h-20 rounded-lg sm:rounded-xl bg-white/5 border-2 ${placeholderBorder} flex items-center justify-center shrink-0`}>
-      <GraduationCap size={16} className="text-white/20 sm:hidden" />
-      <GraduationCap size={20} className="text-white/20 hidden sm:block" />
+    <div className={`w-8 h-10 sm:w-12 sm:h-[3.5rem] md:w-16 md:h-20 rounded-lg sm:rounded-xl bg-white/5 border-2 ${placeholderBorder} flex items-center justify-center shrink-0`}>
+      <GraduationCap size={12} className="text-white/20 sm:hidden" />
+      <GraduationCap size={16} className="text-white/20 hidden sm:block" />
     </div>
   );
 }
@@ -135,26 +135,26 @@ function JambCard({ report, schoolName }) {
         style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
 
       {/* Header */}
-      <div className="relative px-3 sm:px-4 pt-2.5 sm:pt-4 pb-2 sm:pb-2.5 border-b border-white/10 text-center">
-        <p className="text-green-400 font-extrabold text-[9px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
-        <p className="text-white/30 text-[8px] tracking-wide">JAMB UTME · {report.year}</p>
+      <div className="relative px-2.5 sm:px-3 pt-2 sm:pt-2.5 pb-1.5 sm:pb-2 border-b border-white/10 text-center">
+        <p className="text-green-400 font-extrabold text-[8px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/30 text-[7px] sm:text-[8px] tracking-wide">JAMB UTME · {report.year}</p>
       </div>
 
-      {/* Body — compact horizontal on all sizes */}
-      <div className="relative px-3 sm:px-4 py-2.5 sm:py-4 flex items-start gap-2 sm:gap-3">
+      {/* Body */}
+      <div className="relative px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-start gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-white/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-0.5">Top Score</p>
-          <p className="text-yellow-300 font-black text-[1.75rem] sm:text-4xl leading-none tracking-tight">
+          <p className="text-white/40 text-[7px] sm:text-[8px] font-bold uppercase tracking-wider mb-0.5">Top Score</p>
+          <p className="text-yellow-300 font-black text-lg sm:text-[1.75rem] leading-none tracking-tight">
             {report.total}
           </p>
-          <p className="text-white/20 text-[8px] mt-0.5 mb-2">/400</p>
+          <p className="text-white/20 text-[7px] sm:text-[8px] mt-0.5 mb-1.5">/400</p>
 
           {report.subjects?.length > 0 && (
-            <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+            <div className="grid grid-cols-2 gap-0.5 sm:gap-1">
               {report.subjects.slice(0, 4).map((s) => (
-                <div key={s.subject} className="flex items-center justify-between bg-white/5 rounded px-1.5 py-1 gap-1">
-                  <p className="text-white/40 text-[8px] uppercase font-semibold truncate">{s.subject.slice(0, 5)}</p>
-                  <p className="text-yellow-300 font-bold text-[10px] shrink-0">{s.score}</p>
+                <div key={s.subject} className="flex items-center justify-between bg-white/5 rounded px-1 sm:px-1.5 py-0.5 sm:py-1 gap-1">
+                  <p className="text-white/40 text-[7px] sm:text-[8px] uppercase font-semibold truncate">{s.subject.slice(0, 5)}</p>
+                  <p className="text-yellow-300 font-bold text-[8px] sm:text-[10px] shrink-0">{s.score}</p>
                 </div>
               ))}
             </div>
@@ -165,9 +165,9 @@ function JambCard({ report, schoolName }) {
       </div>
 
       {/* Footer */}
-      <div className="relative px-3 sm:px-4 py-1.5 sm:py-2.5 bg-white/5 border-t border-white/10 text-center">
-        <p className="text-white font-bold text-[11px] sm:text-sm leading-tight truncate">{report.studentName}</p>
-        <p className="text-white/30 text-[8px] mt-0.5">Top Scorer</p>
+      <div className="relative px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-bold text-[10px] sm:text-[11px] leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/30 text-[7px] sm:text-[8px] mt-0.5">Top Scorer</p>
       </div>
     </div>
   );
@@ -184,7 +184,7 @@ function WaecCard({ report, schoolName }) {
     return 'bg-red-400 text-red-950';
   };
 
-  const maxGrades = 5;
+  const maxGrades = 4;
   const visibleGrades = report.grades?.slice(0, maxGrades) ?? [];
   const extra = (report.grades?.length ?? 0) - maxGrades;
 
@@ -197,26 +197,26 @@ function WaecCard({ report, schoolName }) {
         style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
 
       {/* Header */}
-      <div className="relative px-3 sm:px-4 pt-2.5 sm:pt-4 pb-2 sm:pb-2.5 border-b border-white/10 text-center">
-        <p className="text-yellow-400 font-extrabold text-[9px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
-        <p className="text-white/30 text-[8px] tracking-wide">WAEC SSCE · {report.year}</p>
+      <div className="relative px-2.5 sm:px-3 pt-2 sm:pt-2.5 pb-1.5 sm:pb-2 border-b border-white/10 text-center">
+        <p className="text-yellow-400 font-extrabold text-[8px] sm:text-[10px] uppercase tracking-widest truncate">{schoolName}</p>
+        <p className="text-white/30 text-[7px] sm:text-[8px] tracking-wide">WAEC SSCE · {report.year}</p>
       </div>
 
-      {/* Body — compact horizontal on all sizes */}
-      <div className="relative px-3 sm:px-4 py-2.5 sm:py-4 flex items-start gap-2 sm:gap-3">
+      {/* Body */}
+      <div className="relative px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-start gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-white/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-1.5">Top Student</p>
-          <div className="space-y-1 sm:space-y-1.5">
+          <p className="text-white/40 text-[7px] sm:text-[8px] font-bold uppercase tracking-wider mb-1">Top Student</p>
+          <div className="space-y-0.5 sm:space-y-1">
             {visibleGrades.map((g) => (
-              <div key={g.subject} className="flex items-center gap-1.5">
-                <p className="text-white/55 text-[10px] sm:text-xs flex-1 truncate leading-tight">{g.subject}</p>
-                <span className={`shrink-0 text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded leading-none ${gradeChip(g.grade)}`}>
+              <div key={g.subject} className="flex items-center gap-1">
+                <p className="text-white/55 text-[9px] sm:text-[10px] flex-1 truncate leading-tight">{g.subject}</p>
+                <span className={`shrink-0 text-[7px] sm:text-[8px] px-1 py-0.5 rounded leading-none ${gradeChip(g.grade)}`}>
                   {g.grade}
                 </span>
               </div>
             ))}
             {extra > 0 && (
-              <p className="text-white/25 text-[8px] pt-0.5">+{extra} more</p>
+              <p className="text-white/25 text-[7px] sm:text-[8px] pt-0.5">+{extra} more</p>
             )}
           </div>
         </div>
@@ -228,9 +228,9 @@ function WaecCard({ report, schoolName }) {
       </div>
 
       {/* Footer */}
-      <div className="relative px-3 sm:px-4 py-1.5 sm:py-2.5 bg-white/5 border-t border-white/10 text-center">
-        <p className="text-white font-bold text-[11px] sm:text-sm leading-tight truncate">{report.studentName}</p>
-        <p className="text-white/30 text-[8px] mt-0.5">Outstanding Result</p>
+      <div className="relative px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/5 border-t border-white/10 text-center">
+        <p className="text-white font-bold text-[10px] sm:text-[11px] leading-tight truncate">{report.studentName}</p>
+        <p className="text-white/30 text-[7px] sm:text-[8px] mt-0.5">Outstanding Result</p>
       </div>
     </div>
   );

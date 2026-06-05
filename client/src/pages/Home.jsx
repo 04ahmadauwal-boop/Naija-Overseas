@@ -152,16 +152,21 @@ const FAQS = [
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-200 last:border-0">
+    <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${open ? 'border-green-700/50 bg-green-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4"
+        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4"
       >
-        <span className="font-semibold text-gray-900 text-[15px]">{q}</span>
-        {open ? <ChevronUp size={18} className="text-gray-400 shrink-0" /> : <ChevronDown size={18} className="text-gray-400 shrink-0" />}
+        <span className="font-semibold text-white text-[14px] sm:text-[15px] leading-snug pr-2"
+          style={{ fontFamily: "'Poppins', 'Georgia', sans-serif" }}>
+          {q}
+        </span>
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-green-600 text-white rotate-180' : 'bg-gray-800 text-gray-500'}`}>
+          <ChevronDown size={14} />
+        </div>
       </button>
       {open && (
-        <div className="pb-5 text-gray-500 text-sm leading-relaxed">
+        <div className="px-5 pb-5 text-gray-400 text-[13px] sm:text-sm leading-relaxed border-t border-white/5 pt-3">
           {a}
         </div>
       )}
@@ -265,6 +270,30 @@ const HERO_SLIDES = [
   },
 ];
 
+const DEFAULT_BANNER = {
+  badge:    'For School Owners',
+  headline: 'Reach thousands of parents actively searching for schools right now.',
+  body:     "List your school on Nigeria's fastest-growing education platform. Get verified, get discovered, and fill your admission slots faster than ever before.",
+  ctaLabel: 'List Your School',
+  ctaLink:  '/list-your-school',
+  stats: [
+    { value: '3x',   label: 'More enquiries on average' },
+    { value: '24h',  label: 'Approval turnaround'       },
+    { value: '₦15k', label: 'One-time listing fee'      },
+    { value: '10k+', label: 'Monthly active parents'    },
+  ],
+  bullets: [
+    'Full school profile page',
+    'Search & comparison visibility',
+    'Direct enquiry routing',
+    'Admin management tools',
+    'Monthly performance report',
+    'Featured listing option',
+  ],
+  bgTheme: 'dark',
+  bgImage: '',
+};
+
 const EMPTY_FILTERS = { search: '', state: '', type: '', level: '', curriculum: '', minFee: '', maxFee: '' };
 
 const BUDGET_OPTIONS = [
@@ -292,6 +321,14 @@ export default function Home() {
   useEffect(() => {
     api.get('/videos', { params: { limit: 12 } })
       .then(({ data }) => setReviewVideos(data.videos || []))
+      .catch(() => {});
+  }, []);
+
+  // Home banner — fetched from admin-controlled API
+  const [banner, setBanner] = useState(DEFAULT_BANNER);
+  useEffect(() => {
+    api.get('/banner')
+      .then(({ data }) => { if (data.banner && data.banner.headline) setBanner({ ...DEFAULT_BANNER, ...data.banner }); })
       .catch(() => {});
   }, []);
 
@@ -1104,7 +1141,7 @@ export default function Home() {
       )}
 
       {/* ── FEATURES GRID ─────────────────────────────────────────── */}
-      <section className="py-14 md:py-24 px-4 bg-white relative overflow-hidden">
+      <section className="min-h-[80vh] flex flex-col justify-center py-12 md:py-20 px-4 bg-white relative overflow-hidden">
         {/* Subtle grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(#f3f4f6_1px,transparent_1px),linear-gradient(to_right,#f3f4f6_1px,transparent_1px)] bg-[size:36px_36px] opacity-60 pointer-events-none" />
 
@@ -1267,94 +1304,224 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FOR SCHOOL OWNERS ─────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-gray-900 rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center gap-10">
-            <div className="flex-1 text-white">
-              <div className="inline-block bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full mb-5 uppercase tracking-wider">
-                For School Owners
+      {/* ── HOME BANNER (admin-controlled) ────────────────────────── */}
+      {(() => {
+        const b = banner;
+        const isExternal = /^https?:\/\//.test(b.ctaLink);
+
+        const themeGradient =
+          b.bgTheme === 'green' ? 'linear-gradient(135deg,#042f1e 0%,#064e3b 45%,#065f46 100%)'
+          : b.bgTheme === 'blue' ? 'linear-gradient(135deg,#0c1a2e 0%,#1e3a5f 50%,#1e40af 100%)'
+          : 'linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#111827 100%)';
+
+        const accentText =
+          b.bgTheme === 'green' ? 'text-yellow-300'
+          : b.bgTheme === 'blue'  ? 'text-cyan-300'
+          : 'text-yellow-400';
+
+        const badgeCls =
+          b.bgTheme === 'green' ? 'bg-yellow-300 text-emerald-900'
+          : b.bgTheme === 'blue'  ? 'bg-cyan-400 text-blue-900'
+          : 'bg-yellow-400 text-gray-900';
+
+        const checkCls =
+          b.bgTheme === 'green' ? 'text-yellow-300'
+          : b.bgTheme === 'blue'  ? 'text-cyan-400'
+          : 'text-green-400';
+
+        return (
+          <section className="py-6 md:py-10 px-4 bg-white">
+            <div className="max-w-6xl mx-auto">
+              <div
+                className="relative rounded-3xl overflow-hidden"
+                style={b.bgImage ? undefined : { background: themeGradient }}
+              >
+                {/* Background image */}
+                {b.bgImage && (
+                  <>
+                    <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${b.bgImage})` }} />
+                    <div className="absolute inset-0 bg-black/65" />
+                    <div className="absolute inset-0"
+                      style={{ background: 'linear-gradient(135deg,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.3) 60%,transparent 100%)' }} />
+                  </>
+                )}
+
+                {/* Dot pattern texture */}
+                <div className="absolute inset-0 opacity-[0.045] pointer-events-none"
+                  style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '18px 18px' }} />
+
+                {/* Decorative glows */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-12 -left-12 w-72 h-72 rounded-full bg-white/4 blur-2xl pointer-events-none" />
+
+                {/* Content */}
+                <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-12 p-5 sm:p-7 md:p-8 lg:p-10">
+
+                  {/* Left */}
+                  <div className="flex-1 min-w-0">
+                    {/* Badge */}
+                    <div className={`inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full mb-5 ${badgeCls}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                      {b.badge}
+                    </div>
+
+                    {/* Headline */}
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-[1.15] mb-4 max-w-xl">
+                      {b.headline}
+                    </h2>
+
+                    {/* Body */}
+                    <p className="text-white/55 text-sm sm:text-base leading-relaxed mb-7 max-w-lg">
+                      {b.body}
+                    </p>
+
+                    {/* Stats */}
+                    {b.stats?.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+                        {b.stats.map((s, i) => (
+                          <div key={i} className="rounded-2xl px-4 py-3.5 border border-white/10"
+                            style={{ background: 'rgba(255,255,255,0.07)' }}>
+                            <div className={`text-2xl sm:text-3xl font-extrabold leading-none mb-1 ${accentText}`}>{s.value}</div>
+                            <div className="text-white/40 text-[11px] leading-snug">{s.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    {isExternal
+                      ? <a href={b.ctaLink} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-white text-gray-900 font-extrabold px-7 py-3.5 rounded-xl hover:bg-gray-100 active:scale-95 transition-all shadow-xl text-sm sm:text-base">
+                          {b.ctaLabel} <ArrowRight size={16} />
+                        </a>
+                      : <Link to={b.ctaLink}
+                          className="inline-flex items-center gap-2 bg-white text-gray-900 font-extrabold px-7 py-3.5 rounded-xl hover:bg-gray-100 active:scale-95 transition-all shadow-xl text-sm sm:text-base">
+                          {b.ctaLabel} <ArrowRight size={16} />
+                        </Link>
+                    }
+                  </div>
+
+                  {/* Right — "What you get" glass card */}
+                  {b.bullets?.filter(Boolean).length > 0 && (
+                    <div
+                      className="shrink-0 w-full lg:w-[17rem] xl:w-72 rounded-2xl p-5 sm:p-6 border border-white/12 backdrop-blur-md"
+                      style={{ background: 'rgba(255,255,255,0.08)' }}
+                    >
+                      <p className="font-extrabold text-white text-sm mb-4 flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${accentText.replace('text-', 'bg-')}`} />
+                        What you get
+                      </p>
+                      <div>
+                        {b.bullets.filter(Boolean).map((item, i) => (
+                          <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/8 last:border-0">
+                            <CheckCircle size={14} className={`${checkCls} shrink-0`} />
+                            <span className="text-white/70 text-sm leading-snug">{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tight mb-4">
-                Reach thousands of parents actively searching for schools right now.
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── FAQ ───────────────────────────────────────────────────── */}
+      <section className="bg-gray-950 py-16 md:py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-[1fr_1.5fr] gap-10 lg:gap-16 items-start">
+
+            {/* Left — sticky header */}
+            <div className="lg:sticky lg:top-24">
+              <span className="inline-block text-green-400 text-[11px] font-extrabold uppercase tracking-[0.2em] mb-4">FAQ</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight mb-4"
+                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                Got questions?<br />
+                <em className="text-green-400 not-italic">We have answers.</em>
               </h2>
-              <p className="text-gray-400 leading-relaxed mb-6">
-                List your school on Nigeria's fastest-growing education platform. Get verified, get discovered, and fill your admission slots faster than ever before.
+              <p className="text-gray-500 text-sm sm:text-base leading-relaxed mb-6 max-w-xs">
+                Everything you need to know about schools, listings, study abroad and more.
               </p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {[
-                  ['3x', 'More enquiries on average'],
-                  ['24h', 'Approval turnaround'],
-                  ['₦15k', 'One-time listing fee'],
-                  ['10k+', 'Monthly active parents'],
-                ].map(([n, l]) => (
+              <Link to="/contact"
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-5 py-2.5 rounded-full transition shadow-lg shadow-green-900/30">
+                Ask a question <ArrowRight size={14} />
+              </Link>
+
+              {/* Decorative stat */}
+              <div className="mt-10 flex gap-6 hidden lg:flex">
+                {[['6', 'Common topics'], ['< 1 min', 'Avg. read time']].map(([v, l]) => (
                   <div key={l}>
-                    <div className="text-2xl font-extrabold text-yellow-400">{n}</div>
-                    <div className="text-gray-400 text-xs">{l}</div>
+                    <div className="text-2xl font-extrabold text-white">{v}</div>
+                    <div className="text-gray-600 text-xs mt-0.5">{l}</div>
                   </div>
                 ))}
               </div>
-              <Link to="/list-your-school"
-                className="inline-block bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition">
-                List Your School →
-              </Link>
             </div>
-            <div className="shrink-0 w-full md:w-72 bg-gray-800 rounded-2xl p-6 border border-gray-700">
-              <h4 className="font-bold text-white mb-4 text-sm">What you get</h4>
-              {[
-                'Full school profile page',
-                'Search & comparison visibility',
-                'Direct enquiry routing',
-                'Admin management tools',
-                'Monthly performance report',
-                'Featured listing option',
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2.5 py-2.5 border-b border-gray-700 last:border-0">
-                  <CheckCircle size={14} className="text-green-400 shrink-0" />
-                  <span className="text-gray-300 text-sm">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── FAQ ───────────────────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-gray-50">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-3">FAQ</p>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-              Frequently asked questions
-            </h2>
-            <p className="text-gray-500">Can't find your answer? <Link to="/contact" className="text-green-700 hover:underline font-medium">Contact us</Link> and we'll help.</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 px-6 shadow-sm">
-            {FAQS.map((faq) => <FAQItem key={faq.q} {...faq} />)}
+            {/* Right — accordion */}
+            <div className="space-y-2">
+              {FAQS.map((faq) => <FAQItem key={faq.q} {...faq} />)}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── FINAL CTA ─────────────────────────────────────────────── */}
-      <section className="py-10 md:py-20 px-4 bg-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-            Start your school search today — it's free.
+      <section className="relative min-h-[60vh] flex flex-col justify-center py-12 px-4 overflow-hidden"
+        style={{ background: 'linear-gradient(135deg,#021a0e 0%,#042f1e 40%,#064e3b 100%)' }}>
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '22px 22px' }} />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
+        {/* Glow orbs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-green-800/15 blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2 rounded-full mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Free for students &amp; parents
+          </div>
+
+          {/* Headline — serif for premium editorial feel */}
+          <h2 className="text-3xl sm:text-4xl md:text-[3.2rem] font-extrabold text-white leading-[1.15] tracking-tight mb-5"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+            Start your school search<br className="hidden sm:block" /> today —{' '}
+            <em className="text-green-400" style={{ fontStyle: 'italic' }}>it's free.</em>
           </h2>
-          <p className="text-gray-500 mb-8 text-lg">
-            Join over 10,000 families who found their ideal school or university placement through Naija & Overseas.
+
+          <p className="text-green-200/60 text-sm sm:text-base leading-relaxed mb-10 max-w-xl mx-auto">
+            Join over 10,000 families who found their ideal school or university placement through Naija &amp; Overseas.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+
+          {/* Trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-10">
+            {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
+              <div key={t} className="flex items-center gap-1.5">
+                {i > 0 && <span className="w-px h-3 bg-green-800 hidden sm:block" />}
+                <CheckCircle size={12} className="text-green-400 shrink-0" />
+                <span className="text-green-300/70 text-xs sm:text-sm font-medium">{t}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
             <Link to="/register"
-              className="bg-green-700 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition text-base shadow-sm">
+              className="bg-white text-green-950 font-extrabold px-8 py-4 rounded-2xl hover:bg-green-50 active:scale-95 transition-all text-sm sm:text-base shadow-2xl shadow-black/30 tracking-tight">
               Create Free Account →
             </Link>
             <Link to="/study-abroad"
-              className="border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition text-base">
+              className="border border-green-600/50 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-green-800/30 active:scale-95 transition-all text-sm sm:text-base backdrop-blur-sm">
               Explore Study Abroad
             </Link>
           </div>
-          <p className="text-gray-400 text-sm mt-4">No credit card required. Free forever for students and parents.</p>
+          <p className="text-green-800 text-xs">No credit card required. No hidden charges. Ever.</p>
         </div>
       </section>
 
