@@ -16,8 +16,16 @@ const blogPostSchema = new mongoose.Schema(
     tags: [{ type: String }],
     isPublished: { type: Boolean, default: false },
     publishedAt: { type: Date },
+    readTime: { type: Number, default: 5 },
+    views: { type: Number, default: 0 },
+    metaDescription: { type: String },
+    metaKeywords: [{ type: String }],
   },
   { timestamps: true }
 );
+
+blogPostSchema.index({ title: 'text', content: 'text', tags: 'text' });
+blogPostSchema.index({ category: 1, isPublished: 1 });
+blogPostSchema.index({ views: -1 });
 
 module.exports = mongoose.model('BlogPost', blogPostSchema);

@@ -5,7 +5,8 @@ import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
   Users, BarChart3, Shield, Zap, Award, X,
-  ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard
+  ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
+  Flame, Clock, Eye, TrendingUp,
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -316,6 +317,12 @@ export default function Home() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Trending blog posts
+  const [trendingPosts, setTrendingPosts] = useState([]);
+  useEffect(() => {
+    api.get('/blog/trending').then(({ data }) => setTrendingPosts(data.posts || [])).catch(() => {});
+  }, []);
+
   // Review videos for the scrolling section
   const [reviewVideos, setReviewVideos] = useState([]);
   useEffect(() => {
@@ -486,7 +493,7 @@ export default function Home() {
       >
         {/* Background — cinematic multi-layer */}
         {HERO_SLIDES.map((s, i) => (
-          <div key={i} className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+          <div key={i} className={`absolute inset-0 transition-opacity duration-1400 ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
             {/* Photo — portrait crop on mobile, landscape on desktop */}
             <div
               className={`absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden ${i === slide ? 'hero-bg-animate' : ''}`}
@@ -499,9 +506,9 @@ export default function Home() {
             {/* Base dark scrim — let photo breathe a bit */}
             <div className="absolute inset-0 bg-black/40" />
             {/* Rich colour gradient from left — full strength, no opacity reduction */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${s.accent} to-transparent`} />
+            <div className={`absolute inset-0 bg-linear-to-r ${s.accent} to-transparent`} />
             {/* Strong bottom fade for text legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
             {/* Subtle radial vignette for editorial depth */}
             <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 90% at 15% 55%, transparent 35%, rgba(0,0,0,0.35) 100%)' }} />
           </div>
@@ -608,7 +615,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-5 mb-3 sm:mb-5">
               {HERO_SLIDES[slide].stats.map((stat, i) => (
                 <div key={stat} className="flex items-center gap-1.5">
-                  {i > 0 && <span className="w-px h-3 bg-white/20 block shrink-0 hidden sm:block" />}
+                  {i > 0 && <span className="w-px h-3 bg-white/20 shrink-0 hidden sm:block" />}
                   <CheckCircle size={10} className="text-green-400 shrink-0" />
                   <span className="text-white/80 text-[11px] sm:text-[13px] font-medium">{stat}</span>
                 </div>
@@ -741,7 +748,7 @@ export default function Home() {
                   <Link
                     key={state}
                     to={`/schools/state/${state}`}
-                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-gradient-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${idx >= 4 ? 'hidden sm:flex' : 'flex'}`}
+                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-linear-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${idx >= 4 ? 'hidden sm:flex' : 'flex'}`}
                   >
                     <span className="text-2xl sm:text-3xl leading-none">{emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -803,7 +810,7 @@ export default function Home() {
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-gray-600"><path d="M8 5v14l11-7z"/></svg>
                   </div>
               }
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="w-9 h-9 rounded-full bg-green-600/90 flex items-center justify-center shadow-lg">
                   <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
@@ -1143,7 +1150,7 @@ export default function Home() {
       {/* ── FEATURES GRID ─────────────────────────────────────────── */}
       <section className="min-h-[80vh] flex flex-col justify-center py-12 md:py-20 px-4 bg-white relative overflow-hidden">
         {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(#f3f4f6_1px,transparent_1px),linear-gradient(to_right,#f3f4f6_1px,transparent_1px)] bg-[size:36px_36px] opacity-60 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(#f3f4f6_1px,transparent_1px),linear-gradient(to_right,#f3f4f6_1px,transparent_1px)] bg-size-[36px_36px] opacity-60 pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -1163,10 +1170,10 @@ export default function Home() {
             {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, card, border, iconBg, iconFg, numFg, badgeBg }) => (
               <div
                 key={title}
-                className={`group relative overflow-hidden rounded-2xl border ${border} bg-gradient-to-br ${card} p-5 sm:p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}
+                className={`group relative overflow-hidden rounded-2xl border ${border} bg-linear-to-br ${card} p-5 sm:p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}
               >
                 {/* Gradient accent bar on hover */}
-                <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div className={`absolute top-0 left-0 right-0 h-0.75 bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
                 {/* Large faded number in background */}
                 <span className={`absolute -top-3 -right-1 text-[80px] leading-none font-black select-none pointer-events-none ${numFg} opacity-60`}>
@@ -1257,8 +1264,8 @@ export default function Home() {
             style={{ height: 'clamp(160px, 40vw, 520px)' }}
           >
             {/* Top / bottom fades */}
-            <div className="absolute top-0 left-0 right-0 h-8 sm:h-12 bg-gradient-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-8 sm:h-12 bg-gradient-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
 
             {[0, 1, 2, 3].map((colIdx) => {
               const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
@@ -1405,7 +1412,7 @@ export default function Home() {
                   {/* Right — "What you get" glass card */}
                   {b.bullets?.filter(Boolean).length > 0 && (
                     <div
-                      className="shrink-0 w-full lg:w-[17rem] xl:w-72 rounded-2xl p-5 sm:p-6 border border-white/12 backdrop-blur-md"
+                      className="shrink-0 w-full lg:w-68 xl:w-72 rounded-2xl p-5 sm:p-6 border border-white/12 backdrop-blur-md"
                       style={{ background: 'rgba(255,255,255,0.08)' }}
                     >
                       <p className="font-extrabold text-white text-sm mb-4 flex items-center gap-2">
@@ -1452,7 +1459,7 @@ export default function Home() {
               </Link>
 
               {/* Decorative stat */}
-              <div className="mt-10 flex gap-6 hidden lg:flex">
+              <div className="mt-10 gap-6 hidden lg:flex">
                 {[['6', 'Common topics'], ['< 1 min', 'Avg. read time']].map(([v, l]) => (
                   <div key={l}>
                     <div className="text-2xl font-extrabold text-white">{v}</div>
@@ -1470,58 +1477,151 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[60vh] flex flex-col justify-center py-12 px-4 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#021a0e 0%,#042f1e 40%,#064e3b 100%)' }}>
-        {/* Dot pattern */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '22px 22px' }} />
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
-        {/* Glow orbs */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-green-800/15 blur-3xl pointer-events-none" />
+      {/* ── TRENDING TOPICS ───────────────────────────────────────── */}
+      <section className="relative overflow-hidden" style={{ minHeight: '70vh' }}
+        aria-label="Trending Topics">
+        {/* Dark background with dot grid */}
+        <div className="absolute inset-0"
+          style={{ background: 'linear-gradient(135deg,#021a0e 0%,#042f1e 50%,#064e3b 100%)' }} />
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/40 to-transparent" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-175 h-100 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-3xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2 rounded-full mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Free for students &amp; parents
-          </div>
-
-          {/* Headline — serif for premium editorial feel */}
-          <h2 className="text-3xl sm:text-4xl md:text-[3.2rem] font-extrabold text-white leading-[1.15] tracking-tight mb-5"
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-            Start your school search<br className="hidden sm:block" /> today —{' '}
-            <em className="text-green-400" style={{ fontStyle: 'italic' }}>it's free.</em>
-          </h2>
-
-          <p className="text-green-200/60 text-sm sm:text-base leading-relaxed mb-10 max-w-xl mx-auto">
-            Join over 10,000 families who found their ideal school or university placement through Naija &amp; Overseas.
-          </p>
-
-          {/* Trust indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-10">
-            {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
-              <div key={t} className="flex items-center gap-1.5">
-                {i > 0 && <span className="w-px h-3 bg-green-800 hidden sm:block" />}
-                <CheckCircle size={12} className="text-green-400 shrink-0" />
-                <span className="text-green-300/70 text-xs sm:text-sm font-medium">{t}</span>
+        <div className="relative max-w-7xl mx-auto px-4 py-14 flex flex-col" style={{ minHeight: '70vh' }}>
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1.5 rounded-full">
+                <Flame size={11} className="text-orange-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Trending Topics
               </div>
-            ))}
+              <h2 className="text-white font-extrabold text-xl sm:text-2xl">
+                What students are reading
+              </h2>
+            </div>
+            <Link to="/blog"
+              className="hidden sm:flex items-center gap-1.5 text-green-400 hover:text-green-300 text-sm font-semibold transition">
+              View all articles <ArrowRight size={14} />
+            </Link>
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
-            <Link to="/register"
-              className="bg-white text-green-950 font-extrabold px-8 py-4 rounded-2xl hover:bg-green-50 active:scale-95 transition-all text-sm sm:text-base shadow-2xl shadow-black/30 tracking-tight">
-              Create Free Account →
-            </Link>
-            <Link to="/study-abroad"
-              className="border border-green-600/50 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-green-800/30 active:scale-95 transition-all text-sm sm:text-base backdrop-blur-sm">
-              Explore Study Abroad
-            </Link>
-          </div>
-          <p className="text-green-800 text-xs">No credit card required. No hidden charges. Ever.</p>
+          {/* Posts grid */}
+          {trendingPosts.length > 0 ? (
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Large featured card */}
+              {trendingPosts[0] && (
+                <Link to={`/blog/${trendingPosts[0].slug}`}
+                  className="group col-span-2 row-span-2 relative rounded-2xl overflow-hidden cursor-pointer">
+                  <div className="absolute inset-0">
+                    {trendingPosts[0].coverImage ? (
+                      <img src={trendingPosts[0].coverImage} alt={trendingPosts[0].title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    ) : (
+                      <div className="w-full h-full bg-green-900" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-gray-950/95 via-gray-950/50 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[10px] bg-white/20 backdrop-blur-sm border border-white/20 text-white font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {trendingPosts[0].category}
+                      </span>
+                      <span className="flex items-center gap-1 text-white/40 text-[10px]">
+                        <TrendingUp size={9} /> #1 trending
+                      </span>
+                    </div>
+                    <h3 className="text-white font-extrabold text-lg leading-snug mb-2 group-hover:text-green-300 transition line-clamp-3">
+                      {trendingPosts[0].title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-white/40 text-xs">
+                      {trendingPosts[0].readTime && <span className="flex items-center gap-1"><Clock size={10} />{trendingPosts[0].readTime} min</span>}
+                      {trendingPosts[0].views > 0 && <span className="flex items-center gap-1"><Eye size={10} />{trendingPosts[0].views.toLocaleString()}</span>}
+                    </div>
+                  </div>
+                </Link>
+              )}
+
+              {/* Smaller cards */}
+              {trendingPosts.slice(1, 8).map((post, i) => (
+                <Link key={post._id} to={`/blog/${post.slug}`}
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer min-h-35">
+                  <div className="absolute inset-0">
+                    {post.coverImage ? (
+                      <img src={post.coverImage} alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full bg-linear-to-br from-green-900 to-green-950" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-gray-950/90 via-gray-950/40 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <span className="text-[9px] text-green-400/70 font-bold uppercase tracking-wider">#{i + 2}</span>
+                    <h4 className="text-white text-xs font-bold leading-snug line-clamp-2 group-hover:text-green-300 transition mt-0.5">
+                      {post.title}
+                    </h4>
+                    {post.readTime && (
+                      <span className="flex items-center gap-1 text-white/30 text-[10px] mt-1">
+                        <Clock size={9} />{post.readTime} min
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            /* Fallback CTA when no posts loaded yet */
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="inline-flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2 rounded-full mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Free for students &amp; parents
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-5"
+                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                Start your school search today —{' '}
+                <em className="text-green-400">it&apos;s free.</em>
+              </h2>
+              <p className="text-green-200/60 text-sm mb-8 max-w-md mx-auto">
+                Join over 10,000 families who found their ideal school or university placement.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/register"
+                  className="bg-white text-green-950 font-extrabold px-8 py-4 rounded-2xl hover:bg-green-50 transition text-sm shadow-xl">
+                  Create Free Account →
+                </Link>
+                <Link to="/blog"
+                  className="border border-green-600/50 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-green-800/30 transition text-sm">
+                  Read Our Blog
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom CTA strip */}
+          {trendingPosts.length > 0 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
+                  <div key={t} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="w-px h-3 bg-green-800 hidden sm:block" />}
+                    <CheckCircle size={11} className="text-green-400 shrink-0" />
+                    <span className="text-green-300/60 text-xs font-medium">{t}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <Link to="/register"
+                  className="bg-white text-green-950 font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-green-50 transition shadow-lg">
+                  Get Started Free →
+                </Link>
+                <Link to="/blog"
+                  className="border border-green-600/40 text-green-300 font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-green-800/30 transition sm:flex hidden items-center gap-1.5">
+                  <BookOpen size={13} /> All Articles
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
