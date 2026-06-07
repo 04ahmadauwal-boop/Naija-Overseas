@@ -1202,7 +1202,7 @@ export default function Home() {
 
         {/* ── RIGHT PANEL — cards ── */}
         <div className="relative z-10 flex-1 p-5 sm:p-6 lg:p-7">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 h-full" style={{ gridTemplateRows: 'repeat(2,1fr)' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:h-full lg:grid-rows-2">
             {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
               <div key={title}
                 className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.065] hover:border-white/[0.13] p-4 sm:p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
@@ -1511,7 +1511,7 @@ export default function Home() {
       </section>
 
       {/* ── TRENDING TOPICS ───────────────────────────────────────── */}
-      <section className="relative overflow-hidden" style={{ minHeight: '70vh' }}
+      <section className="relative overflow-hidden"
         aria-label="Trending Topics">
         {/* Dark background with dot grid */}
         <div className="absolute inset-0"
@@ -1521,7 +1521,7 @@ export default function Home() {
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/40 to-transparent" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-175 h-100 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-8 flex flex-col" style={{ height: '70vh', minHeight: '480px' }}>
+        <div className="relative max-w-7xl mx-auto px-4 py-8 md:flex md:flex-col md:h-[70vh] md:min-h-[480px]">
           {/* Header row */}
           <div className="flex items-center justify-between mb-5 shrink-0">
             <div className="flex items-center gap-3">
@@ -1542,11 +1542,11 @@ export default function Home() {
 
           {/* Posts grid */}
           {trendingPosts.length > 0 ? (
-            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-3 min-h-0">
+            <div className="mt-2 md:flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-3 md:min-h-0">
               {/* Large featured card */}
               {trendingPosts[0] && (
                 <Link to={`/blog/${trendingPosts[0].slug}`}
-                  className="group col-span-2 row-span-2 relative rounded-2xl overflow-hidden cursor-pointer">
+                  className="group col-span-1 sm:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden cursor-pointer h-56 sm:h-72 md:h-auto">
                   <div className="absolute inset-0">
                     {trendingPosts[0].coverImage ? (
                       <img src={trendingPosts[0].coverImage} alt={trendingPosts[0].title}
@@ -1576,10 +1576,10 @@ export default function Home() {
                 </Link>
               )}
 
-              {/* Smaller cards */}
-              {trendingPosts.slice(1, 8).map((post, i) => (
+              {/* Smaller cards — 4 fills the right 2×2 on md+ */}
+              {trendingPosts.slice(1, 5).map((post, i) => (
                 <Link key={post._id} to={`/blog/${post.slug}`}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer">
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer h-36 sm:h-44 md:h-auto">
                   <div className="absolute inset-0">
                     {post.coverImage ? (
                       <img src={post.coverImage} alt={post.title}

@@ -533,38 +533,39 @@ export default function SchoolDetail() {
         )}
 
         {/* Bottom content */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-8 pb-5 sm:pb-7 z-10">
-          <div className="max-w-5xl mx-auto flex items-end justify-between gap-4">
+        <div className="absolute bottom-0 left-0 right-0 px-3 sm:px-8 pb-4 sm:pb-7 z-10">
+          <div className="max-w-5xl mx-auto flex items-end justify-between gap-2 sm:gap-4">
 
             {/* Left: name + stats */}
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                <span className="text-[11px] bg-green-600/90 text-white px-2.5 py-0.5 rounded-full capitalize font-medium">{school.type}</span>
-                <span className="text-[11px] bg-white/20 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full capitalize">{school.level} school</span>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                <span className="text-[10px] sm:text-[11px] bg-green-600/90 text-white px-2 sm:px-2.5 py-0.5 rounded-full capitalize font-medium">{school.type}</span>
+                <span className="text-[10px] sm:text-[11px] bg-white/20 backdrop-blur-sm text-white px-2 sm:px-2.5 py-0.5 rounded-full capitalize">{school.level} school</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-[2.4rem] font-extrabold text-white leading-tight drop-shadow-lg flex flex-wrap items-start gap-2.5">
+              <h1 className="text-lg sm:text-2xl md:text-[2.4rem] font-extrabold text-white leading-tight drop-shadow-lg flex flex-wrap items-start gap-2">
                 {school.name}
                 {school.status === 'approved' && (
-                  <span className="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full shrink-0 mt-1">
-                    <CheckCircle size={15} className="text-white" strokeWidth={3} />
+                  <span className="inline-flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 bg-emerald-500 rounded-full shrink-0 mt-0.5 sm:mt-1">
+                    <CheckCircle size={11} className="text-white sm:hidden" strokeWidth={3} />
+                    <CheckCircle size={15} className="text-white hidden sm:block" strokeWidth={3} />
                   </span>
                 )}
               </h1>
-              <p className="flex items-center gap-1 mt-1.5 mb-3 text-white/65 text-xs sm:text-sm">
-                <MapPin size={12} className="shrink-0" />
-                {[school.address, school.city, school.state, school.country].filter(Boolean).join(', ')}
+              <p className="flex items-center gap-1 mt-1 mb-2 text-white/65 text-[10px] sm:text-sm">
+                <MapPin size={10} className="shrink-0" />
+                <span className="truncate">{[school.city, school.state, school.country].filter(Boolean).join(', ')}</span>
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {(school.rating ?? 0) > 0 && (
-                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {school.rating.toFixed(1)}/5 Rating
+                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                    ★ {school.rating.toFixed(1)}
                   </span>
                 )}
-                <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <span className="hidden sm:inline bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
                   {(school.profileViews || 0).toLocaleString()} Views
                 </span>
                 {(school.reviewCount ?? 0) > 0 && (
-                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                     {school.reviewCount} Review{school.reviewCount !== 1 ? 's' : ''}
                   </span>
                 )}
@@ -572,40 +573,44 @@ export default function SchoolDetail() {
             </div>
 
             {/* Right: circular action buttons */}
-            <div className="flex items-end gap-4 shrink-0">
+            <div className="flex items-end gap-2 sm:gap-4 shrink-0">
               {/* Campus Stories — dedicated campusStory field */}
               <button
                 onClick={() => school.campusStory ? setVideoLightbox(school.campusStory) : scrollToId('sd-gallery')}
-                className="flex flex-col items-center gap-2 group"
+                className="flex flex-col items-center gap-1.5 group"
               >
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-[3px] border-white/70 bg-gray-800 shadow-xl group-hover:border-white transition">
+                <div className="relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 sm:border-[3px] border-white/70 bg-gray-800 shadow-xl group-hover:border-white transition">
                   {school.campusStory && getYoutubeThumbnail(school.campusStory) ? (
                     <img src={getYoutubeThumbnail(school.campusStory)} alt="" className="w-full h-full object-cover" />
                   ) : firstPhoto ? (
                     <img src={firstPhoto} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <GraduationCap size={26} className="text-white/50" />
+                      <GraduationCap size={18} className="text-white/50 sm:hidden" />
+                      <GraduationCap size={26} className="text-white/50 hidden sm:block" />
                     </div>
                   )}
                   {school.campusStory && (
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center">
-                        <Play size={14} className="text-white fill-white ml-0.5" />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/25 flex items-center justify-center">
+                        <Play size={10} className="text-white fill-white ml-0.5 sm:hidden" />
+                        <Play size={14} className="text-white fill-white ml-0.5 hidden sm:block" />
                       </div>
                     </div>
                   )}
                 </div>
-                <span className="text-white/90 text-[10px] sm:text-xs font-bold drop-shadow-lg whitespace-nowrap">Campus Stories</span>
+                <span className="text-white/90 text-[9px] sm:text-[10px] md:text-xs font-bold drop-shadow-lg whitespace-nowrap">Campus Stories</span>
               </button>
 
               {/* Parent Tools */}
-              <button onClick={() => scrollToId('sd-reviews')} className="flex flex-col items-center gap-2 group">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-xl border-[3px] border-white/20 group-hover:border-white/40 transition"
+              <button onClick={() => scrollToId('sd-reviews')} className="flex flex-col items-center gap-1.5 group">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center shadow-xl border-2 sm:border-[3px] border-white/20 group-hover:border-white/40 transition"
                   style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
-                  <UserCog size={26} className="text-white sm:w-8 sm:h-8" />
+                  <UserCog size={18} className="text-white sm:hidden" />
+                  <UserCog size={26} className="text-white hidden sm:block md:hidden" />
+                  <UserCog size={32} className="text-white hidden md:block" />
                 </div>
-                <span className="text-white/90 text-[10px] sm:text-xs font-bold drop-shadow-lg whitespace-nowrap">Parent Tools</span>
+                <span className="text-white/90 text-[9px] sm:text-[10px] md:text-xs font-bold drop-shadow-lg whitespace-nowrap">Parent Tools</span>
               </button>
             </div>
 
