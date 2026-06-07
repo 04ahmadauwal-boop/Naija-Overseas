@@ -98,7 +98,7 @@ function FeaturedCard({ post }) {
         )}
         <div className="absolute inset-0 bg-linear-to-t from-gray-950/95 via-gray-950/50 to-transparent" />
         <div className="absolute top-5 left-5">
-          <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/25 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm border border-green-500/50 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
             <TrendingUp size={10} /> Featured
           </span>
         </div>
@@ -132,7 +132,7 @@ function PostCard({ post }) {
   return (
     <Link to={`/blog/${post.slug}`}
       className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="relative h-48 bg-gray-100 overflow-hidden shrink-0">
+      <div className="relative h-44 bg-gray-100 overflow-hidden shrink-0">
         {post.coverImage ? (
           <img src={post.coverImage} alt={post.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -146,15 +146,15 @@ function PostCard({ post }) {
           <CategoryBadge category={post.category} />
         </div>
       </div>
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-green-700 transition line-clamp-2 text-[15px]">
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-bold text-gray-900 leading-snug mb-1.5 group-hover:text-green-700 transition line-clamp-2 text-[14.5px]">
           {post.title}
         </h3>
         {post.excerpt && (
-          <p className="text-gray-500 text-sm line-clamp-2 flex-1 leading-relaxed">{post.excerpt}</p>
+          <p className="text-gray-500 text-xs line-clamp-2 flex-1 leading-relaxed">{post.excerpt}</p>
         )}
         {post.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-3">
+          <div className="flex flex-wrap gap-1 mt-2.5">
             {post.tags.slice(0, 2).map((t) => (
               <span key={t} className="inline-flex items-center gap-0.5 text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
                 <Tag size={8} />{t}
@@ -162,11 +162,11 @@ function PostCard({ post }) {
             ))}
           </div>
         )}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1"><User size={11} />{post.author?.name || 'N&O Team'}</span>
-          </div>
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
           <ReadMeta readTime={post.readTime} views={post.views} />
+          <span className="flex items-center gap-0.5 text-[11px] font-bold text-green-700 group-hover:gap-1.5 transition-all">
+            Read <ArrowRight size={11} />
+          </span>
         </div>
       </div>
     </Link>
@@ -221,30 +221,39 @@ export default function Blog() {
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
 
-        <div className="relative max-w-3xl mx-auto px-4 text-center py-20">
-          <div className="inline-flex items-center gap-2 bg-green-500/15 backdrop-blur-sm border border-green-500/30 text-green-300 text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-full mb-5">
-            <BookOpen size={11} /> Education Insights for West Africa
+        <div className="relative max-w-3xl mx-auto px-4 text-center py-16">
+          <div className="inline-flex items-center gap-2 bg-green-500/15 backdrop-blur-sm border border-green-500/25 text-green-300 text-[10px] font-bold uppercase tracking-[0.18em] px-4 py-1.5 rounded-full mb-5">
+            <BookOpen size={10} /> Education Insights for West Africa
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight leading-[1.1]">
             Learn. Explore. <span className="text-green-400">Succeed.</span>
           </h1>
-          <p className="text-white/60 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-            Expert guides, school rankings, study abroad tips and visa information for students and parents across West Africa.
+          <p className="text-white/55 text-sm md:text-base mb-7 max-w-lg mx-auto leading-relaxed">
+            Expert guides, school rankings, study abroad tips and visa information for students across West Africa.
           </p>
 
           <form onSubmit={(e) => { e.preventDefault(); fetchPosts(1); }}
             className="flex max-w-lg mx-auto gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search articles, schools, visa tips..."
                 className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/95 backdrop-blur-sm text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-xl" />
             </div>
             <button type="submit"
-              className="bg-green-600 hover:bg-green-500 text-white px-6 rounded-xl text-sm font-bold transition shadow-xl whitespace-nowrap">
+              className="bg-green-600 hover:bg-green-500 text-white px-5 rounded-xl text-sm font-bold transition shadow-xl whitespace-nowrap">
               Search
             </button>
           </form>
+
+          {/* Stats row */}
+          <div className="flex items-center justify-center gap-6 mt-7 text-white/35 text-[11px]">
+            <span className="flex items-center gap-1.5"><BookOpen size={11} /> 500+ Articles</span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span>5 Categories</span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span>Weekly Updates</span>
+          </div>
         </div>
       </section>
 
@@ -252,17 +261,19 @@ export default function Blog() {
       <TrendingBar posts={trending} />
 
       {/* ── CATEGORY TABS ────────────────────────────────────────────── */}
-      <div className="border-b border-gray-200 bg-white sticky top-16 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto py-3 scrollbar-hide">
+      <div className="border-b border-gray-100 bg-white/95 backdrop-blur-sm sticky top-16 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto py-2.5 scrollbar-hide">
           {CATEGORIES.map((cat) => {
             const active = (cat === 'All' && !category) || cat === category;
             const meta = CAT_META[cat];
             return (
               <button key={cat} onClick={() => setCategory(cat === 'All' ? '' : cat)}
-                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-sm whitespace-nowrap transition font-semibold ${
-                  active ? 'bg-green-700 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition font-semibold ${
+                  active
+                    ? 'bg-green-700 text-white shadow-md ring-2 ring-green-700/20'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
                 }`}>
-                {meta && <span>{meta.icon}</span>}
+                {meta && <span className="text-sm">{meta.icon}</span>}
                 {cat}
               </button>
             );
@@ -271,7 +282,7 @@ export default function Blog() {
       </div>
 
       {/* ── POSTS ────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-10">
+      <section className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
@@ -288,9 +299,9 @@ export default function Blog() {
             <p className="text-gray-500 text-sm">Try a different category or search term.</p>
           </div>
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-8">
             {/* Main grid */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-5">
               {featured && <FeaturedCard post={featured} />}
               {rest.slice(0, 4).map((post) => (
                 <PostCard key={post._id} post={post} />
@@ -301,12 +312,13 @@ export default function Blog() {
             {rest.length > 4 && (
               <>
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-extrabold text-gray-900">
+                  <div className="w-1 h-5 rounded-full bg-green-600 shrink-0" />
+                  <h2 className="text-base font-extrabold text-gray-900">
                     {category ? `More ${category} Articles` : 'More Articles'}
                   </h2>
-                  <div className="flex-1 h-px bg-gray-200" />
+                  <div className="flex-1 h-px bg-gray-100" />
                 </div>
-                <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-5">
+                <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {rest.slice(4).map((post) => (
                     <PostCard key={post._id} post={post} />
                   ))}
@@ -340,11 +352,11 @@ export default function Blog() {
       </section>
 
       {/* ── TOP TOPICS ───────────────────────────────────────────────── */}
-      <section className="bg-white border-t border-gray-100 py-12 px-4">
+      <section className="bg-white border-t border-gray-100 py-10 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-7">
-            <Flame className="text-orange-500" size={20} />
-            <h2 className="text-xl font-extrabold text-gray-900">Explore by Topic</h2>
+          <div className="flex items-center gap-3 mb-5">
+            <Flame className="text-orange-500" size={18} />
+            <h2 className="text-base font-extrabold text-gray-900">Explore by Topic</h2>
           </div>
           <div className="flex flex-wrap gap-3">
             {[

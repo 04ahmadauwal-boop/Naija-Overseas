@@ -106,14 +106,20 @@ function TableOfContents({ content }) {
   }, [content]);
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sticky top-24">
-      <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Contents</p>
-      <nav className="space-y-1">
+    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+      <div className="flex items-center gap-2 mb-3.5">
+        <div className="w-1 h-4 rounded-full bg-green-600" />
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Contents</p>
+      </div>
+      <nav className="space-y-0.5">
         {headings.map(({ level, id, text }) => (
           <a key={id} href={`#${id}`}
-            className={`block text-sm py-1 transition rounded px-2 -mx-2 ${level === 3 ? 'pl-5' : ''} ${
-              active === id ? 'text-green-700 font-semibold bg-green-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            className={`flex items-center gap-2 text-xs py-1.5 transition rounded-lg px-2 -mx-2 ${level === 3 ? 'pl-6' : ''} ${
+              active === id
+                ? 'text-green-700 font-bold bg-green-50'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
             }`}>
+            {active === id && <span className="w-1 h-1 rounded-full bg-green-600 shrink-0" />}
             {text}
           </a>
         ))}
@@ -149,7 +155,6 @@ function RelatedCard({ post }) {
 function processContent(html) {
   let counter = {};
   return html
-    .replace(/\n/g, '<br/>')
     .replace(/<h([2-3])>([^<]+)<\/h[2-3]>/g, (_, level, text) => {
       const base = text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       counter[base] = (counter[base] || 0) + 1;
@@ -219,34 +224,46 @@ export default function BlogPost() {
       <BackToTop />
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <div className="relative w-full" style={{ height: '460px' }}>
+      <div className="relative w-full" style={{ height: '520px' }}>
         {post.coverImage ? (
-          <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+          <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover scale-[1.02]" style={{ objectPosition: 'center 30%' }} />
         ) : (
           <div className="w-full h-full bg-linear-to-br from-green-900 to-green-950" />
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-gray-950/95 via-gray-950/60 to-gray-950/30" />
+        <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/60 to-gray-950/20" />
 
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="max-w-4xl mx-auto px-4 pb-10 w-full">
             <Link to="/blog"
-              className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white mb-5 transition">
-              <ArrowLeft size={15} /> Back to Blog
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white mb-6 transition group">
+              <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform" /> All Articles
             </Link>
-            <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full ${catMeta.color} mb-3`}>
-              {post.category}
-            </span>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4 max-w-3xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full ${catMeta.color}`}>
+                {post.category}
+              </span>
+              {post.readTime && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-white/40 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  <Clock size={10} /> {post.readTime} min read
+                </span>
+              )}
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-[2.6rem] font-extrabold text-white leading-[1.15] mb-5 max-w-3xl tracking-tight">
               {post.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/50">
-              <span className="flex items-center gap-1.5"><User size={13} />{post.author?.name || 'N&O Team'}</span>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-white/45">
+              <span className="flex items-center gap-1.5"><User size={12} />{post.author?.name || 'N&O Team'}</span>
+              <span className="w-1 h-1 rounded-full bg-white/25" />
               <span className="flex items-center gap-1.5">
-                <Calendar size={13} />
+                <Calendar size={12} />
                 {new Date(post.publishedAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
-              {post.readTime && <span className="flex items-center gap-1.5"><Clock size={13} />{post.readTime} min read</span>}
-              {post.views > 0 && <span className="flex items-center gap-1.5"><Eye size={13} />{post.views.toLocaleString()} views</span>}
+              {post.views > 0 && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-white/25" />
+                  <span className="flex items-center gap-1.5"><Eye size={12} />{post.views.toLocaleString()} views</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -259,7 +276,7 @@ export default function BlogPost() {
           {/* Main content */}
           <div>
             {/* Share row */}
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-6 pb-5 border-b border-gray-100">
               <div className="flex flex-wrap gap-1.5">
                 {post.tags?.map((tag) => (
                   <Link key={tag} to={`/blog?search=${encodeURIComponent(tag)}`}
@@ -273,53 +290,43 @@ export default function BlogPost() {
 
             {/* Article content */}
             <div
-              className="prose prose-lg prose-gray max-w-none
-                prose-headings:font-extrabold prose-headings:text-gray-900 prose-headings:scroll-mt-24
-                prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-3 prose-h2:border-b prose-h2:border-gray-100
-                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-                prose-p:text-black prose-p:leading-relaxed prose-p:mb-5
-                prose-li:text-black prose-li:leading-relaxed
-                prose-strong:text-black prose-strong:font-bold
-                prose-a:text-green-700 prose-a:no-underline hover:prose-a:underline
-                prose-blockquote:border-l-4 prose-blockquote:border-green-500 prose-blockquote:bg-green-50 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5
-                prose-img:rounded-2xl prose-img:shadow-md
-                prose-ul:list-disc prose-ol:list-decimal"
+              className="blog-content prose prose-gray max-w-none prose-headings:scroll-mt-28"
               dangerouslySetInnerHTML={{ __html: processed }}
             />
 
             {/* Bottom share */}
-            <div className="mt-10 pt-8 border-t border-gray-200 flex items-center justify-between flex-wrap gap-4">
-              <p className="text-sm font-semibold text-gray-700">Found this helpful? Share it</p>
+            <div className="mt-10 pt-6 border-t border-gray-100 flex items-center justify-between flex-wrap gap-4">
+              <p className="text-sm font-semibold text-gray-600">Found this helpful? Share it</p>
               <ShareBar title={post.title} url={pageUrl} />
             </div>
 
             {/* Author card */}
-            <div className="mt-8 bg-linear-to-br from-green-50 to-emerald-50 border border-green-100 rounded-3xl p-6 flex gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-green-700 text-white flex items-center justify-center font-extrabold text-xl shrink-0">
+            <div className="mt-7 bg-linear-to-br from-gray-50 to-green-50/40 border border-gray-100 rounded-2xl p-5 flex gap-4 items-start">
+              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-green-700 to-green-900 text-white flex items-center justify-center font-extrabold text-lg shrink-0 shadow-md">
                 {(post.author?.name || 'N')[0]}
               </div>
               <div>
-                <p className="font-bold text-gray-900">{post.author?.name || 'N&O Editorial Team'}</p>
-                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                  Educational content writer at Naija &amp; Overseas, focused on helping West African students navigate
-                  secondary school choices, university admissions, and study abroad opportunities.
+                <p className="font-bold text-gray-900 text-sm">{post.author?.name || 'N&O Editorial Team'}</p>
+                <p className="text-xs text-gray-400 mb-0.5">Educational Writer · Naija &amp; Overseas</p>
+                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+                  Helping West African students navigate school choices, university admissions, and study abroad opportunities.
                 </p>
               </div>
             </div>
 
             {/* CTA */}
-            <div className="mt-8 rounded-3xl overflow-hidden"
-              style={{ background: 'linear-gradient(135deg,#021a0e,#064e3b)' }}>
-              <div className="px-8 py-8 text-center">
-                <p className="font-extrabold text-white text-xl mb-2">Ready to find your ideal school?</p>
-                <p className="text-green-300/70 text-sm mb-6">
-                  Explore 500+ Nigerian schools, compare fees, facilities and results side by side.
+            <div className="mt-7 rounded-2xl overflow-hidden"
+              style={{ background: 'linear-gradient(135deg,#021a0e,#065f46)' }}>
+              <div className="px-7 py-7 text-center">
+                <p className="font-extrabold text-white text-xl mb-1.5 tracking-tight">Ready to find your ideal school?</p>
+                <p className="text-green-300/70 text-sm mb-5 max-w-sm mx-auto leading-relaxed">
+                  Explore 500+ Nigerian schools — compare fees, facilities and results side by side.
                 </p>
                 <div className="flex gap-3 justify-center flex-wrap">
                   <Link to="/" className="bg-white text-green-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-green-50 transition shadow-lg">
                     Compare Schools
                   </Link>
-                  <Link to="/study-abroad" className="border border-green-600/50 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-green-800/30 transition">
+                  <Link to="/study-abroad" className="border border-green-500/40 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-green-800/30 transition">
                     Study Abroad →
                   </Link>
                 </div>
@@ -329,29 +336,37 @@ export default function BlogPost() {
 
           {/* Sidebar */}
           <aside className="hidden lg:block">
-            <div className="space-y-6">
+            <div className="space-y-5 sticky top-24">
               <TableOfContents content={processed} />
 
               {related.length > 0 && (
                 <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Related Articles</p>
-                  <div className="space-y-1 divide-y divide-gray-50">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 rounded-full bg-green-600" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Related Articles</p>
+                  </div>
+                  <div className="divide-y divide-gray-50">
                     {related.map((r) => <RelatedCard key={r._id} post={r} />)}
                   </div>
-                  <Link to="/blog" className="mt-4 flex items-center gap-1.5 text-sm text-green-700 font-semibold hover:gap-2.5 transition-all">
-                    See all articles <ArrowRight size={14} />
+                  <Link to="/blog" className="mt-3 flex items-center gap-1.5 text-xs text-green-700 font-bold hover:gap-2.5 transition-all pt-3 border-t border-gray-50">
+                    See all articles <ArrowRight size={12} />
                   </Link>
                 </div>
               )}
 
-              <div className="bg-green-950 rounded-2xl p-5 text-white">
-                <p className="font-bold mb-1">Get weekly tips</p>
-                <p className="text-green-400/70 text-xs mb-4">School news, visa guides, and scholarship alerts.</p>
-                <input type="email" placeholder="Your email address"
-                  className="w-full px-3 py-2.5 rounded-lg bg-green-900 border border-green-800 text-white text-xs placeholder-green-700 focus:outline-none focus:ring-1 focus:ring-green-500 mb-2" />
-                <button className="w-full bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2.5 rounded-lg transition">
-                  Subscribe Free →
-                </button>
+              <div className="rounded-2xl p-5 text-white overflow-hidden relative"
+                style={{ background: 'linear-gradient(135deg,#052e16,#065f46)' }}>
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-500/10 -translate-y-6 translate-x-6" />
+                <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-green-400/10 translate-y-4 -translate-x-4" />
+                <div className="relative">
+                  <p className="font-bold text-sm mb-0.5">Get weekly education tips</p>
+                  <p className="text-green-400/70 text-xs mb-3.5">School news, visa guides, scholarship alerts.</p>
+                  <input type="email" placeholder="Your email address"
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs placeholder-green-700 focus:outline-none focus:ring-1 focus:ring-green-500 mb-2" />
+                  <button className="w-full bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-lg">
+                    Subscribe Free →
+                  </button>
+                </div>
               </div>
             </div>
           </aside>

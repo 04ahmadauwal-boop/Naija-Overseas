@@ -21,6 +21,8 @@ const schoolSchema = new mongoose.Schema(
     },
     facilities: [{ type: String }],
     images: [{ type: String }],
+    videos: [{ type: String }],
+    campusStory: { type: String, default: '' },
     description: { type: String },
     achievements: [
       {

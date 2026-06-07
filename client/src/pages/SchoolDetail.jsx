@@ -4,7 +4,7 @@ import {
   MapPin, Phone, Mail, Globe, ArrowLeft,
   CheckCircle, Building2, GraduationCap, DollarSign,
   Users, Calendar, Share2, BarChart3, Award,
-  ChevronLeft, ChevronRight, Play, X, Star, MessageSquare, Trash2
+  ChevronLeft, ChevronRight, Play, X, Star, MessageSquare, Trash2, UserCog
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 const SECTION_LINKS = [
   { label: 'About',      id: 'sd-about'     },
   { label: 'Gallery',    id: 'sd-gallery'   },
+  { label: 'Videos',     id: 'sd-videos'    },
   { label: 'Results',    id: 'sd-results'   },
   { label: 'Facilities', id: 'sd-facilities'},
   { label: 'Fees',       id: 'sd-fees'      },
@@ -340,8 +341,8 @@ export default function SchoolDetail() {
 
   const [school, setSchool] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(null);
+  const [videoLightbox, setVideoLightbox] = useState(null);
 
   // Reviews state
   const [reviews, setReviews]           = useState([]);
@@ -411,20 +412,6 @@ export default function SchoolDetail() {
     return () => observers.forEach((obs) => obs?.disconnect());
   }, [school]);
 
-  useEffect(() => {
-    const total = school?.images?.length ?? 0;
-    if (total <= 1) return;
-    const t = setInterval(() => setActiveImage((i) => (i + 1) % total), 10000);
-    return () => clearInterval(t);
-  }, [school?.images?.length]);
-
-  const prevImage = useCallback(() => {
-    setActiveImage((i) => (i - 1 + (school?.images?.length ?? 1)) % (school?.images?.length ?? 1));
-  }, [school?.images?.length]);
-
-  const nextImage = useCallback(() => {
-    setActiveImage((i) => (i + 1) % (school?.images?.length ?? 1));
-  }, [school?.images?.length]);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -497,135 +484,254 @@ export default function SchoolDetail() {
 
   const formatFee = (n) => n ? `₦${Number(n).toLocaleString()}` : 'Contact School';
   const images = school.images || [];
-  const currentMedia = images[activeImage] || null;
+  const isVideoUrl = (url) => url && /\.(mp4|webm|ogg|mov)$/i.test(url);
+  const photos = images.filter((src) => !isYoutube(src) && !isVideoUrl(src));
+  const schoolVideos = [...new Set([
+    ...(school.videos || []),
+    ...images.filter((src) => isYoutube(src) || isVideoUrl(src)),
+  ])];
+  const firstPhoto = photos[0] || null;
+  const enquireHref = school.contact?.email
+    ? `mailto:${school.contact.email}`
+    : school.contact?.phone
+    ? `tel:${school.contact.phone}`
+    : '#';
+  const scrollToId = (id) => {
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 56, behavior: 'smooth' });
+  };
+  const prevPhoto = () => setGalleryLightboxIdx((i) => ((i ?? 0) - 1 + photos.length) % photos.length);
+  const nextPhoto = () => setGalleryLightboxIdx((i) => ((i ?? 0) + 1) % photos.length);
 
   return (
     <div className="bg-white min-h-screen">
 
-      {/* ── GALLERY ───────────────────────────────────────────────── */}
-      <div
-        className="relative w-full bg-black overflow-hidden"
-        style={{ height: images.length ? 'clamp(220px, 42vw, 50vh)' : '18rem' }}
-      >
-        {currentMedia ? (
-          isYoutube(currentMedia) ? (
-            <iframe
-              src={getYoutubeEmbed(currentMedia)}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              title={school.name}
-            />
-          ) : (
-            <img
-              src={currentMedia}
-              alt={school.name}
-              className="w-full h-full object-cover cursor-pointer"
-              onClick={() => setLightboxOpen(true)}
-            />
-          )
+      {/* ── HERO ──────────────────────────────────────────────────── */}
+      <div className="relative w-full overflow-hidden" style={{ height: '50vh', minHeight: '320px' }}>
+        {/* Background */}
+        {firstPhoto ? (
+          <img src={firstPhoto} alt={school.name} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-green-800 to-green-900 flex items-center justify-center">
-            <GraduationCap size={64} className="text-green-600 opacity-30" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #1a4731 100%)' }}>
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
           </div>
         )}
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent pointer-events-none" />
-
-        {/* Nav arrows */}
-        {images.length > 1 && (
-          <>
-            <button onClick={prevImage}
-              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition shadow-lg z-10">
-              <ChevronLeft size={18} />
-            </button>
-            <button onClick={nextImage}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition shadow-lg z-10">
-              <ChevronRight size={18} />
-            </button>
-            <div className="absolute bottom-[4.5rem] sm:bottom-20 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-              {images.map((_, i) => (
-                <button key={i} onClick={() => setActiveImage(i)}
-                  className={`rounded-full transition-all ${i === activeImage ? 'w-5 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`} />
-              ))}
-            </div>
-          </>
-        )}
+        {/* Dark overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.93) 0%, rgba(0,0,0,0.52) 42%, rgba(0,0,0,0.12) 100%)' }} />
 
         {/* Back button */}
         <button onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/35 backdrop-blur-sm text-white text-sm font-medium px-3 py-2 rounded-full hover:bg-black/50 transition z-10">
+          className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm text-white text-sm font-medium px-3 py-2 rounded-full hover:bg-black/60 transition z-10">
           <ArrowLeft size={15} /> <span className="hidden sm:inline">Back</span>
         </button>
 
+        {/* Featured badge */}
         {school.isFeatured && (
-          <div className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
+          <div className="absolute top-4 right-4 bg-white/15 backdrop-blur-sm border border-white/30 text-white text-[11px] font-bold px-3 py-1 rounded-full z-10">
             ★ Featured
           </div>
         )}
 
-        {/* Title overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 pb-4 sm:pb-6 z-10">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex flex-wrap gap-1.5 mb-1.5">
-              <span className="text-[11px] bg-green-600 text-white px-2 py-0.5 rounded-full capitalize font-medium">{school.type}</span>
-              <span className="text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full capitalize">{school.level} school</span>
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-8 pb-5 sm:pb-7 z-10">
+          <div className="max-w-5xl mx-auto flex items-end justify-between gap-4">
+
+            {/* Left: name + stats */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                <span className="text-[11px] bg-green-600/90 text-white px-2.5 py-0.5 rounded-full capitalize font-medium">{school.type}</span>
+                <span className="text-[11px] bg-white/20 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full capitalize">{school.level} school</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-[2.4rem] font-extrabold text-white leading-tight drop-shadow-lg flex flex-wrap items-start gap-2.5">
+                {school.name}
+                {school.status === 'approved' && (
+                  <span className="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full shrink-0 mt-1">
+                    <CheckCircle size={15} className="text-white" strokeWidth={3} />
+                  </span>
+                )}
+              </h1>
+              <p className="flex items-center gap-1 mt-1.5 mb-3 text-white/65 text-xs sm:text-sm">
+                <MapPin size={12} className="shrink-0" />
+                {[school.address, school.city, school.state, school.country].filter(Boolean).join(', ')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(school.rating ?? 0) > 0 && (
+                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {school.rating.toFixed(1)}/5 Rating
+                  </span>
+                )}
+                <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  {(school.profileViews || 0).toLocaleString()} Views
+                </span>
+                {(school.reviewCount ?? 0) > 0 && (
+                  <span className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {school.reviewCount} Review{school.reviewCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
             </div>
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow leading-tight">{school.name}</h1>
-            <p className="flex items-center gap-1 mt-1 text-white/75 text-xs sm:text-sm line-clamp-1">
-              <MapPin size={12} className="shrink-0" />
-              {[school.address, school.city, school.state, school.country].filter(Boolean).join(', ')}
-            </p>
+
+            {/* Right: circular action buttons */}
+            <div className="flex items-end gap-4 shrink-0">
+              {/* Campus Stories — dedicated campusStory field */}
+              <button
+                onClick={() => school.campusStory ? setVideoLightbox(school.campusStory) : scrollToId('sd-gallery')}
+                className="flex flex-col items-center gap-2 group"
+              >
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-[3px] border-white/70 bg-gray-800 shadow-xl group-hover:border-white transition">
+                  {school.campusStory && getYoutubeThumbnail(school.campusStory) ? (
+                    <img src={getYoutubeThumbnail(school.campusStory)} alt="" className="w-full h-full object-cover" />
+                  ) : firstPhoto ? (
+                    <img src={firstPhoto} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <GraduationCap size={26} className="text-white/50" />
+                    </div>
+                  )}
+                  {school.campusStory && (
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center">
+                        <Play size={14} className="text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <span className="text-white/90 text-[10px] sm:text-xs font-bold drop-shadow-lg whitespace-nowrap">Campus Stories</span>
+              </button>
+
+              {/* Parent Tools */}
+              <button onClick={() => scrollToId('sd-reviews')} className="flex flex-col items-center gap-2 group">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-xl border-[3px] border-white/20 group-hover:border-white/40 transition"
+                  style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
+                  <UserCog size={26} className="text-white sm:w-8 sm:h-8" />
+                </div>
+                <span className="text-white/90 text-[10px] sm:text-xs font-bold drop-shadow-lg whitespace-nowrap">Parent Tools</span>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* ── THUMBNAIL STRIP ───────────────────────────────────────── */}
-      {images.length > 1 && (
-        <div id="sd-gallery" className="bg-gray-950 border-b border-gray-800">
-          <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2">
-            <div className="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide">
-              {images.map((src, i) => {
-                const isVid = isYoutube(src);
-                const thumb = isVid ? getYoutubeThumbnail(src) : src;
-                return (
-                  <button key={i} onClick={() => setActiveImage(i)}
-                    className={`relative shrink-0 rounded-lg overflow-hidden border-2 transition-all
-                      w-14 h-10 sm:w-20 sm:h-14
-                      ${i === activeImage
-                        ? 'border-green-500 opacity-100 ring-1 ring-green-400'
-                        : 'border-transparent opacity-50 hover:opacity-85'}`}>
-                    <img src={thumb || ''} alt="" className="w-full h-full object-cover" />
-                    {isVid && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <Play size={12} className="text-white fill-white" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+      {/* ── STICKY SECTION NAV ────────────────────────────────────── */}
+      {school && <SchoolNav school={school} active={activeSection} />}
+
+      {/* ── PHOTO LIGHTBOX ────────────────────────────────────────── */}
+      {galleryLightboxIdx !== null && photos[galleryLightboxIdx] && (
+        <div className="fixed inset-0 z-[100] bg-black/96 flex items-center justify-center p-4"
+          onClick={() => setGalleryLightboxIdx(null)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition z-10">
+            <X size={26} />
+          </button>
+          {photos.length > 1 && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); prevPhoto(); }}
+                className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/15 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition z-10">
+                <ChevronLeft size={20} />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
+                className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/15 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition z-10">
+                <ChevronRight size={20} />
+              </button>
+            </>
+          )}
+          <img src={photos[galleryLightboxIdx]} alt=""
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()} />
+          <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs">
+            {galleryLightboxIdx + 1} / {photos.length}
+          </p>
+        </div>
+      )}
+
+      {/* ── VIDEO LIGHTBOX ────────────────────────────────────────── */}
+      {videoLightbox && (
+        <div className="fixed inset-0 z-[100] bg-black/96 flex items-center justify-center p-4"
+          onClick={() => setVideoLightbox(null)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition z-10">
+            <X size={26} />
+          </button>
+          <div className="w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
+            {isYoutube(videoLightbox) ? (
+              <iframe
+                src={`${getYoutubeEmbed(videoLightbox)}&autoplay=1`}
+                className="w-full h-full rounded-xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen title="School video"
+              />
+            ) : (
+              <video src={videoLightbox} controls autoPlay className="w-full h-full rounded-xl" />
+            )}
           </div>
         </div>
       )}
 
-      {/* ── STICKY SECTION NAV ────────────────────────────────────── */}
-      {school && <SchoolNav school={school} active={activeSection} />}
-
-      {/* ── LIGHTBOX ──────────────────────────────────────────────── */}
-      {lightboxOpen && currentMedia && !isYoutube(currentMedia) && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setLightboxOpen(false)}>
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition">
-            <X size={26} />
-          </button>
-          <img src={currentMedia} alt="" className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" />
-        </div>
-      )}
-
       {/* ── MAIN CONTENT ──────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
+      <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-5">
+
+        {/* ── PHOTO GALLERY ─────────────────────────────────────────── */}
+        {photos.length > 0 && (
+          <div id="sd-gallery">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <h2 className="font-bold text-gray-900 text-base">{school.name} Gallery</h2>
+                <a href={enquireHref}
+                  className="bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full hover:bg-emerald-700 transition shadow-sm whitespace-nowrap">
+                  Enquire Now
+                </a>
+              </div>
+              <div className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+                {photos.map((src, i) => (
+                  <button key={i} onClick={() => setGalleryLightboxIdx(i)}
+                    className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                    <img src={src} alt={`${school.name} ${i + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── VIDEO SECTION ─────────────────────────────────────────── */}
+        {schoolVideos.length > 0 && (
+          <div id="sd-videos">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <h2 className="font-bold text-gray-900 text-base">{school.name} Videos</h2>
+                <a href={enquireHref}
+                  className="bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full hover:bg-emerald-700 transition shadow-sm whitespace-nowrap">
+                  Enquire Now
+                </a>
+              </div>
+              <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {schoolVideos.map((url, i) => {
+                  const thumb = getYoutubeThumbnail(url);
+                  return (
+                    <button key={i} onClick={() => setVideoLightbox(url)}
+                      className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 group hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                      {thumb ? (
+                        <img src={thumb} alt={`Video ${i + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                          <Play size={28} className="text-gray-600" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <Play size={20} className="text-yellow-950 fill-yellow-950 ml-0.5" />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
 
           {/* ── Left: Main Details ── */}

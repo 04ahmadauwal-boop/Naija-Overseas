@@ -266,23 +266,11 @@ textarea:focus::placeholder {
   left: 100%;
 }
 
-/* Responsive padding animations */
+/* Mobile typography — keep headings compact on small screens */
 @media (max-width: 640px) {
-  body {
-    font-size: clamp(14px, 2vw, 16px);
-  }
-
-  h1 {
-    font-size: clamp(24px, 6vw, 32px);
-  }
-
-  h2 {
-    font-size: clamp(20px, 5vw, 28px);
-  }
-
-  button {
-    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.25rem);
-  }
+  h1 { font-size: 1.625rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.0625rem; }
 }
 
 /* Dark mode smooth transitions */

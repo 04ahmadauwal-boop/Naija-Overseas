@@ -834,7 +834,8 @@ export default function Home() {
             <div className="flex flex-col items-center pt-5 pb-4 px-4 gap-1.5">
               <span className="w-8 h-0.5 bg-green-500 rounded-full block" />
               <p className="text-center text-white font-extrabold text-sm sm:text-base md:text-xl tracking-tight">
-                Parent Reviews &amp; Educator Perspectives
+                <span className="sm:hidden">Reviews &amp; Perspectives</span>
+                <span className="hidden sm:inline">Parent Reviews &amp; Educator Perspectives</span>
               </p>
             </div>
             <div className="flex flex-col lg:flex-row">
@@ -1147,53 +1148,85 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── FEATURES GRID ─────────────────────────────────────────── */}
-      <section className="min-h-[80vh] flex flex-col justify-center py-12 md:py-20 px-4 bg-white relative overflow-hidden">
-        {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(#f3f4f6_1px,transparent_1px),linear-gradient(to_right,#f3f4f6_1px,transparent_1px)] bg-size-[36px_36px] opacity-60 pointer-events-none" />
+      {/* ── WHY NAIJA & OVERSEAS ──────────────────────────────────── */}
+      <section
+        ref={featuresRef}
+        className="relative overflow-hidden flex flex-col lg:flex-row lg:h-[80vh]"
+        style={{ minHeight: '600px', background: 'linear-gradient(150deg,#050d08 0%,#071a0e 55%,#0b2415 100%)' }}
+      >
+        {/* Background dot grid */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle,#4ade80 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+        {/* Glow orbs */}
+        <div className="absolute -bottom-40 right-1/3 w-[500px] h-[500px] rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-900/15 blur-3xl pointer-events-none" />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/30 to-transparent" />
 
-        <div className="relative max-w-6xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <span className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
-              Why Naija &amp; Overseas
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">
-              Everything you need,<br className="hidden sm:block" /> in one platform.
-            </h2>
-            <p className="text-gray-500 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-              Built for West African families — powerful tools for parents, students, and school owners all under one roof.
-            </p>
+        {/* ── LEFT PANEL ── */}
+        <div className="relative z-10 flex flex-col justify-center px-8 sm:px-12 lg:px-14 pt-12 pb-8 lg:py-0 lg:w-[38%] shrink-0 border-b lg:border-b-0 lg:border-r border-white/[0.06]">
+          <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full mb-6 w-fit">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Why Naija &amp; Overseas
+          </span>
+
+          <h2 className="text-white font-extrabold text-2xl sm:text-3xl lg:text-[2rem] leading-[1.15] tracking-tight mb-4">
+            Everything you need,<br />
+            <span className="text-green-400">in one platform.</span>
+          </h2>
+
+          <p className="text-white/40 text-sm leading-relaxed mb-8 max-w-xs">
+            Built for West African families — powerful tools for parents, students and school owners, all under one roof.
+          </p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-5 mb-9">
+            {[
+              { value: '500+', label: 'Verified Schools',   color: 'text-white' },
+              { value: '10K+', label: 'Families Helped',    color: 'text-white' },
+              { value: '95%',  label: 'Visa Success Rate',  color: 'text-green-400' },
+              { value: '8',    label: 'Countries Covered',  color: 'text-white' },
+            ].map(({ value, label, color }) => (
+              <div key={label}>
+                <div className={`text-2xl font-extrabold leading-none ${color}`}>{value}</div>
+                <div className="text-white/30 text-[11px] mt-1 font-medium">{label}</div>
+              </div>
+            ))}
           </div>
 
-          <div ref={featuresRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, card, border, iconBg, iconFg, numFg, badgeBg }) => (
-              <div
-                key={title}
-                className={`group relative overflow-hidden rounded-2xl border ${border} bg-linear-to-br ${card} p-5 sm:p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}
-              >
-                {/* Gradient accent bar on hover */}
-                <div className={`absolute top-0 left-0 right-0 h-0.75 bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <Link to="/register"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-green-950/60 w-fit">
+            Get Started Free <ArrowRight size={14} />
+          </Link>
+        </div>
 
-                {/* Large faded number in background */}
-                <span className={`absolute -top-3 -right-1 text-[80px] leading-none font-black select-none pointer-events-none ${numFg} opacity-60`}>
+        {/* ── RIGHT PANEL — cards ── */}
+        <div className="relative z-10 flex-1 p-5 sm:p-6 lg:p-7">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 h-full" style={{ gridTemplateRows: 'repeat(2,1fr)' }}>
+            {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
+              <div key={title}
+                className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.065] hover:border-white/[0.13] p-4 sm:p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
+                {/* Accent top bar on hover */}
+                <div className={`absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                {/* Number watermark */}
+                <span className="absolute -top-1 -right-1 text-[56px] leading-none font-black text-white/[0.04] select-none pointer-events-none">
                   {num}
                 </span>
 
                 {/* Icon */}
-                <div className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${iconBg} flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-105 transition-transform duration-200 shadow-sm`}>
-                  <Icon size={20} className={iconFg} />
+                <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center mb-3 shrink-0 group-hover:scale-105 transition-transform duration-200`}>
+                  <Icon size={16} className={iconFg} />
                 </div>
 
                 {/* Title */}
-                <h3 className="font-extrabold text-gray-900 text-[15px] sm:text-base mb-2 leading-snug pr-10">{title}</h3>
+                <h3 className="text-white/90 font-bold text-[13px] leading-snug mb-1.5 pr-6">{title}</h3>
 
-                {/* Description */}
-                <p className="text-gray-500 text-[13px] sm:text-sm leading-relaxed mb-4 sm:mb-5">{desc}</p>
+                {/* Desc */}
+                <p className="text-white/35 text-[11.5px] leading-relaxed flex-1 line-clamp-3">{desc}</p>
 
                 {/* Badge */}
-                <span className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${badgeBg}`}>
-                  <CheckCircle size={10} />
+                <span className="mt-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-white/[0.07] text-white/45 border border-white/[0.08] w-fit shrink-0">
+                  <CheckCircle size={8} className="text-green-400" />
                   {badge}
                 </span>
               </div>
@@ -1488,9 +1521,9 @@ export default function Home() {
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/40 to-transparent" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-175 h-100 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-14 flex flex-col" style={{ minHeight: '70vh' }}>
+        <div className="relative max-w-7xl mx-auto px-4 py-8 flex flex-col" style={{ height: '70vh', minHeight: '480px' }}>
           {/* Header row */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-5 shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1.5 rounded-full">
                 <Flame size={11} className="text-orange-400" />
@@ -1509,7 +1542,7 @@ export default function Home() {
 
           {/* Posts grid */}
           {trendingPosts.length > 0 ? (
-            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-3 min-h-0">
               {/* Large featured card */}
               {trendingPosts[0] && (
                 <Link to={`/blog/${trendingPosts[0].slug}`}
@@ -1546,7 +1579,7 @@ export default function Home() {
               {/* Smaller cards */}
               {trendingPosts.slice(1, 8).map((post, i) => (
                 <Link key={post._id} to={`/blog/${post.slug}`}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer min-h-35">
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer">
                   <div className="absolute inset-0">
                     {post.coverImage ? (
                       <img src={post.coverImage} alt={post.title}
@@ -1600,7 +1633,7 @@ export default function Home() {
 
           {/* Bottom CTA strip */}
           {trendingPosts.length > 0 && (
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-white/10 shrink-0">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                 {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
                   <div key={t} className="flex items-center gap-1.5">

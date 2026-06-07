@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
   Plus, Edit2, Trash2, FileText, X, Eye, EyeOff,
   Upload, Image, Clock, Tag, Globe, AlignLeft,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Search, Building2,
 } from 'lucide-react';
 
 const CATEGORIES = ['Study Tips', 'School Reviews', 'Study Abroad', 'Visa Guides', 'News'];
@@ -31,6 +31,10 @@ export default function ManageBlog() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(false);
   const [seoOpen, setSeoOpen] = useState(false);
+  const [showSchoolPicker, setShowSchoolPicker] = useState(false);
+  const [schoolSearch, setSchoolSearch] = useState('');
+  const [schoolResults, setSchoolResults] = useState([]);
+  const [schoolSearching, setSchoolSearching] = useState(false);
   const fileRef = useRef();
 
   const fetchPosts = async () => {
@@ -103,6 +107,51 @@ export default function ManageBlog() {
     setShowForm(true);
     setPreview(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const searchSchools = async (q) => {
+    setSchoolSearch(q);
+    if (!q.trim()) { setSchoolResults([]); return; }
+    setSchoolSearching(true);
+    try {
+      const { data } = await api.get(`/schools?search=${encodeURIComponent(q)}&limit=8`);
+      setSchoolResults(data.schools || []);
+    } catch { setSchoolResults([]); }
+    finally { setSchoolSearching(false); }
+  };
+
+  const insertSchool = (school) => {
+    const ta = document.getElementById('blog-content');
+    const start = ta?.selectionStart ?? form.content.length;
+    const count = (form.content.match(/class="school-embed"/g) || []).length;
+    const num = count + 1;
+    const img = school.images?.[0] || '';
+    const rawDesc = school.description || '';
+    const desc = rawDesc.length > 220 ? rawDesc.slice(0, 220) + '…' : rawDesc;
+    const tags = [school.type, school.curriculum, school.state]
+      .filter(Boolean).map((t) => `<span>${t}</span>`).join('');
+    const lines = [
+      `\n<div class="school-embed">`,
+      img ? `  <img src="${img}" alt="${school.name}" class="school-embed-img"/>` : null,
+      `  <div class="school-embed-body">`,
+      `    <h3 class="school-embed-title"><span class="school-embed-num">${num}</span> ${school.name}</h3>`,
+      tags ? `    <div class="school-embed-tags">${tags}</div>` : null,
+      desc ? `    <p class="school-embed-desc">${desc}</p>` : null,
+      `    <div class="school-embed-actions">`,
+      `      <a href="/schools/${school.slug}">View School →</a>`,
+      `      <a href="/schools/${school.slug}#reviews">View Reviews</a>`,
+      `      <a href="/schools/${school.slug}#admission">Get Admission</a>`,
+      `    </div>`,
+      `  </div>`,
+      `</div>\n`,
+    ].filter((l) => l !== null);
+    const html = lines.join('\n');
+    const newContent = form.content.slice(0, start) + html + form.content.slice(start);
+    setForm((f) => ({ ...f, content: newContent }));
+    setShowSchoolPicker(false);
+    setSchoolSearch('');
+    setSchoolResults([]);
+    setTimeout(() => { ta?.focus(); }, 10);
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white transition';
@@ -273,6 +322,11 @@ export default function ManageBlog() {
                             {label}
                           </button>
                         ))}
+                        <button type="button"
+                          onClick={() => { setShowSchoolPicker(true); setSchoolSearch(''); setSchoolResults([]); }}
+                          className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-green-50 border border-green-200 rounded-lg text-green-700 hover:bg-green-100 font-semibold transition ml-1">
+                          <Building2 size={12} /> Insert School
+                        </button>
                       </div>
                       <textarea id="blog-content" required
                         placeholder="Write the full article here. Use HTML tags for formatting — <h2>, <p>, <ul>, <strong>, <blockquote>, etc."
@@ -416,6 +470,88 @@ export default function ManageBlog() {
           )}
         </div>
       </div>
+
+      {/* ── SCHOOL PICKER MODAL ───────────────────────────────── */}
+      {showSchoolPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/60">
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-green-600" />
+                <h3 className="font-bold text-gray-900 text-sm">Insert School Card</h3>
+              </div>
+              <button onClick={() => setShowSchoolPicker(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition">
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Search input */}
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Search schools by name…"
+                  value={schoolSearch}
+                  onChange={(e) => searchSchools(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                />
+                {schoolSearching && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5 pl-1">Type to search. Click a school to insert a card into the article.</p>
+            </div>
+
+            {/* Results */}
+            <div className="flex-1 overflow-y-auto">
+              {schoolResults.length === 0 && schoolSearch.trim() && !schoolSearching ? (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                  <Building2 size={28} className="mb-2 opacity-40" />
+                  <p className="text-sm">No schools found for &quot;{schoolSearch}&quot;</p>
+                </div>
+              ) : schoolResults.length === 0 && !schoolSearch.trim() ? (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-300">
+                  <Search size={28} className="mb-2" />
+                  <p className="text-sm text-gray-400">Start typing to search schools</p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-50">
+                  {schoolResults.map((school) => (
+                    <li key={school._id}>
+                      <button
+                        type="button"
+                        onClick={() => insertSchool(school)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition text-left group">
+                        {school.images?.[0] ? (
+                          <img src={school.images[0]} alt={school.name}
+                            className="w-12 h-12 rounded-lg object-cover shrink-0 border border-gray-100" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                            <Building2 size={18} className="text-gray-300" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-gray-900 group-hover:text-green-700 truncate">{school.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {school.state && <span className="text-xs text-gray-500">{school.state}</span>}
+                            {school.type && <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{school.type}</span>}
+                            {school.curriculum && <span className="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded-full">{school.curriculum}</span>}
+                          </div>
+                        </div>
+                        <span className="text-xs text-green-600 font-semibold opacity-0 group-hover:opacity-100 transition shrink-0">Insert →</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

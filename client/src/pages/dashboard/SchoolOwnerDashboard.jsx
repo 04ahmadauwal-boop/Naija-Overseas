@@ -6,7 +6,7 @@ import {
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, DollarSign,
   Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload,
-  CalendarCheck, XCircle,
+  CalendarCheck, XCircle, Video, Play,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -48,6 +48,7 @@ const TABS = [
   { id: 'achievements', label: 'Achievements',     icon: Trophy          },
   { id: 'reports',      label: 'Exam Results',     icon: BookOpen        },
   { id: 'gallery',      label: 'Gallery',          icon: Image           },
+  { id: 'videos',       label: 'Videos',           icon: Video           },
   { id: 'analytics',    label: 'Analytics',        icon: BarChart2       },
   { id: 'visits',       label: 'Visit Requests',   icon: CalendarCheck   },
   { id: 'reviews',      label: 'Reviews',          icon: Star            },
@@ -1355,6 +1356,216 @@ function GalleryTab({ school }) {
   );
 }
 
+// ─── Video Tab ────────────────────────────────────────────────────────────────
+
+function VideoTab({ school }) {
+  const [campusStory, setCampusStory] = useState(school?.campusStory || '');
+  const [campusStoryInput, setCampusStoryInput] = useState(school?.campusStory || '');
+  const [savingStory, setSavingStory] = useState(false);
+
+  const [videos, setVideos] = useState(school?.videos || []);
+  const [urlInput, setUrlInput] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const getYoutubeId = (url) => {
+    const m = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/);
+    return m?.[1];
+  };
+  const getThumb = (url) => {
+    const id = getYoutubeId(url);
+    return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
+  };
+
+  const saveCampusStory = async () => {
+    if (!school?._id) return;
+    setSavingStory(true);
+    try {
+      await api.put(`/schools/${school._id}`, { campusStory: campusStoryInput.trim() });
+      setCampusStory(campusStoryInput.trim());
+      toast.success('Campus Story saved');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save Campus Story');
+    } finally {
+      setSavingStory(false);
+    }
+  };
+
+  const removeCampusStory = async () => {
+    if (!school?._id) return;
+    setSavingStory(true);
+    try {
+      await api.put(`/schools/${school._id}`, { campusStory: '' });
+      setCampusStory('');
+      setCampusStoryInput('');
+      toast.success('Campus Story removed');
+    } catch {
+      toast.error('Failed to remove');
+    } finally {
+      setSavingStory(false);
+    }
+  };
+
+  const persistVideos = async (updated) => {
+    if (!school?._id) { toast.error('No school found'); return; }
+    setSaving(true);
+    try {
+      await api.put(`/schools/${school._id}`, { videos: updated });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save videos');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAdd = async () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) { toast.error('Please enter a video URL'); return; }
+    if (videos.includes(trimmed)) { toast.error('Video already added'); return; }
+    const updated = [...videos, trimmed];
+    setVideos(updated);
+    setUrlInput('');
+    await persistVideos(updated);
+    toast.success('Video added');
+  };
+
+  const handleDelete = async (url) => {
+    const updated = videos.filter((v) => v !== url);
+    setVideos(updated);
+    await persistVideos(updated);
+    toast.success('Video removed');
+  };
+
+  const storyThumb = campusStory ? getThumb(campusStory) : null;
+
+  return (
+    <div className="space-y-6">
+
+      {/* ── Campus Story ── */}
+      <div>
+        <h2 className="text-lg font-bold text-gray-900 mb-0.5">Campus Story</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          A single featured video shown on the Campus Stories button on your school profile hero. Upload a short tour, welcome message, or highlights reel.
+        </p>
+
+        {/* Current story preview */}
+        {campusStory && (
+          <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-video max-w-sm mb-4 group">
+            {storyThumb ? (
+              <img src={storyThumb} alt="Campus Story" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Video size={32} className="text-gray-600" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-white/25 flex items-center justify-center">
+                <Play size={20} className="text-white fill-white ml-0.5" />
+              </div>
+            </div>
+            <div className="absolute top-2 left-3">
+              <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Campus Story</span>
+            </div>
+            <button onClick={removeCampusStory} disabled={savingStory}
+              className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition disabled:opacity-50">
+              <X size={14} className="text-white" />
+            </button>
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+          <p className="text-sm font-semibold text-gray-700">{campusStory ? 'Update' : 'Set'} Campus Story URL</p>
+          <div className="flex gap-3">
+            <input
+              value={campusStoryInput}
+              onChange={(e) => setCampusStoryInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && saveCampusStory()}
+              className={inp + ' flex-1'}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <button onClick={saveCampusStory} disabled={savingStory || !campusStoryInput.trim()}
+              className="inline-flex items-center gap-2 bg-green-700 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-green-800 transition whitespace-nowrap disabled:opacity-50">
+              {savingStory ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+              Save
+            </button>
+          </div>
+          <p className="text-xs text-gray-400">Paste a YouTube video link. This video appears exclusively on the Campus Stories button on your profile.</p>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100" />
+
+      {/* ── General Videos ── */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">School Videos</h2>
+            <p className="text-sm text-gray-500 mt-0.5">{videos.length} video{videos.length !== 1 ? 's' : ''} · shown in the Videos section of your profile</p>
+          </div>
+          {saving && (
+            <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+              <span className="w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
+              Saving...
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+          <p className="text-sm font-bold text-gray-900">Add Video</p>
+          <p className="text-xs text-gray-500">Paste a YouTube link. These appear in the Videos section on your school profile page.</p>
+          <div className="flex gap-3">
+            <input value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              className={inp + ' flex-1'} placeholder="https://www.youtube.com/watch?v=..." />
+            <button onClick={handleAdd} disabled={saving}
+              className="inline-flex items-center gap-2 bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-gray-900 transition whitespace-nowrap disabled:opacity-60">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+        </div>
+
+        {videos.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center mt-4">
+            <Video size={32} className="text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm mb-1">No videos yet</p>
+            <p className="text-gray-400 text-xs">Add YouTube videos to showcase your school to parents</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            {videos.map((url, i) => {
+              const thumb = getThumb(url);
+              return (
+                <div key={i} className="relative group rounded-2xl overflow-hidden bg-gray-900 aspect-video">
+                  {thumb ? (
+                    <img src={thumb} alt={`Video ${i + 1}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Video size={32} className="text-gray-600" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <Play size={20} className="text-white fill-white ml-0.5" />
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition flex items-center justify-center">
+                    <button onClick={() => handleDelete(url)} disabled={saving}
+                      className="opacity-0 group-hover:opacity-100 transition w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50">
+                      <Trash2 size={16} className="text-white" />
+                    </button>
+                  </div>
+                  <p className="absolute bottom-2 left-3 right-3 text-white/70 text-xs truncate">{url}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Analytics Tab ────────────────────────────────────────────────────────────
 
 function AnalyticsTab({ school }) {
@@ -1897,6 +2108,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'achievements' && <AchievementsTab school={school} />}
               {activeTab === 'reports' && <ExamResultsTab school={school} />}
               {activeTab === 'gallery' && <GalleryTab school={school} />}
+              {activeTab === 'videos' && <VideoTab school={school} />}
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
               {activeTab === 'visits' && <VisitRequestsTab />}
               {activeTab === 'reviews' && <OwnerReviewsTab school={school} />}
