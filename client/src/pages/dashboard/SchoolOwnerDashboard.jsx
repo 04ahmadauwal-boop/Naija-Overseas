@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import LGA_DATA from '../../utils/lgaData';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -439,6 +440,7 @@ function EditListingTab({ school, onSaved }) {
     type: school?.type || 'private',
     level: school?.level || 'secondary',
     state: school?.state || '',
+    lga: school?.lga || '',
     city: school?.city || '',
     address: school?.address || '',
     curriculum: school?.curriculum || [],
@@ -521,15 +523,22 @@ function EditListingTab({ school, onSaved }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">State</label>
-              <select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} className={inp}>
+              <select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value, lga: '' })} className={inp}>
                 <option value="">Select state</option>
                 {NIGERIAN_STATES.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">City / Area</label>
-              <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inp} placeholder="e.g. Lagos Island" />
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Local Government Area</label>
+              <select value={form.lga} onChange={(e) => setForm({ ...form, lga: e.target.value })} className={inp} disabled={!form.state}>
+                <option value="">{form.state ? 'Select LGA' : 'Select state first'}</option>
+                {(LGA_DATA[form.state] || []).map((lga) => <option key={lga}>{lga}</option>)}
+              </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">City / Area</label>
+            <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inp} placeholder="e.g. Lagos Island" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Address</label>

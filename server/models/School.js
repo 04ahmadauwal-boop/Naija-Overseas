@@ -8,6 +8,7 @@ const schoolSchema = new mongoose.Schema(
     level: { type: String, enum: ['primary', 'secondary', 'both'], default: 'secondary' },
     country: { type: String, default: 'Nigeria' },
     state: { type: String, required: true },
+    lga: { type: String, default: '' },
     city: { type: String },
     address: { type: String },
     fees: {

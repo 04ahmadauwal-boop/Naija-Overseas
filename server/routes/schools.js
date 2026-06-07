@@ -14,11 +14,13 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 // GET /api/schools — public list with filters
 router.get('/', async (req, res) => {
   try {
-    const { state, type, level, curriculum, minFee, maxFee, search, page = 1, limit = 12, featured } = req.query;
+    const { state, lga, city, type, level, curriculum, minFee, maxFee, search, page = 1, limit = 12, featured } = req.query;
     const filter = { status: 'approved' };
 
     if (featured === 'true') filter.isFeatured = true;
     if (state) filter.state = new RegExp(state, 'i');
+    if (lga) filter.lga = new RegExp(lga, 'i');
+    if (city) filter.city = new RegExp(city, 'i');
     if (type) filter.type = type;
     if (level) filter.level = level;
     if (curriculum) filter.curriculum = curriculum;
