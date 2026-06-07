@@ -224,7 +224,7 @@ export default function BlogPost() {
       <BackToTop />
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <div className="relative w-full" style={{ height: '520px' }}>
+      <div className="relative w-full" style={{ height: '50vh', minHeight: '320px' }}>
         {post.coverImage ? (
           <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover scale-[1.02]" style={{ objectPosition: 'center 30%' }} />
         ) : (
