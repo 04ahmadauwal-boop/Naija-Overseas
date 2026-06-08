@@ -5,6 +5,7 @@ const slugify = require('slugify');
 const mongoose = require('mongoose');
 const School = require('../models/School');
 const SuggestedSchool = require('../models/SuggestedSchool');
+const SchoolClaim = require('../models/SchoolClaim');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const cloudinary = require('../utils/cloudinary');
@@ -82,6 +83,59 @@ router.get('/admin/all', protect, isAdmin, async (req, res) => {
   }
 });
 
+// GET /api/schools/search?q= — name autocomplete for claim flow (must be before /:identifier)
+router.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) return res.json({ schools: [] });
+    const schools = await School.find({
+      status: 'approved',
+      name: new RegExp(q.trim(), 'i'),
+    })
+      .select('name state city type level images')
+      .limit(8);
+    res.json({ schools });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/schools/admin/claims — admin views all school claims (must be before /:identifier)
+router.get('/admin/claims', protect, isAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = status ? { status } : {};
+    const claims = await SchoolClaim.find(filter)
+      .populate('school', 'name state city type level slug')
+      .sort({ createdAt: -1 });
+    res.json({ claims });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PATCH /api/schools/admin/claims/:claimId — admin approves or rejects a claim
+router.patch('/admin/claims/:claimId', protect, isAdmin, async (req, res) => {
+  try {
+    const { action, adminNote } = req.body;
+    if (!['approved', 'rejected'].includes(action)) {
+      return res.status(400).json({ message: 'action must be approved or rejected' });
+    }
+    const claim = await SchoolClaim.findById(req.params.claimId);
+    if (!claim) return res.status(404).json({ message: 'Claim not found' });
+    claim.status = action;
+    if (adminNote) claim.adminNote = adminNote;
+    await claim.save();
+    if (action === 'approved' && claim.updatedData) {
+      const { ownerName, ownerEmail, ...schoolData } = claim.updatedData;
+      await School.findByIdAndUpdate(claim.school, schoolData);
+    }
+    res.json({ claim, message: `Claim ${action}` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/schools/suggestions — admin views submitted suggestions (must be before /:identifier)
 router.get('/suggestions', protect, isAdmin, async (req, res) => {
   try {
@@ -147,6 +201,28 @@ router.put('/:id', protect, async (req, res) => {
     }
     const updated = await School.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ school: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/schools/:id/claim — public, claim an existing school listing
+router.post('/:id/claim', async (req, res) => {
+  try {
+    const { claimantName, claimantEmail, claimantPhone, updatedData } = req.body;
+    if (!claimantEmail?.trim()) return res.status(400).json({ message: 'Claimant email is required' });
+    const school = await School.findById(req.params.id);
+    if (!school) return res.status(404).json({ message: 'School not found' });
+    const existing = await SchoolClaim.findOne({ school: school._id, claimantEmail: claimantEmail.trim(), status: 'pending' });
+    if (existing) return res.status(409).json({ message: 'You already have a pending claim for this school' });
+    const claim = await SchoolClaim.create({
+      school: school._id,
+      claimantName,
+      claimantEmail: claimantEmail.trim(),
+      claimantPhone,
+      updatedData,
+    });
+    res.status(201).json({ claim, message: 'Claim submitted for admin review' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

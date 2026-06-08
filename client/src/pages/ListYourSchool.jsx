@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   CheckCircle, ChevronRight, ChevronLeft, School,
   DollarSign, Phone, Upload, Star, Clock, Users,
   Camera, X as XIcon, Zap, Gift, ShieldCheck, BarChart3,
-  SlidersHorizontal, Play
+  SlidersHorizontal, Play, Search, Flag, AlertCircle
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -47,7 +47,6 @@ const SIX_REASONS = [
   },
 ];
 
-// Replace with your actual YouTube video ID, e.g. 'dQw4w9WgXcQ'
 const TUTORIAL_VIDEO_ID = '';
 
 const STEPS = ['School Info', 'Fees & Facilities', 'Contact & Review'];
@@ -100,10 +99,99 @@ export default function ListYourSchool() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef(null);
 
+  // Claim flow state
+  const [claimMode, setClaimMode] = useState(false);
+  const [claimedSchool, setClaimedSchool] = useState(null); // { _id, name, ... }
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchTimeout = useRef(null);
+  const nameInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white transition';
 
   const toggleArr = (key, val) =>
     setForm((f) => ({ ...f, [key]: f[key].includes(val) ? f[key].filter((x) => x !== val) : [...f[key], val] }));
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
+          nameInputRef.current && !nameInputRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const searchSchools = useCallback(async (q) => {
+    if (!q || q.trim().length < 2) { setSearchResults([]); setShowDropdown(false); return; }
+    setSearchLoading(true);
+    try {
+      const { data } = await api.get('/schools/search', { params: { q } });
+      setSearchResults(data.schools || []);
+      setShowDropdown((data.schools || []).length > 0);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setForm((f) => ({ ...f, name: val }));
+    if (claimMode) return; // don't re-search if already in claim mode
+    clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => searchSchools(val), 350);
+  };
+
+  const handleSelectExisting = async (school) => {
+    setShowDropdown(false);
+    setSearchResults([]);
+    // Fetch full school data
+    try {
+      const { data } = await api.get(`/schools/${school._id}`);
+      const s = data.school;
+      setClaimedSchool(s);
+      setClaimMode(true);
+      setForm({
+        name: s.name || '',
+        type: s.type || 'private',
+        level: s.level || 'secondary',
+        country: s.country || 'Nigeria',
+        state: s.state || '',
+        city: s.city || '',
+        address: s.address || '',
+        description: s.description || '',
+        fees: {
+          tuition: s.fees?.tuition || '',
+          boarding: s.fees?.boarding || '',
+        },
+        curriculum: s.curriculum || [],
+        facilities: s.facilities || [],
+        images: s.images || [],
+        contact: {
+          phone: s.contact?.phone || '',
+          email: s.contact?.email || '',
+          website: s.contact?.website || '',
+        },
+        ownerEmail: '',
+        ownerName: '',
+      });
+    } catch {
+      toast.error('Could not load school details. Please try again.');
+    }
+  };
+
+  const cancelClaim = () => {
+    setClaimMode(false);
+    setClaimedSchool(null);
+    setForm(INITIAL);
+    setStep(0);
+  };
 
   const handleImageUpload = async (file) => {
     if (!file) return;
@@ -135,7 +223,17 @@ export default function ListYourSchool() {
     }
     setLoading(true);
     try {
-      await api.post('/schools', form);
+      if (claimMode && claimedSchool) {
+        const { ownerName, ownerEmail, ...updatedData } = form;
+        await api.post(`/schools/${claimedSchool._id}/claim`, {
+          claimantName: ownerName,
+          claimantEmail: ownerEmail,
+          claimantPhone: form.contact.phone,
+          updatedData,
+        });
+      } else {
+        await api.post('/schools', form);
+      }
       setSubmitted(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Submission failed. Please try again.');
@@ -148,30 +246,40 @@ export default function ListYourSchool() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-lg p-10 max-w-lg w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="text-green-600" size={40} />
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${claimMode ? 'bg-blue-100' : 'bg-green-100'}`}>
+            {claimMode
+              ? <Flag className="text-blue-600" size={40} />
+              : <CheckCircle className="text-green-600" size={40} />}
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Submitted Successfully!</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
+            {claimMode ? 'Claim Submitted!' : 'Submitted Successfully!'}
+          </h2>
           <p className="text-gray-500 mb-2 leading-relaxed">
-            <strong className="text-gray-800">{form.name}</strong> has been submitted for review.
+            {claimMode
+              ? <>Your claim for <strong className="text-gray-800">{claimedSchool?.name}</strong> has been sent to our team.</>
+              : <><strong className="text-gray-800">{form.name}</strong> has been submitted for review.</>}
           </p>
           <p className="text-gray-500 text-sm mb-8">
-            Our team will review your listing and publish it within <strong>24–48 hours</strong>.
-            We'll notify you at <strong>{form.contact.email || form.ownerEmail}</strong>.
+            Our team will review {claimMode ? 'your claim' : 'your listing'} and respond within{' '}
+            <strong>24–48 hours</strong>. We'll notify you at{' '}
+            <strong>{form.ownerEmail}</strong>.
           </p>
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-8 text-left space-y-2">
-            <p className="text-sm font-semibold text-green-800">What happens next?</p>
-            {['Our team reviews your school details', 'We may contact you to verify information', 'Your listing goes live on the platform', 'You start receiving enquiries from parents'].map((t, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-green-700">
-                <span className="w-5 h-5 bg-green-700 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">{i + 1}</span>
+          <div className={`border rounded-2xl p-4 mb-8 text-left space-y-2 ${claimMode ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+            <p className={`text-sm font-semibold ${claimMode ? 'text-blue-800' : 'text-green-800'}`}>What happens next?</p>
+            {(claimMode
+              ? ['Our team reviews your claim and proposed changes', 'We may contact you to verify your authority over this school', 'If approved, your school profile will be updated', 'You\'ll be notified by email once the review is complete']
+              : ['Our team reviews your school details', 'We may contact you to verify information', 'Your listing goes live on the platform', 'You start receiving enquiries from parents']
+            ).map((t, i) => (
+              <div key={i} className={`flex items-center gap-2 text-sm ${claimMode ? 'text-blue-700' : 'text-green-700'}`}>
+                <span className={`w-5 h-5 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${claimMode ? 'bg-blue-700' : 'bg-green-700'}`}>{i + 1}</span>
                 {t}
               </div>
             ))}
           </div>
           <button
-            onClick={() => { setSubmitted(false); setForm(INITIAL); setStep(0); }}
-            className="w-full bg-green-700 text-white py-3.5 rounded-xl font-semibold hover:bg-green-800 transition">
-            List Another School
+            onClick={() => { setSubmitted(false); setForm(INITIAL); setStep(0); setClaimMode(false); setClaimedSchool(null); }}
+            className={`w-full text-white py-3.5 rounded-xl font-semibold transition ${claimMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-700 hover:bg-green-800'}`}>
+            {claimMode ? 'Submit Another Claim' : 'List Another School'}
           </button>
         </div>
       </div>
@@ -183,7 +291,6 @@ export default function ListYourSchool() {
 
       {/* ── HERO HEADER ─────────────────────────────────────── */}
       <div className="relative bg-linear-to-br from-green-800 via-green-700 to-green-900 overflow-hidden">
-        {/* Dot pattern */}
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative max-w-5xl mx-auto px-4 py-12 md:py-16 text-center">
@@ -219,7 +326,6 @@ export default function ListYourSchool() {
               Join hundreds of schools already growing their admissions through Nigeria's most trusted school discovery platform.
             </p>
           </div>
-
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {SIX_REASONS.map(({ icon: Icon, color, title, desc }, i) => (
               <div key={title}
@@ -267,10 +373,8 @@ export default function ListYourSchool() {
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-linear-to-br from-green-900 via-green-800 to-gray-900">
-                {/* Decorative dots */}
                 <div className="absolute inset-0 opacity-10"
                   style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-
                 <div className="relative flex flex-col items-center gap-4 text-center px-6">
                   <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 shadow-2xl">
                     <Play size={32} className="text-white ml-1.5" fill="white" />
@@ -290,7 +394,6 @@ export default function ListYourSchool() {
             )}
           </div>
 
-          {/* Quick steps below video */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
             {[
               { step: '1', title: 'Fill School Info', desc: 'Enter your school name, location, type, and description.' },
@@ -313,25 +416,46 @@ export default function ListYourSchool() {
 
       <div className="max-w-3xl mx-auto px-4 py-10">
 
+        {/* ── CLAIM MODE BANNER ───────────────────────────────── */}
+        {claimMode && claimedSchool && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+            <Flag size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-blue-900">Claiming: {claimedSchool.name}</p>
+              <p className="text-xs text-blue-700 mt-0.5">
+                This school is already in our directory. Review the pre-filled information, make any corrections, then submit your claim for admin approval.
+              </p>
+            </div>
+            <button
+              onClick={cancelClaim}
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-blue-400 hover:bg-blue-100 hover:text-blue-700 transition"
+              title="Cancel claim">
+              <XIcon size={15} />
+            </button>
+          </div>
+        )}
+
         {/* ── STEPPER ─────────────────────────────────────────── */}
         <div className="flex items-center mb-10">
           {STEPS.map((label, i) => (
             <div key={label} className="flex items-center flex-1 last:flex-none">
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                  i < step ? 'bg-green-700 text-white' :
-                  i === step ? 'bg-green-700 text-white ring-4 ring-green-100' :
-                  'bg-gray-200 text-gray-500'
+                  i < step
+                    ? claimMode ? 'bg-blue-600 text-white' : 'bg-green-700 text-white'
+                    : i === step
+                      ? claimMode ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-green-700 text-white ring-4 ring-green-100'
+                      : 'bg-gray-200 text-gray-500'
                 }`}>
                   {i < step ? <CheckCircle size={16} /> : i + 1}
                 </div>
                 <div className="hidden sm:block">
-                  <p className={`text-xs font-medium ${i <= step ? 'text-green-700' : 'text-gray-400'}`}>Step {i + 1}</p>
+                  <p className={`text-xs font-medium ${i <= step ? claimMode ? 'text-blue-600' : 'text-green-700' : 'text-gray-400'}`}>Step {i + 1}</p>
                   <p className={`text-sm font-bold ${i <= step ? 'text-gray-900' : 'text-gray-400'}`}>{label}</p>
                 </div>
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-4 transition-all ${i < step ? 'bg-green-700' : 'bg-gray-200'}`} />
+                <div className={`flex-1 h-0.5 mx-4 transition-all ${i < step ? claimMode ? 'bg-blue-600' : 'bg-green-700' : 'bg-gray-200'}`} />
               )}
             </div>
           ))}
@@ -344,19 +468,88 @@ export default function ListYourSchool() {
           {step === 0 && (
             <div className="space-y-5">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                  <School size={20} className="text-green-700" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${claimMode ? 'bg-blue-100' : 'bg-green-100'}`}>
+                  {claimMode ? <Flag size={20} className="text-blue-600" /> : <School size={20} className="text-green-700" />}
                 </div>
                 <div>
-                  <h2 className="font-bold text-gray-900 text-lg">School Information</h2>
-                  <p className="text-gray-400 text-sm">Tell us about your institution</p>
+                  <h2 className="font-bold text-gray-900 text-lg">
+                    {claimMode ? 'Claim Your School' : 'School Information'}
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    {claimMode ? 'Review and update the school details below' : 'Tell us about your institution'}
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">School Name <span className="text-red-500">*</span></label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className={inp} placeholder="e.g. Kings College Lagos" />
+              {/* School name with autocomplete */}
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  School Name <span className="text-red-500">*</span>
+                  {!claimMode && (
+                    <span className="ml-2 text-xs font-normal text-gray-400">— type to search existing schools</span>
+                  )}
+                </label>
+                <div className="relative" ref={nameInputRef}>
+                  <input
+                    value={form.name}
+                    onChange={handleNameChange}
+                    onFocus={() => { if (searchResults.length > 0 && !claimMode) setShowDropdown(true); }}
+                    className={inp + (claimMode ? ' border-blue-200 focus:ring-blue-400' : '')}
+                    placeholder={claimMode ? form.name : 'e.g. Kings College Lagos'}
+                    readOnly={claimMode}
+                    style={claimMode ? { backgroundColor: '#f8faff', cursor: 'default' } : {}}
+                  />
+                  {searchLoading && !claimMode && (
+                    <span className="absolute right-3 top-3.5 w-4 h-4 border-2 border-gray-200 border-t-green-500 rounded-full animate-spin" />
+                  )}
+                </div>
+
+                {/* Autocomplete dropdown */}
+                {showDropdown && !claimMode && searchResults.length > 0 && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+                      <AlertCircle size={13} className="text-amber-500 shrink-0" />
+                      <p className="text-xs text-gray-500">
+                        <span className="font-semibold text-gray-700">School already listed?</span> Click it to claim and manage your profile.
+                      </p>
+                    </div>
+                    <ul className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                      {searchResults.map((s) => (
+                        <li key={s._id}>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectExisting(s)}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-left transition">
+                            {s.images?.[0] ? (
+                              <img src={s.images[0]} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0 bg-gray-100" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                <School size={16} className="text-gray-400" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">{s.name}</p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {[s.city, s.state].filter(Boolean).join(', ')}
+                                {s.type ? ` · ${s.type}` : ''}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+                              Claim
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
+                      <p className="text-xs text-gray-400">
+                        Not your school? Keep typing to add a new one.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -475,10 +668,9 @@ export default function ListYourSchool() {
                 </div>
               </div>
 
-              {/* School Photos */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">School Photos (optional)</label>
-                <p className="text-xs text-gray-400 mb-3">Upload photos of your school campus, classrooms, or facilities. These will appear on your listing card.</p>
+                <p className="text-xs text-gray-400 mb-3">Upload photos of your school campus, classrooms, or facilities.</p>
                 <button
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
@@ -551,7 +743,14 @@ export default function ListYourSchool() {
               </div>
 
               <div className="border-t border-gray-100 pt-5">
-                <p className="text-sm font-bold text-gray-700 mb-4">Your Details (for listing notifications)</p>
+                <p className="text-sm font-bold text-gray-700 mb-1">
+                  {claimMode ? 'Your Details (for claim verification)' : 'Your Details (for listing notifications)'}
+                </p>
+                {claimMode && (
+                  <p className="text-xs text-blue-600 mb-4 flex items-center gap-1.5">
+                    <AlertCircle size={12} /> We'll contact you to verify your authority to manage this school.
+                  </p>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Name</label>
@@ -568,7 +767,9 @@ export default function ListYourSchool() {
 
               {/* Review Summary */}
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-3">
-                <p className="text-sm font-bold text-gray-700 mb-2">Listing Summary</p>
+                <p className="text-sm font-bold text-gray-700 mb-2">
+                  {claimMode ? 'Claim Summary' : 'Listing Summary'}
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div><span className="text-gray-400">School:</span> <span className="font-medium text-gray-800">{form.name || '—'}</span></div>
                   <div><span className="text-gray-400">Type:</span> <span className="font-medium text-gray-800 capitalize">{form.type}</span></div>
@@ -580,11 +781,19 @@ export default function ListYourSchool() {
                 </div>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
-                <CheckCircle size={18} className="text-green-600 shrink-0 mt-0.5" />
+              <div className={`border rounded-2xl p-4 flex items-start gap-3 ${claimMode ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                {claimMode
+                  ? <Flag size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  : <CheckCircle size={18} className="text-green-600 shrink-0 mt-0.5" />}
                 <div>
-                  <p className="text-sm font-semibold text-green-800">Free Listing — Admin Approval Required</p>
-                  <p className="text-xs text-green-700 mt-0.5">Your school will be reviewed by our team and published within 24–48 hours. No payment needed.</p>
+                  <p className={`text-sm font-semibold ${claimMode ? 'text-blue-800' : 'text-green-800'}`}>
+                    {claimMode ? 'School Claim — Admin Verification Required' : 'Free Listing — Admin Approval Required'}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${claimMode ? 'text-blue-700' : 'text-green-700'}`}>
+                    {claimMode
+                      ? 'Our team will verify your claim and apply your changes within 24–48 hours.'
+                      : 'Your school will be reviewed by our team and published within 24–48 hours. No payment needed.'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -603,14 +812,16 @@ export default function ListYourSchool() {
                   if (step === 0 && (!form.name.trim() || !form.state)) { toast.error('School name and state are required'); return; }
                   setStep(step + 1);
                 }}
-                className="flex items-center gap-2 bg-green-700 text-white text-sm px-6 py-3 rounded-xl hover:bg-green-800 transition font-semibold">
+                className={`flex items-center gap-2 text-white text-sm px-6 py-3 rounded-xl transition font-semibold ${claimMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-700 hover:bg-green-800'}`}>
                 Continue <ChevronRight size={16} />
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={loading}
-                className="flex items-center gap-2 bg-green-700 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
+                className={`flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl transition disabled:opacity-60 ${claimMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-700 hover:bg-green-800'}`}>
                 {loading ? (
                   <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
+                ) : claimMode ? (
+                  <><Flag size={16} /> Submit Claim</>
                 ) : (
                   <><Upload size={16} /> Submit for Approval</>
                 )}
@@ -620,7 +831,7 @@ export default function ListYourSchool() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          By submitting, you agree that all information is accurate and you are authorised to list this school.
+          By submitting, you agree that all information is accurate and you are authorised to {claimMode ? 'manage' : 'list'} this school.
         </p>
       </div>
     </div>
