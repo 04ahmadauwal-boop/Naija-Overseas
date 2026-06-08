@@ -3,7 +3,7 @@ import {
   CheckCircle, ChevronRight, ChevronLeft, School,
   DollarSign, Phone, Upload, Star, Clock, Users,
   Camera, X as XIcon, Zap, Gift, ShieldCheck, BarChart3,
-  SlidersHorizontal, Play, Search, Flag, AlertCircle
+  SlidersHorizontal, Play, Flag, AlertCircle
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -298,7 +298,7 @@ export default function ListYourSchool() {
             Free to list · Live in 24–48 hrs
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
-            Add Your School in<br className="hidden sm:block" /> <span className="text-green-300">5 Minutes</span>
+            Add Your School/Claim your school in<br className="hidden sm:block" /> <span className="text-orange-200">3 Minutes</span>
           </h1>
           <p className="text-green-100 text-base md:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
             Join 500+ schools reaching 10,000+ parents monthly on Nigeria's smartest school discovery platform.

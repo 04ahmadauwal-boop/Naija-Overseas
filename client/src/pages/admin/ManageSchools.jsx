@@ -64,7 +64,7 @@ function ClaimsView() {
       <ul className="text-xs text-gray-600 space-y-1 mt-1">
         {entries.map(([k, v]) => (
           <li key={k} className="flex gap-2">
-            <span className="text-gray-400 font-medium capitalize min-w-[80px]">{k.replace(/([A-Z])/g, ' $1').trim()}:</span>
+            <span className="text-gray-400 font-medium capitalize min-w-20">{k.replace(/([A-Z])/g, ' $1').trim()}:</span>
             <span className="text-gray-700 break-all">
               {typeof v === 'object' ? JSON.stringify(v) : String(v)}
             </span>
@@ -214,7 +214,7 @@ function ClaimsView() {
                           {claim.status}
                         </span>
                         {claim.adminNote && (
-                          <p className="text-xs text-gray-400 mt-1 max-w-[120px] truncate" title={claim.adminNote}>
+                          <p className="text-xs text-gray-400 mt-1 max-w-30 truncate" title={claim.adminNote}>
                             Note: {claim.adminNote}
                           </p>
                         )}

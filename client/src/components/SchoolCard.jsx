@@ -26,7 +26,7 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
       }`}
     >
       {/* ── IMAGE ──────────────────────────────────── */}
-      <Link to={href} className="block relative w-full h-48 overflow-hidden shrink-0 bg-gradient-to-br from-emerald-50 to-green-100">
+      <Link to={href} className="block relative w-full h-48 overflow-hidden shrink-0 bg-linear-to-br from-emerald-50 to-green-100">
         {school.images?.[0] ? (
           <img
             ref={imageRef}
@@ -42,7 +42,7 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
         )}
 
         {/* Gradient scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
 
         {/* Featured ribbon */}
         {school.isFeatured && (
@@ -118,24 +118,25 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Link
-            to={href}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm shadow-green-200 active:scale-[0.97]"
-          >
-            View School <ArrowRight size={12} />
-          </Link>
           <button
             onClick={() => onCompare(school)}
             title={isSelected ? 'Remove from compare' : 'Add to compare'}
-            className={`flex items-center justify-center gap-1 text-xs font-semibold px-3 py-2.5 rounded-xl border-2 transition ${
+            className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2.5 rounded-xl border-2 transition active:scale-[0.97] ${
               isSelected
-                ? 'bg-green-600 border-green-600 text-white'
-                : 'border-gray-200 text-gray-500 hover:border-green-400 hover:text-green-700 hover:bg-green-50'
+                ? 'bg-green-600 border-green-600 text-white shadow-sm shadow-green-200'
+                : 'border-green-600 text-green-700 hover:bg-green-600 hover:text-white hover:shadow-sm hover:shadow-green-200'
             }`}
           >
             <BarChart3 size={13} />
-            {isSelected ? '✓' : ''}
+            {isSelected ? 'Added ✓' : 'Compare School'}
           </button>
+          <Link
+            to={href}
+            title="View school profile"
+            className="flex items-center justify-center px-3 py-2.5 rounded-xl border-2 border-gray-200 text-gray-500 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition"
+          >
+            <ArrowRight size={13} />
+          </Link>
         </div>
       </div>
     </div>
