@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Search, ChevronDown, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Star, Search, ChevronDown, MessageSquare } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import api from '../utils/api';
 
 // Shown when no reviews exist in the database yet
@@ -282,38 +283,14 @@ export default function AllReviews() {
           )}
 
           {/* Pagination — only for real DB reviews */}
-          {pages > 1 && !loading && !usingStatic && (
-            <div className="flex justify-center items-center gap-2 mt-10">
-              <button onClick={() => handlePage(page - 1)} disabled={page === 1}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800 disabled:opacity-40 transition">
-                <ChevronLeft size={16} />
-              </button>
-              {Array.from({ length: pages }, (_, i) => i + 1)
-                .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 2)
-                .reduce((acc, p, i, arr) => {
-                  if (i > 0 && p - arr[i - 1] > 1) acc.push('...');
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((p, i) =>
-                  p === '...' ? (
-                    <span key={`e-${i}`} className="text-gray-600 px-1">…</span>
-                  ) : (
-                    <button key={p} onClick={() => handlePage(p)}
-                      className={`w-9 h-9 rounded-xl text-sm font-semibold transition ${
-                        p === page
-                          ? 'bg-yellow-400 text-gray-900 shadow-sm'
-                          : 'border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800'
-                      }`}>
-                      {p}
-                    </button>
-                  )
-                )}
-              <button onClick={() => handlePage(page + 1)} disabled={page === pages}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800 disabled:opacity-40 transition">
-                <ChevronRight size={16} />
-              </button>
-            </div>
+          {!loading && !usingStatic && (
+            <Pagination
+              page={page}
+              pages={pages}
+              onPage={handlePage}
+              dark
+              activeClass="bg-yellow-400 border-yellow-400 text-gray-900 shadow-sm"
+            />
           )}
         </div>
       </div>

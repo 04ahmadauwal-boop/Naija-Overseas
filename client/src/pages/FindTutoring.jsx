@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import Pagination from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import {
   Search, SlidersHorizontal, Star, MapPin, CheckCircle,
   ArrowRight, X, Video, Users, Clock, TrendingUp,
   Zap, Shield, Banknote, GraduationCap, UserCheck,
-  ChevronLeft, ChevronRight, BookOpen, Globe,
+  BookOpen, Globe,
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -739,27 +740,8 @@ export default function FindTutoring() {
           )}
 
           {/* Pagination */}
-          {pages > 1 && !loading && (
-            <div className="flex items-center justify-center gap-1.5 mt-8">
-              <button disabled={currentPage === 1}
-                onClick={() => doFetch(currentPage - 1, filters, sort)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600">
-                <ChevronLeft size={15} />
-              </button>
-              {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
-                <button key={p} onClick={() => doFetch(p, filters, sort)}
-                  className={`w-9 h-9 rounded-xl text-sm font-semibold transition ${
-                    p === currentPage ? 'bg-green-700 text-white shadow-sm' : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                  }`}>
-                  {p}
-                </button>
-              ))}
-              <button disabled={currentPage === pages}
-                onClick={() => doFetch(currentPage + 1, filters, sort)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600">
-                <ChevronRight size={15} />
-              </button>
-            </div>
+          {!loading && (
+            <Pagination page={currentPage} pages={pages} onPage={(p) => doFetch(p, filters, sort)} />
           )}
 
           {/* Browse footer */}

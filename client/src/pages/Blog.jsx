@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import Pagination from '../components/Pagination';
 import {
   BookOpen, Search, ArrowRight, Calendar, User, Clock, Eye,
-  TrendingUp, ChevronLeft, ChevronRight, Tag, Flame,
+  TrendingUp, Tag, Flame,
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -327,26 +328,7 @@ export default function Blog() {
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-6">
-                <button onClick={() => fetchPosts(page - 1)} disabled={page === 1}
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                  <ChevronLeft size={18} />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} onClick={() => fetchPosts(p)}
-                    className={`w-10 h-10 rounded-xl font-semibold text-sm transition ${
-                      p === page ? 'bg-green-700 text-white shadow-sm' : 'border border-gray-200 text-gray-600 hover:bg-gray-100'
-                    }`}>
-                    {p}
-                  </button>
-                ))}
-                <button onClick={() => fetchPosts(page + 1)} disabled={page === totalPages}
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            )}
+            <Pagination page={page} pages={totalPages} onPage={fetchPosts} />
           </div>
         )}
       </section>

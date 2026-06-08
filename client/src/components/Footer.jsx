@@ -8,28 +8,32 @@ const COLS = [
   {
     heading: 'Platform',
     links: [
-      ['/', 'Compare Schools'],
-      ['/study-abroad', 'Study Abroad'],
+      ['/', 'Find Schools'],
+      ['/compare', 'Compare Schools'],
+      ['/find-tutoring', 'Find a Tutor'],
+      ['/videos', 'Watch Reviews'],
       ['/list-your-school', 'List Your School'],
-      ['/blog', 'Blog'],
+      ['/reviews', 'Parent Reviews'],
     ],
   },
   {
     heading: 'Company',
     links: [
       ['/about', 'About Us'],
-      ['/contact', 'Contact'],
-      ['/blog', 'Resources'],
+      ['/contact', 'Contact Us'],
+      ['/blog', 'Blog & Resources'],
+      ['/become-a-tutor', 'Become a Tutor'],
       ['/register', 'Sign Up Free'],
     ],
   },
   {
-    heading: 'Destinations',
+    heading: 'Study Abroad',
     links: [
-      ['/study-abroad', 'UK'],
-      ['/study-abroad', 'Canada'],
-      ['/study-abroad', 'USA'],
-      ['/study-abroad', 'Australia'],
+      ['/study-abroad/uk', 'United Kingdom'],
+      ['/study-abroad/canada', 'Canada'],
+      ['/study-abroad/usa', 'United States'],
+      ['/study-abroad/australia', 'Australia'],
+      ['/study-abroad/germany', 'Germany'],
     ],
   },
 ];
@@ -76,7 +80,7 @@ export default function Footer() {
                 </span>
               </div>
               <p className="text-gray-600 text-[13px] leading-relaxed mb-4 max-w-xs">
-                West Africa's smartest school discovery and international admissions platform. Trusted by 10,000+ families.
+                West Africa's school discovery and international admissions platform — serving families across Nigeria, Ghana, The Gambia and Cameroon.
               </p>
               {/* Newsletter */}
               <form onSubmit={handleNewsletter} className="flex gap-2 max-w-xs">
@@ -134,7 +138,7 @@ export default function Footer() {
               </a>
               <span className="hidden md:flex items-center gap-1.5">
                 <MapPin size={11} className="shrink-0" />
-                Nigeria · Ghana · Gambia
+                Lagos, Nigeria · Ghana · Gambia · Cameroon
               </span>
             </div>
 

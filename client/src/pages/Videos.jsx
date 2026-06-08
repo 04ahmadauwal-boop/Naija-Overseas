@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Play, Filter, Clock } from 'lucide-react';
 import api from '../utils/api';
+import Pagination from '../components/Pagination';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = ['All', 'Parent Review', 'Principal Interview', 'School Review', 'Study Abroad', 'General'];
@@ -259,21 +260,7 @@ export default function Videos() {
             </div>
 
             {/* Pagination */}
-            {pages > 1 && (
-              <div className="flex justify-center gap-2 mt-10">
-                {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => fetchVideos(p)}
-                    className={`w-9 h-9 rounded-lg text-sm font-semibold transition ${
-                      p === currentPage ? 'bg-green-700 text-white' : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            )}
+            <Pagination page={currentPage} pages={pages} onPage={fetchVideos} />
           </>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Pagination from '../components/Pagination';
 import { useFadeIn, useSlideIn, useScrollAnimation } from '../hooks/useGsapAnimations';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
@@ -797,21 +798,7 @@ export default function Home() {
               </div>
 
               {/* Pagination */}
-              <div className="flex justify-center items-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setStateExplPage(p)}
-                    className={`w-9 h-9 rounded-xl text-sm font-semibold transition ${
-                      p === stateExplPage
-                        ? 'bg-green-700 text-white shadow-sm'
-                        : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
+              <Pagination page={stateExplPage} pages={totalPages} onPage={setStateExplPage} />
             </div>
           </section>
         );
@@ -1158,18 +1145,7 @@ export default function Home() {
           )}
 
           {/* Pagination */}
-          {pages > 1 && (
-            <div className="flex justify-center gap-2 mt-10">
-              {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => fetchSchools(p)}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
-                    p === currentPage ? 'bg-green-700 text-white' : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
-                  }`}>
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
+          <Pagination page={currentPage} pages={pages} onPage={fetchSchools} />
         </div>
       </section>
 
@@ -1194,8 +1170,8 @@ export default function Home() {
       {/* ── WHY NAIJA & OVERSEAS ──────────────────────────────────── */}
       <section
         ref={featuresRef}
-        className="relative overflow-hidden flex flex-col lg:flex-row lg:h-[80vh]"
-        style={{ minHeight: '600px', background: 'linear-gradient(150deg,#050d08 0%,#071a0e 55%,#0b2415 100%)' }}
+        className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(150deg,#050d08 0%,#071a0e 55%,#0b2415 100%)' }}
       >
         {/* Background dot grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -1206,75 +1182,80 @@ export default function Home() {
         {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/30 to-transparent" />
 
-        {/* ── LEFT PANEL ── */}
-        <div className="relative z-10 flex flex-col justify-center px-8 sm:px-12 lg:px-14 pt-12 pb-8 lg:py-0 lg:w-[38%] shrink-0 border-b lg:border-b-0 lg:border-r border-white/[0.06]">
-          <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full mb-6 w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Why Naija &amp; Overseas
-          </span>
+        <div className="relative z-10 flex flex-col lg:flex-row">
 
-          <h2 className="text-white font-extrabold text-2xl sm:text-3xl lg:text-[2rem] leading-[1.15] tracking-tight mb-4">
-            Everything you need,<br />
-            <span className="text-green-400">in one platform.</span>
-          </h2>
+          {/* ── LEFT PANEL ── */}
+          <div className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-12 sm:py-16 lg:py-20 lg:w-[40%] shrink-0 border-b lg:border-b-0 lg:border-r border-white/[0.06]">
 
-          <p className="text-white/40 text-sm leading-relaxed mb-8 max-w-xs">
-            Built for West African families — powerful tools for parents, students and school owners, all under one roof.
-          </p>
+            <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full mb-6 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              Why Naija &amp; Overseas
+            </span>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-5 mb-9">
-            {[
-              { value: '500+', label: 'Verified Schools',   color: 'text-white' },
-              { value: '10K+', label: 'Families Helped',    color: 'text-white' },
-              { value: '95%',  label: 'Visa Success Rate',  color: 'text-green-400' },
-              { value: '8',    label: 'Countries Covered',  color: 'text-white' },
-            ].map(({ value, label, color }) => (
-              <div key={label}>
-                <div className={`text-2xl font-extrabold leading-none ${color}`}>{value}</div>
-                <div className="text-white/30 text-[11px] mt-1 font-medium">{label}</div>
-              </div>
-            ))}
-          </div>
+            <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-[2.6rem] leading-[1.12] tracking-tight mb-4">
+              Everything you need,<br />
+              <span className="text-green-400">in one platform.</span>
+            </h2>
 
-          <Link to="/register"
-            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-green-950/60 w-fit">
-            Get Started Free <ArrowRight size={14} />
-          </Link>
-        </div>
+            <p className="text-white/40 text-sm sm:text-base leading-relaxed mb-10 max-w-sm">
+              Built for West African families — powerful tools for parents, students and school owners, all under one roof.
+            </p>
 
-        {/* ── RIGHT PANEL — cards ── */}
-        <div className="relative z-10 flex-1 p-5 sm:p-6 lg:p-7">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:h-full lg:grid-rows-2">
-            {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
-              <div key={title}
-                className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.065] hover:border-white/[0.13] p-4 sm:p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
-                {/* Accent top bar on hover */}
-                <div className={`absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                {/* Number watermark */}
-                <span className="absolute -top-1 -right-1 text-[56px] leading-none font-black text-white/[0.04] select-none pointer-events-none">
-                  {num}
-                </span>
-
-                {/* Icon */}
-                <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center mb-3 shrink-0 group-hover:scale-105 transition-transform duration-200`}>
-                  <Icon size={16} className={iconFg} />
+            {/* Stats grid */}
+            <div className="grid grid-cols-2 gap-px bg-white/[0.06] rounded-2xl overflow-hidden mb-10 border border-white/[0.06]">
+              {[
+                { value: '500+', label: 'Verified Schools',  color: 'text-green-400' },
+                { value: '10K+', label: 'Families Helped',   color: 'text-white' },
+                { value: '95%',  label: 'Visa Success Rate', color: 'text-green-400' },
+                { value: '8',    label: 'Countries Covered', color: 'text-white' },
+              ].map(({ value, label, color }) => (
+                <div key={label} className="bg-white/[0.03] flex flex-col items-center justify-center py-5 px-4 text-center">
+                  <div className={`text-2xl sm:text-3xl font-extrabold leading-none ${color}`}>{value}</div>
+                  <div className="text-white/30 text-[11px] sm:text-xs mt-1.5 font-medium">{label}</div>
                 </div>
+              ))}
+            </div>
 
-                {/* Title */}
-                <h3 className="text-white/90 font-bold text-[13px] leading-snug mb-1.5 pr-6">{title}</h3>
-
-                {/* Desc */}
-                <p className="text-white/35 text-[11.5px] leading-relaxed flex-1 line-clamp-3">{desc}</p>
-
-                {/* Badge */}
-                <span className="mt-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-white/[0.07] text-white/45 border border-white/[0.08] w-fit shrink-0">
-                  <CheckCircle size={8} className="text-green-400" />
-                  {badge}
-                </span>
-              </div>
-            ))}
+            <Link to="/register"
+              className="flex items-center justify-center gap-2 sm:inline-flex bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-7 py-3.5 rounded-xl transition shadow-lg shadow-green-950/60 sm:w-fit active:scale-95">
+              Get Started Free <ArrowRight size={14} />
+            </Link>
           </div>
+
+          {/* ── RIGHT PANEL — feature cards ── */}
+          <div className="flex-1 p-6 sm:p-8 lg:p-10 flex items-center">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
+                <div key={title}
+                  className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
+                  {/* Accent top bar */}
+                  <div className={`absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  {/* Number watermark */}
+                  <span className="absolute -top-2 -right-1 text-[64px] leading-none font-black text-white/[0.035] select-none pointer-events-none">
+                    {num}
+                  </span>
+
+                  {/* Icon */}
+                  <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center mb-4 shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+                    <Icon size={18} className={iconFg} />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-white/90 font-bold text-sm leading-snug mb-2 pr-6">{title}</h3>
+
+                  {/* Desc */}
+                  <p className="text-white/35 text-xs leading-relaxed flex-1 line-clamp-3">{desc}</p>
+
+                  {/* Badge */}
+                  <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-white/[0.06] text-white/40 border border-white/[0.08] w-fit shrink-0">
+                    <CheckCircle size={8} className="text-green-400" />
+                    {badge}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </section>
 
