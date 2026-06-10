@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 import {
   BookOpen, Search, ArrowRight, Calendar, User, Clock, Eye,
-  TrendingUp, Tag, Flame,
+  TrendingUp, Tag, Flame, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';

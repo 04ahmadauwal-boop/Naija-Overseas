@@ -15,6 +15,7 @@ const blogPostSchema = new mongoose.Schema(
     coverImage: { type: String },
     tags: [{ type: String }],
     isPublished: { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false },
     publishedAt: { type: Date },
     readTime: { type: Number, default: 5 },
     views: { type: Number, default: 0 },

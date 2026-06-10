@@ -7,7 +7,7 @@ import {
   Star, ChevronDown, ChevronUp, BookOpen, Globe,
   Users, BarChart3, Shield, Zap, Award, X,
   ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
-  Flame, Clock, Eye, TrendingUp,
+  Clock, Eye,
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -318,10 +318,12 @@ export default function Home() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Trending blog posts
-  const [trendingPosts, setTrendingPosts] = useState([]);
+  // Featured blog post (admin-chosen) + 4 most recent
+  const [featuredPost, setFeaturedPost] = useState(null);
+  const [recentPosts, setRecentPosts] = useState([]);
   useEffect(() => {
-    api.get('/blog/trending').then(({ data }) => setTrendingPosts(data.posts || [])).catch(() => {});
+    api.get('/blog/featured').then(({ data }) => setFeaturedPost(data.post || null)).catch(() => {});
+    api.get('/blog', { params: { limit: 3 } }).then(({ data }) => setRecentPosts(data.posts || [])).catch(() => {});
   }, []);
 
   // Review videos for the scrolling section
@@ -1534,151 +1536,167 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TRENDING TOPICS ───────────────────────────────────────── */}
-      <section className="relative overflow-hidden"
-        aria-label="Trending Topics">
-        {/* Dark background with dot grid */}
+      {/* ── FEATURED BLOG ─────────────────────────────────────────── */}
+      <section className="relative overflow-hidden" aria-label="Featured Blog">
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,#021a0e 0%,#042f1e 50%,#064e3b 100%)' }} />
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ background: 'linear-gradient(135deg,#021a0e 0%,#042f1e 55%,#064e3b 100%)' }} />
+        <div className="absolute inset-0 opacity-[0.035] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/40 to-transparent" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-175 h-100 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/35 to-transparent" />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-8 md:flex md:flex-col md:h-[70vh] md:min-h-[480px]">
-          {/* Header row */}
-          <div className="flex items-center justify-between mb-5 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1.5 rounded-full">
-                <Flame size={11} className="text-orange-400" />
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                Trending Topics
+        <div className="relative max-w-7xl mx-auto px-4 py-7 md:py-10">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1.5 bg-green-900/60 border border-green-700/40 text-green-300 text-[10px] font-bold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full">
+                <Star size={10} className="text-yellow-400 fill-yellow-400" />
+                <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                Featured
               </div>
-              <h2 className="text-white font-extrabold text-xl sm:text-2xl">
-                What students are reading
-              </h2>
+              <h2 className="text-white font-extrabold text-base sm:text-lg">From the Blog</h2>
             </div>
             <Link to="/blog"
-              className="hidden sm:flex items-center gap-1.5 text-green-400 hover:text-green-300 text-sm font-semibold transition">
-              View all articles <ArrowRight size={14} />
+              className="hidden sm:flex items-center gap-1 text-green-400/70 hover:text-green-300 text-xs font-semibold transition">
+              All articles <ArrowRight size={12} />
             </Link>
           </div>
 
-          {/* Posts grid */}
-          {trendingPosts.length > 0 ? (
-            <div className="mt-2 md:flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-3 md:min-h-0">
-              {/* Large featured card */}
-              {trendingPosts[0] && (
-                <Link to={`/blog/${trendingPosts[0].slug}`}
-                  className="group col-span-1 sm:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden cursor-pointer h-56 sm:h-72 md:h-auto">
-                  <div className="absolute inset-0">
-                    {trendingPosts[0].coverImage ? (
-                      <img src={trendingPosts[0].coverImage} alt={trendingPosts[0].title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    ) : (
-                      <div className="w-full h-full bg-green-900" />
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-gray-950/95 via-gray-950/50 to-transparent" />
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-[10px] bg-white/20 backdrop-blur-sm border border-white/20 text-white font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        {trendingPosts[0].category}
-                      </span>
-                      <span className="flex items-center gap-1 text-white/40 text-[10px]">
-                        <TrendingUp size={9} /> #1 trending
-                      </span>
-                    </div>
-                    <h3 className="text-white font-extrabold text-lg leading-snug mb-2 group-hover:text-green-300 transition line-clamp-3">
-                      {trendingPosts[0].title}
-                    </h3>
-                    <div className="flex items-center gap-3 text-white/40 text-xs">
-                      {trendingPosts[0].readTime && <span className="flex items-center gap-1"><Clock size={10} />{trendingPosts[0].readTime} min</span>}
-                      {trendingPosts[0].views > 0 && <span className="flex items-center gap-1"><Eye size={10} />{trendingPosts[0].views.toLocaleString()}</span>}
-                    </div>
-                  </div>
-                </Link>
-              )}
+          {/* Body — stacks on mobile, side-by-side on lg+ */}
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch lg:max-h-[280px]">
 
-              {/* Smaller cards — 4 fills the right 2×2 on md+ */}
-              {trendingPosts.slice(1, 5).map((post, i) => (
-                <Link key={post._id} to={`/blog/${post.slug}`}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer h-36 sm:h-44 md:h-auto">
-                  <div className="absolute inset-0">
-                    {post.coverImage ? (
-                      <img src={post.coverImage} alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            {/* ── LEFT: 3 recent posts ── */}
+            <div className="order-2 lg:order-1 lg:w-[260px] xl:w-[280px] shrink-0 flex flex-col">
+              <p className="text-white/25 text-[9px] font-bold uppercase tracking-widest mb-2">
+                Recent Articles
+              </p>
+              <div className="flex-1 flex flex-col divide-y divide-white/[0.05]">
+                {recentPosts.length > 0 ? recentPosts.slice(0, 3).map((post) => (
+                  <Link key={post._id} to={`/blog/${post.slug}`}
+                    className="group flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 hover:opacity-90 transition-opacity">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-green-950/80">
+                      {post.coverImage
+                        ? <img src={post.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />
+                        : <div className="w-full h-full flex items-center justify-center"><BookOpen size={12} className="text-green-800" /></div>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[9px] text-green-400/55 font-bold uppercase tracking-wide">{post.category}</span>
+                      <p className="text-white/75 text-[11px] font-semibold leading-snug line-clamp-2 group-hover:text-white transition mt-0.5">{post.title}</p>
+                      {post.readTime && (
+                        <span className="flex items-center gap-1 text-white/20 text-[9px] mt-1">
+                          <Clock size={7} /> {post.readTime} min
+                        </span>
+                      )}
+                    </div>
+                    <ArrowRight size={11} className="text-green-500/0 group-hover:text-green-500/70 shrink-0 transition-colors" />
+                  </Link>
+                )) : (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 py-2.5 first:pt-0">
+                      <div className="w-12 h-12 rounded-lg bg-white/[0.04] skeleton-shimmer shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-2 bg-white/[0.04] rounded skeleton-shimmer w-16" />
+                        <div className="h-3 bg-white/[0.04] rounded skeleton-shimmer w-full" />
+                        <div className="h-3 bg-white/[0.04] rounded skeleton-shimmer w-3/4" />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <Link to="/blog"
+                className="mt-3 flex items-center gap-1 text-green-400/50 hover:text-green-400 text-[11px] font-semibold transition lg:hidden">
+                View all <ArrowRight size={10} />
+              </Link>
+            </div>
+
+            {/* Vertical divider — desktop only */}
+            <div className="hidden lg:block w-px bg-white/[0.06] shrink-0 self-stretch" />
+
+            {/* ── RIGHT: Featured post ── */}
+            <div className="order-1 lg:order-2 flex-1 min-w-0">
+              {featuredPost ? (
+                <Link to={`/blog/${featuredPost.slug}`}
+                  className="group relative block rounded-xl overflow-hidden h-full shadow-xl hover:shadow-green-950/60 transition-shadow duration-500">
+                  <div className="relative h-40 sm:h-44 lg:h-full lg:min-h-0">
+                    {featuredPost.coverImage ? (
+                      <img src={featuredPost.coverImage} alt={featuredPost.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
                     ) : (
-                      <div className="w-full h-full bg-linear-to-br from-green-900 to-green-950" />
+                      <div className="w-full h-full bg-green-900/60 flex items-center justify-center">
+                        <BookOpen className="text-green-700/50" size={48} />
+                      </div>
                     )}
-                    <div className="absolute inset-0 bg-linear-to-t from-gray-950/90 via-gray-950/40 to-transparent" />
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <span className="text-[9px] text-green-400/70 font-bold uppercase tracking-wider">#{i + 2}</span>
-                    <h4 className="text-white text-xs font-bold leading-snug line-clamp-2 group-hover:text-green-300 transition mt-0.5">
-                      {post.title}
-                    </h4>
-                    {post.readTime && (
-                      <span className="flex items-center gap-1 text-white/30 text-[10px] mt-1">
-                        <Clock size={9} />{post.readTime} min
+                    <div className="absolute inset-0 bg-linear-to-t from-gray-950/95 via-gray-950/30 to-transparent" />
+                    {/* Featured badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="inline-flex items-center gap-1 bg-yellow-400/95 text-gray-950 text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md">
+                        <Star size={8} fill="currentColor" /> Featured
                       </span>
-                    )}
+                    </div>
+                    {/* Content overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                      <span className="inline-flex items-center text-[10px] bg-white/10 backdrop-blur-sm border border-white/15 text-white/70 font-semibold px-2 py-0.5 rounded-full mb-2">
+                        {featuredPost.category}
+                      </span>
+                      <h3 className="text-white font-extrabold text-base sm:text-lg md:text-xl leading-snug mb-1.5 group-hover:text-green-300 transition line-clamp-2">
+                        {featuredPost.title}
+                      </h3>
+                      {featuredPost.excerpt && (
+                        <p className="text-white/40 text-xs leading-relaxed mb-2.5 hidden sm:block line-clamp-1">
+                          {featuredPost.excerpt}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 text-white/35 text-[10px]">
+                          {featuredPost.readTime && (
+                            <span className="flex items-center gap-1"><Clock size={9} />{featuredPost.readTime} min read</span>
+                          )}
+                          {featuredPost.views > 0 && (
+                            <span className="flex items-center gap-1"><Eye size={9} />{featuredPost.views.toLocaleString()}</span>
+                          )}
+                        </div>
+                        <span className="flex items-center gap-1 text-green-400 font-bold text-xs group-hover:gap-2 transition-all whitespace-nowrap">
+                          Read <ArrowRight size={11} />
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </Link>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center h-full min-h-[140px] rounded-xl border border-white/[0.05] bg-white/[0.015] p-6">
+                  <Star size={22} className="text-green-800/60 mb-2" />
+                  <p className="text-white/25 text-xs font-medium">No featured article set</p>
+                  <p className="text-white/15 text-[10px] mt-0.5">Admin → Blog → click ★ on any post</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Footer strip */}
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3.5 border-t border-white/[0.07]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
+                <div key={t} className="flex items-center gap-1">
+                  {i > 0 && <span className="w-px h-3 bg-green-900 hidden sm:block" />}
+                  <CheckCircle size={9} className="text-green-500 shrink-0" />
+                  <span className="text-green-400/40 text-[10px] font-medium">{t}</span>
+                </div>
               ))}
             </div>
-          ) : (
-            /* Fallback CTA when no posts loaded yet */
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="inline-flex items-center gap-2 bg-green-900/60 border border-green-700/40 text-green-300 text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2 rounded-full mb-8">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                Free for students &amp; parents
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-5"
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-                Start your school search today —{' '}
-                <em className="text-green-400">it&apos;s free.</em>
-              </h2>
-              <p className="text-green-200/60 text-sm mb-8 max-w-md mx-auto">
-                Join over 10,000 families who found their ideal school or university placement.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/register"
-                  className="bg-white text-green-950 font-extrabold px-8 py-4 rounded-2xl hover:bg-green-50 transition text-sm shadow-xl">
-                  Create Free Account →
-                </Link>
-                <Link to="/blog"
-                  className="border border-green-600/50 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-green-800/30 transition text-sm">
-                  Read Our Blog
-                </Link>
-              </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link to="/register"
+                className="bg-white text-green-950 font-bold px-4 py-2 rounded-lg text-xs hover:bg-green-50 transition shadow-md">
+                Get Started Free →
+              </Link>
+              <Link to="/blog"
+                className="border border-green-700/40 text-green-400/60 font-semibold px-4 py-2 rounded-lg text-xs hover:bg-green-900/30 transition sm:flex hidden items-center gap-1">
+                <BookOpen size={11} /> All Articles
+              </Link>
             </div>
-          )}
+          </div>
 
-          {/* Bottom CTA strip */}
-          {trendingPosts.length > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-white/10 shrink-0">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                {['10,000+ Families', '500+ Schools', '95% Visa Success', 'Always Free'].map((t, i) => (
-                  <div key={t} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="w-px h-3 bg-green-800 hidden sm:block" />}
-                    <CheckCircle size={11} className="text-green-400 shrink-0" />
-                    <span className="text-green-300/60 text-xs font-medium">{t}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <Link to="/register"
-                  className="bg-white text-green-950 font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-green-50 transition shadow-lg">
-                  Get Started Free →
-                </Link>
-                <Link to="/blog"
-                  className="border border-green-600/40 text-green-300 font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-green-800/30 transition sm:flex hidden items-center gap-1.5">
-                  <BookOpen size={13} /> All Articles
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 

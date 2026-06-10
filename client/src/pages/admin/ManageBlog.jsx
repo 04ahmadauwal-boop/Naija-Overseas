@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
   Plus, Edit2, Trash2, FileText, X, Eye, EyeOff,
   Upload, Image, Clock, Tag, Globe, AlignLeft,
-  ChevronDown, ChevronUp, Search, Building2,
+  ChevronDown, ChevronUp, Search, Building2, Star,
 } from 'lucide-react';
 
 const CATEGORIES = ['Study Tips', 'School Reviews', 'Study Abroad', 'Visa Guides', 'News'];
@@ -44,6 +44,14 @@ export default function ManageBlog() {
       setPosts(data.posts);
     } catch { toast.error('Failed to load posts'); }
     finally { setLoading(false); }
+  };
+
+  const toggleFeatured = async (post) => {
+    try {
+      await api.post(`/blog/${post._id}/feature`);
+      toast.success(post.isFeatured ? 'Removed from featured' : `"${post.title}" is now featured`);
+      fetchPosts();
+    } catch { toast.error('Failed to update featured post'); }
   };
 
   useEffect(() => { fetchPosts(); }, []);
@@ -410,6 +418,7 @@ export default function ManageBlog() {
                     {['Title', 'Category', 'Read Time', 'Views', 'Status', 'Date', 'Actions'].map((h) => (
                       <th key={h} className="px-5 py-4 font-semibold whitespace-nowrap">{h}</th>
                     ))}
+                    <th className="px-3 py-4 font-semibold whitespace-nowrap text-center">Featured</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -461,6 +470,18 @@ export default function ManageBlog() {
                             <Trash2 size={13} />
                           </button>
                         </div>
+                      </td>
+                      <td className="px-3 py-4 text-center">
+                        <button
+                          onClick={() => toggleFeatured(post)}
+                          title={post.isFeatured ? 'Remove from featured' : 'Set as featured on Home'}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg transition mx-auto ${
+                            post.isFeatured
+                              ? 'bg-yellow-100 text-yellow-500 hover:bg-yellow-200'
+                              : 'bg-gray-100 text-gray-300 hover:bg-yellow-50 hover:text-yellow-400'
+                          }`}>
+                          <Star size={14} fill={post.isFeatured ? 'currentColor' : 'none'} />
+                        </button>
                       </td>
                     </tr>
                   ))}

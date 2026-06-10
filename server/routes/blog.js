@@ -30,6 +30,18 @@ router.post('/upload-image', protect, isAdmin, upload.single('image'), async (re
   }
 });
 
+// GET /api/blog/featured — single admin-chosen featured post
+router.get('/featured', async (req, res) => {
+  try {
+    const post = await BlogPost.findOne({ isPublished: true, isFeatured: true })
+      .populate('author', 'name')
+      .select('title slug excerpt coverImage category views readTime publishedAt tags author');
+    res.json({ post: post || null });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/blog/trending — top 8 posts by views
 router.get('/trending', async (req, res) => {
   try {
@@ -71,6 +83,25 @@ router.get('/admin/all', protect, isAdmin, async (req, res) => {
   try {
     const posts = await BlogPost.find().populate('author', 'name').sort({ createdAt: -1 });
     res.json({ posts });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/blog/:id/feature — admin toggles featured post
+router.post('/:id/feature', protect, isAdmin, async (req, res) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    if (post.isFeatured) {
+      post.isFeatured = false;
+      await post.save();
+    } else {
+      await BlogPost.updateMany({}, { isFeatured: false });
+      post.isFeatured = true;
+      await post.save();
+    }
+    res.json({ post });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
