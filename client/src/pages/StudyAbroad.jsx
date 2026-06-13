@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { initializePaystack } from '../utils/paystack';
 
 /* ─── DATA ──────────────────────────────────────────────────── */
 
@@ -103,7 +104,7 @@ const BENEFITS = [
 
 const WHY_US = [
   { icon: Award, title: '95% Visa Success Rate', desc: 'Our thorough preparation and document review means 95 of every 100 students we work with get their student visa approved first attempt.' },
-  { icon: Users, title: '2,000+ Students Placed', desc: 'Since 2022, we have successfully placed over 2,000 Nigerian students in universities across 8 countries worldwide.' },
+  { icon: Users, title: '100+ Students Placed', desc: 'Since 2022, we have successfully placed over 2,000 Nigerian students in universities across 8 countries worldwide.' },
   { icon: GraduationCap, title: '50+ Partner Universities', desc: 'Our direct relationships with universities means faster processing times, special consideration, and in some cases, exclusive scholarship access.' },
   { icon: Shield, title: 'End-to-End Service', desc: 'From first consultation to your first day on campus — we handle every single step so you never feel alone in the process.' },
   { icon: Clock, title: '48-Hour Response Guarantee', desc: 'Every enquiry receives a personalised response from a senior counsellor within 48 hours. No automated replies, no waiting weeks.' },
@@ -173,10 +174,18 @@ export default function StudyAbroad() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    fullName: '', email: '', phone: '', destinationCountry: '',
-    university: '', program: '', intake: '', currentQualification: '', requiresVisa: true,
+  const [step, setStep] = useState(1);
+  const [payRef, setPayRef] = useState('');
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
   });
+  const [form, setForm] = useState({
+    fullName: '', email: '', phone: '', destinationCountry: '', program: '',
+    consultDate: '', consultTime: '',
+  });
+
+  const TIME_SLOTS = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
   const intervalRef = useRef(null);
   const progressRef = useRef(null);
   const tickRef = useRef(0);
@@ -206,23 +215,51 @@ export default function StudyAbroad() {
     return () => clearInterval(progressRef.current);
   }, [slide, paused, TOTAL_TICKS]);
 
-  const handleSubmit = async (e) => {
+  const handleStep1 = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await api.post('/study-abroad', form);
-      setSubmitted(true);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Submission failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    if (!form.consultDate) { toast.error('Please select a consultation date.'); return; }
+    if (!form.consultTime) { toast.error('Please select a consultation time.'); return; }
+    setStep(2);
+  };
+
+  const handlePayment = () => {
+    initializePaystack({
+      email: form.email,
+      amount: 10000,
+      metadata: {
+        name: form.fullName,
+        phone: form.phone,
+        destination: form.destinationCountry,
+        program: form.program,
+        consultDate: form.consultDate,
+        consultTime: form.consultTime,
+      },
+      onSuccess: async (reference) => {
+        setPayRef(reference);
+        setLoading(true);
+        try {
+          await api.post('/study-abroad/consultation', { ...form, reference, amount: 10000 });
+          setSubmitted(true);
+        } catch (err) {
+          console.error('Booking save error:', err);
+          toast.error(
+            err.response?.data?.message ||
+            'Payment received but booking record failed. Please contact us with your payment reference: ' + reference
+          );
+        } finally {
+          setLoading(false);
+        }
+      },
+      onClose: () => {},
+    });
   };
 
   const resetForm = () => {
     setShowForm(false);
     setSubmitted(false);
-    setForm({ fullName: '', email: '', phone: '', destinationCountry: '', university: '', program: '', intake: '', currentQualification: '', requiresVisa: true });
+    setStep(1);
+    setPayRef('');
+    setForm({ fullName: '', email: '', phone: '', destinationCountry: '', program: '', consultDate: '', consultTime: '' });
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
@@ -313,7 +350,7 @@ export default function StudyAbroad() {
                 </div>
                 <button onClick={() => setShowForm(true)}
                   className="w-full mt-5 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
-                  Get Free Consultation <ArrowRight size={15} />
+                  Book Consultation <ArrowRight size={15} />
                 </button>
               </div>
             </div>
@@ -373,7 +410,7 @@ export default function StudyAbroad() {
       <section className="bg-green-900 text-white">
         <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 divide-x divide-green-800">
           {[
-            ['2,000+', 'Students Successfully Placed'],
+            ['100+', 'Students Successfully Placed'],
             ['95%', 'Visa Approval Rate'],
             ['50+', 'Partner Universities'],
             ['8', 'Countries Covered'],
@@ -429,7 +466,7 @@ export default function StudyAbroad() {
 
           <div className="grid grid-cols-2 gap-4">
             {[
-              { n: '2,000+', l: 'Students Placed', color: 'bg-green-700' },
+              { n: '100+', l: 'Students Placed', color: 'bg-green-700' },
               { n: '95%', l: 'Visa Success Rate', color: 'bg-blue-700' },
               { n: '8', l: 'Destinations', color: 'bg-purple-700' },
               { n: '50+', l: 'Partner Universities', color: 'bg-orange-600' },
@@ -772,103 +809,235 @@ export default function StudyAbroad() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          APPLICATION MODAL
+          CONSULTATION BOOKING MODAL
       ══════════════════════════════════════════════════════════ */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
-          <div className="bg-white rounded-3xl w-full max-w-lg my-auto shadow-2xl overflow-hidden">
+      {showForm && (() => {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const calYear = calMonth.getFullYear();
+        const calMonthIdx = calMonth.getMonth();
+        const daysInMonth = new Date(calYear, calMonthIdx + 1, 0).getDate();
+        const firstDay = new Date(calYear, calMonthIdx, 1).getDay();
+        const canGoPrev = calMonth > new Date(today.getFullYear(), today.getMonth(), 1);
+        const fmtDate = (ds) => {
+          if (!ds) return '';
+          const [y, m, d] = ds.split('-');
+          return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        };
 
-            <div className="bg-green-900 px-7 py-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-extrabold text-white">Free Study Abroad Application</h2>
-                <p className="text-green-300 text-xs mt-0.5">A counsellor will contact you within 48 hours</p>
-              </div>
-              <button onClick={resetForm}
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-800 text-green-300 hover:bg-green-700 transition">
-                <X size={16} />
-              </button>
-            </div>
+        return (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+            <div className={`bg-white rounded-3xl w-full my-auto shadow-2xl overflow-hidden ${step === 1 ? 'max-w-2xl' : 'max-w-md'}`}>
 
-            {submitted ? (
-              <div className="p-10 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle size={32} className="text-green-600" />
+              {/* Header */}
+              <div className="bg-green-900 px-7 py-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-extrabold text-white">
+                    {submitted ? 'Booking Confirmed!' : step === 1 ? 'Book a Consultation' : 'Review & Pay'}
+                  </h2>
+                  <p className="text-green-300 text-xs mt-0.5">
+                    {submitted ? 'Your slot is reserved' : step === 1 ? 'Pick a date and time that works for you' : 'Consultation fee — ₦10,000'}
+                  </p>
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-2">Application Submitted!</h3>
-                <p className="text-gray-500 text-sm mb-2">Thank you, <strong>{form.fullName}</strong>!</p>
-                <p className="text-gray-500 text-sm mb-6">
-                  A senior counsellor will review your profile and contact you at <strong>{form.email}</strong> within 48 hours with a personalised university shortlist.
-                </p>
                 <button onClick={resetForm}
-                  className="bg-green-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition text-sm">
-                  Close
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-800 text-green-300 hover:bg-green-700 transition">
+                  <X size={16} />
                 </button>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="p-7 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
-                    <input type="text" required value={form.fullName}
-                      onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inp} placeholder="Your full name" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email <span className="text-red-500">*</span></label>
-                    <input type="email" required value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })} className={inp} placeholder="you@email.com" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone <span className="text-red-500">*</span></label>
-                    <input type="tel" required value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inp} placeholder="+234 800..." />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Preferred Destination <span className="text-red-500">*</span></label>
-                    <select required value={form.destinationCountry}
-                      onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })} className={inp}>
-                      <option value="">Select a destination country</option>
-                      {DESTINATIONS.map(({ country }) => <option key={country}>{country}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Program / Course</label>
-                    <input value={form.program}
-                      onChange={(e) => setForm({ ...form, program: e.target.value })} className={inp} placeholder="e.g. Computer Science" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Preferred Intake</label>
-                    <input value={form.intake}
-                      onChange={(e) => setForm({ ...form, intake: e.target.value })} className={inp} placeholder="e.g. Sept 2025" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Highest Qualification</label>
-                    <input value={form.currentQualification}
-                      onChange={(e) => setForm({ ...form, currentQualification: e.target.value })} className={inp} placeholder="e.g. WAEC, BSc, HND" />
-                  </div>
+
+              {/* Step indicator */}
+              {!submitted && (
+                <div className="flex border-b border-gray-100">
+                  {['Your Details & Schedule', 'Confirm & Pay'].map((label, i) => (
+                    <div key={label} className={`flex-1 py-2.5 text-center text-xs font-semibold transition
+                      ${step === i + 1 ? 'text-green-700 border-b-2 border-green-600' : 'text-gray-400'}`}>
+                      {i + 1}. {label}
+                    </div>
+                  ))}
                 </div>
-                <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer border border-gray-100">
-                  <input type="checkbox" checked={form.requiresVisa}
-                    onChange={(e) => setForm({ ...form, requiresVisa: e.target.checked })}
-                    className="w-4 h-4 accent-green-600" />
-                  <span className="text-sm text-gray-700">I need visa assistance</span>
-                </label>
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={resetForm}
-                    className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={loading}
-                    className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                    {loading
-                      ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
-                      : 'Submit Application →'}
+              )}
+
+              {/* ── SUCCESS ── */}
+              {submitted && (
+                <div className="p-10 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <CheckCircle size={32} className="text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-900 mb-2">Consultation Booked!</h3>
+                  <p className="text-gray-500 text-sm mb-1">Thank you, <strong>{form.fullName}</strong>.</p>
+                  <p className="text-gray-500 text-sm mb-4">
+                    Your consultation is scheduled for<br />
+                    <strong className="text-gray-800">{fmtDate(form.consultDate)} at {form.consultTime}</strong>.
+                  </p>
+                  <p className="text-gray-400 text-xs mb-6">A confirmation will be sent to <strong>{form.email}</strong>. Our counsellor will reach out shortly before your slot.</p>
+                  <button onClick={resetForm}
+                    className="bg-green-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition text-sm">
+                    Done
                   </button>
                 </div>
-              </form>
-            )}
+              )}
+
+              {/* ── STEP 1: Details + Calendar ── */}
+              {!submitted && step === 1 && (
+                <form onSubmit={handleStep1} className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+
+                    {/* Left — personal info */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Your Information</p>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+                        <input type="text" required value={form.fullName}
+                          onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inp} placeholder="Your full name" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
+                        <input type="email" required value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })} className={inp} placeholder="you@email.com" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
+                        <input type="tel" required value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inp} placeholder="+234 800..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Destination <span className="text-red-500">*</span></label>
+                        <select required value={form.destinationCountry}
+                          onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })} className={inp}>
+                          <option value="">Select a country</option>
+                          {DESTINATIONS.map(({ country }) => <option key={country}>{country}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Program / Course</label>
+                        <input value={form.program}
+                          onChange={(e) => setForm({ ...form, program: e.target.value })} className={inp} placeholder="e.g. Computer Science" />
+                      </div>
+                    </div>
+
+                    {/* Right — calendar + time slots */}
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Pick a Date <span className="text-red-500">*</span></p>
+
+                      {/* Month nav */}
+                      <div className="flex items-center justify-between mb-2">
+                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))}
+                          disabled={!canGoPrev}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition">
+                          <ChevronLeft size={16} />
+                        </button>
+                        <span className="text-sm font-bold text-gray-800">
+                          {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+
+                      {/* Day headers */}
+                      <div className="grid grid-cols-7 mb-1">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                          <div key={d} className="text-center text-[10px] font-bold text-gray-400 py-1">{d}</div>
+                        ))}
+                      </div>
+
+                      {/* Day cells */}
+                      <div className="grid grid-cols-7 gap-0.5">
+                        {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                          const day = i + 1;
+                          const date = new Date(calYear, calMonthIdx, day);
+                          const isPast = date < today;
+                          const dateStr = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const isSelected = form.consultDate === dateStr;
+                          return (
+                            <button key={day} type="button" disabled={isPast}
+                              onClick={() => setForm({ ...form, consultDate: dateStr, consultTime: '' })}
+                              className={`aspect-square rounded-lg text-xs font-medium transition flex items-center justify-center
+                                ${isPast ? 'text-gray-300 cursor-not-allowed' : isSelected ? 'bg-green-600 text-white font-bold shadow' : 'hover:bg-green-50 text-gray-700'}`}>
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Time slots */}
+                      {form.consultDate && (
+                        <div className="mt-4">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pick a Time <span className="text-red-500">*</span></p>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {TIME_SLOTS.map((t) => (
+                              <button key={t} type="button"
+                                onClick={() => setForm({ ...form, consultTime: t })}
+                                className={`py-2 rounded-xl text-xs font-semibold border transition
+                                  ${form.consultTime === t ? 'bg-green-600 text-white border-green-600' : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'}`}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <button type="button" onClick={resetForm}
+                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
+                      Cancel
+                    </button>
+                    <button type="submit"
+                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 transition flex items-center justify-center gap-2">
+                      Continue to Payment <ArrowRight size={15} />
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* ── STEP 2: Review & Pay ── */}
+              {!submitted && step === 2 && (
+                <div className="p-7">
+                  <div className="bg-gray-50 rounded-2xl p-5 mb-5 space-y-3 border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Booking Summary</p>
+                    {[
+                      ['Name', form.fullName],
+                      ['Email', form.email],
+                      ['Phone', form.phone],
+                      ['Destination', form.destinationCountry || '—'],
+                      ['Program', form.program || '—'],
+                      ['Date', fmtDate(form.consultDate)],
+                      ['Time', form.consultTime],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex justify-between text-sm">
+                        <span className="text-gray-500">{label}</span>
+                        <span className="font-semibold text-gray-800 text-right max-w-[60%]">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center justify-between mb-6">
+                    <span className="text-sm font-semibold text-green-900">Consultation Fee</span>
+                    <span className="text-xl font-extrabold text-green-700">₦10,000</span>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => setStep(1)}
+                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+                      <ChevronLeft size={15} /> Back
+                    </button>
+                    <button type="button" onClick={handlePayment} disabled={loading}
+                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
+                      {loading
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
+                        : <>Pay ₦10,000 <ArrowRight size={15} /></>}
+                    </button>
+                  </div>
+                  <p className="text-center text-xs text-gray-400 mt-3">Secured by Paystack · SSL encrypted</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

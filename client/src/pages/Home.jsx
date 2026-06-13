@@ -4,8 +4,7 @@ import Pagination from '../components/Pagination';
 import { useFadeIn, useSlideIn, useScrollAnimation } from '../hooks/useGsapAnimations';
 import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
-  Star, ChevronDown, ChevronUp, BookOpen, Globe,
-  Users, BarChart3, Shield, Zap, Award, X,
+  Star, ChevronDown, BookOpen, Globe, BarChart3, Shield, X,
   ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
   Clock, Eye,
 } from 'lucide-react';
@@ -442,7 +441,7 @@ export default function Home() {
     } else {
       doFetch(1, EMPTY_FILTERS);
     }
-  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   const handleCompare = (school) => {
     if (selected.find((s) => s._id === school._id)) {
@@ -1179,7 +1178,7 @@ export default function Home() {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle,#4ade80 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
         {/* Glow orbs */}
-        <div className="absolute -bottom-40 right-1/3 w-[500px] h-[500px] rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 right-1/3 w-125 h-125 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-900/15 blur-3xl pointer-events-none" />
         {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/30 to-transparent" />
@@ -1187,7 +1186,7 @@ export default function Home() {
         <div className="relative z-10 flex flex-col lg:flex-row">
 
           {/* ── LEFT PANEL ── */}
-          <div className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-12 sm:py-16 lg:py-20 lg:w-[40%] shrink-0 border-b lg:border-b-0 lg:border-r border-white/[0.06]">
+          <div className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-12 sm:py-16 lg:py-20 lg:w-[40%] shrink-0 border-b lg:border-b-0 lg:border-r border-white/6">
 
             <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full mb-6 w-fit">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
@@ -1204,14 +1203,14 @@ export default function Home() {
             </p>
 
             {/* Stats grid */}
-            <div className="grid grid-cols-2 gap-px bg-white/[0.06] rounded-2xl overflow-hidden mb-10 border border-white/[0.06]">
+            <div className="grid grid-cols-2 gap-px bg-white/6 rounded-2xl overflow-hidden mb-10 border border-white/6">
               {[
                 { value: '500+', label: 'Verified Schools',  color: 'text-green-400' },
                 { value: '10K+', label: 'Families Helped',   color: 'text-white' },
                 { value: '95%',  label: 'Visa Success Rate', color: 'text-green-400' },
                 { value: '8',    label: 'Countries Covered', color: 'text-white' },
               ].map(({ value, label, color }) => (
-                <div key={label} className="bg-white/[0.03] flex flex-col items-center justify-center py-5 px-4 text-center">
+                <div key={label} className="bg-white/3 flex flex-col items-center justify-center py-5 px-4 text-center">
                   <div className={`text-2xl sm:text-3xl font-extrabold leading-none ${color}`}>{value}</div>
                   <div className="text-white/30 text-[11px] sm:text-xs mt-1.5 font-medium">{label}</div>
                 </div>
@@ -1229,9 +1228,9 @@ export default function Home() {
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
                 <div key={title}
-                  className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
+                  className="group relative rounded-2xl border border-white/[0.07] bg-white/3 hover:bg-white/[0.07] hover:border-white/15 p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
                   {/* Accent top bar */}
-                  <div className={`absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   {/* Number watermark */}
                   <span className="absolute -top-2 -right-1 text-[64px] leading-none font-black text-white/[0.035] select-none pointer-events-none">
                     {num}
@@ -1249,7 +1248,7 @@ export default function Home() {
                   <p className="text-white/35 text-xs leading-relaxed flex-1 line-clamp-3">{desc}</p>
 
                   {/* Badge */}
-                  <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-white/[0.06] text-white/40 border border-white/[0.08] w-fit shrink-0">
+                  <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-white/6 text-white/40 border border-white/8 w-fit shrink-0">
                     <CheckCircle size={8} className="text-green-400" />
                     {badge}
                   </span>
@@ -1563,14 +1562,14 @@ export default function Home() {
           </div>
 
           {/* Body — stacks on mobile, side-by-side on lg+ */}
-          <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch lg:max-h-[280px]">
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-stretch lg:max-h-70">
 
             {/* ── LEFT: 3 recent posts ── */}
-            <div className="order-2 lg:order-1 lg:w-[260px] xl:w-[280px] shrink-0 flex flex-col">
+            <div className="order-2 lg:order-1 lg:w-65 xl:w-70 shrink-0 flex flex-col">
               <p className="text-white/25 text-[9px] font-bold uppercase tracking-widest mb-2">
                 Recent Articles
               </p>
-              <div className="flex-1 flex flex-col divide-y divide-white/[0.05]">
+              <div className="flex-1 flex flex-col divide-y divide-white/5">
                 {recentPosts.length > 0 ? recentPosts.slice(0, 3).map((post) => (
                   <Link key={post._id} to={`/blog/${post.slug}`}
                     className="group flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 hover:opacity-90 transition-opacity">
@@ -1594,11 +1593,11 @@ export default function Home() {
                 )) : (
                   Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 py-2.5 first:pt-0">
-                      <div className="w-12 h-12 rounded-lg bg-white/[0.04] skeleton-shimmer shrink-0" />
+                      <div className="w-12 h-12 rounded-lg bg-white/4 skeleton-shimmer shrink-0" />
                       <div className="flex-1 space-y-1.5">
-                        <div className="h-2 bg-white/[0.04] rounded skeleton-shimmer w-16" />
-                        <div className="h-3 bg-white/[0.04] rounded skeleton-shimmer w-full" />
-                        <div className="h-3 bg-white/[0.04] rounded skeleton-shimmer w-3/4" />
+                        <div className="h-2 bg-white/4 rounded skeleton-shimmer w-16" />
+                        <div className="h-3 bg-white/4 rounded skeleton-shimmer w-full" />
+                        <div className="h-3 bg-white/4 rounded skeleton-shimmer w-3/4" />
                       </div>
                     </div>
                   ))
@@ -1611,7 +1610,7 @@ export default function Home() {
             </div>
 
             {/* Vertical divider — desktop only */}
-            <div className="hidden lg:block w-px bg-white/[0.06] shrink-0 self-stretch" />
+            <div className="hidden lg:block w-px bg-white/6 shrink-0 self-stretch" />
 
             {/* ── RIGHT: Featured post ── */}
             <div className="order-1 lg:order-2 flex-1 min-w-0">
@@ -1664,7 +1663,7 @@ export default function Home() {
                   </div>
                 </Link>
               ) : (
-                <div className="flex flex-col items-center justify-center text-center h-full min-h-[140px] rounded-xl border border-white/[0.05] bg-white/[0.015] p-6">
+                <div className="flex flex-col items-center justify-center text-center h-full min-h-35 rounded-xl border border-white/6 bg-white/15 p-6">
                   <Star size={22} className="text-green-800/60 mb-2" />
                   <p className="text-white/25 text-xs font-medium">No featured article set</p>
                   <p className="text-white/15 text-[10px] mt-0.5">Admin → Blog → click ★ on any post</p>
