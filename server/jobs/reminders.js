@@ -1,6 +1,7 @@
 const cron     = require('node-cron');
 const Booking  = require('../models/Booking');
 const sendEmail = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 
 function initReminders() {
   // Run every 30 minutes
@@ -33,6 +34,10 @@ function initReminders() {
 ${b.callLink ? `<p><a href="${b.callLink}">Join your class here</a></p>` : ''}
 <p>— Naija &amp; Overseas Team</p>`,
         }).catch(() => {});
+        sendWhatsApp({
+          to: b.phone,
+          message: `Hi ${b.name},\n\n⏰ Reminder: Your tutoring session is *tomorrow, ${new Date(b.date).toDateString()}* at *${b.timeSlot}*.${b.callLink ? `\n\n🔗 Join your class here:\n${b.callLink}` : ''}\n\n— Naija & Overseas Team`,
+        }).catch(() => {});
         await Booking.findByIdAndUpdate(b._id, { reminderSent24h: true }).catch(() => {});
       }
 
@@ -52,6 +57,10 @@ ${b.callLink ? `<p><a href="${b.callLink}">Join your class here</a></p>` : ''}
 <p>Your tutoring session starts in about <strong>1 hour</strong> (${new Date(b.date).toDateString()} at ${b.timeSlot}).</p>
 ${b.callLink ? `<p><strong><a href="${b.callLink}">Join your class now</a></strong></p>` : ''}
 <p>— Naija &amp; Overseas Team</p>`,
+        }).catch(() => {});
+        sendWhatsApp({
+          to: b.phone,
+          message: `Hi ${b.name},\n\n🚀 Your tutoring session starts in *1 hour* (${new Date(b.date).toDateString()} at ${b.timeSlot}).${b.callLink ? `\n\n🔗 Join now:\n${b.callLink}` : ''}\n\n— Naija & Overseas Team`,
         }).catch(() => {});
         await Booking.findByIdAndUpdate(b._id, { reminderSent1h: true }).catch(() => {});
       }

@@ -9,6 +9,7 @@ const User = require('../models/User');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 
 const uploadMedia = multer({
   storage: multer.memoryStorage(),
@@ -305,11 +306,13 @@ router.post('/register', protect, async (req, res) => {
       await User.findByIdAndUpdate(req.user._id, { profilePhoto }).catch(() => {});
     }
 
+    const appMsg = `Hi ${req.user.name},\n\nThank you for applying to become a tutor on Naija & Overseas! We have received your application and will review it within 24–48 hours.\n\nOnce approved, your profile will go live and students will be able to book sessions with you.\n\nBest regards,\nThe Naija & Overseas Team`;
     await sendEmail({
       to: req.user.email,
       subject: 'Tutor Application Received — Naija & Overseas',
       html: `<p>Hi ${req.user.name},</p><p>Thank you for applying to become a tutor on Naija & Overseas! We have received your application and will review it within <strong>24–48 hours</strong>.</p><p>Once approved, your profile will go live and students will be able to book sessions with you.</p><p>Best regards,<br/>The Naija & Overseas Team</p>`,
     });
+    sendWhatsApp({ to: req.user.phone, message: appMsg }).catch(() => {});
 
     res.status(201).json({ profile, message: 'Application submitted! We will review and activate your profile within 24–48 hours.' });
   } catch (err) {
@@ -378,11 +381,13 @@ router.post('/:id/book', optionalAuth, async (req, res) => {
       tutorId: tutor._id,
     });
 
+    const bookMsg = `Hi ${name},\n\nYour ${sessionType === 'trial' ? 'free trial lesson' : 'tutoring session'} with *${tutor.displayName || tutor.user?.name}* for *${subject || 'your chosen subject'}* on *${new Date(date).toDateString()}* at *${timeSlot}* has been received.\n\nWe will confirm your session shortly.\n\n— Naija & Overseas`;
     await sendEmail({
       to: email,
       subject: `${sessionType === 'trial' ? 'Free Trial' : 'Session'} Booking Confirmed — Naija & Overseas`,
       html: `<p>Hi ${name},</p><p>Your <strong>${sessionType === 'trial' ? 'free trial lesson' : 'tutoring session'}</strong> with <strong>${tutor.displayName || tutor.user?.name}</strong> for <strong>${subject || 'your chosen subject'}</strong> on <strong>${new Date(date).toDateString()}</strong> at <strong>${timeSlot}</strong> has been received.</p><p>We will confirm your session shortly.</p>`,
     });
+    sendWhatsApp({ to: phone, message: bookMsg }).catch(() => {});
 
     res.status(201).json({ booking, message: 'Booking received! Check your email for confirmation.' });
   } catch (err) {
@@ -430,11 +435,14 @@ router.patch('/:id/activate', protect, isAdmin, async (req, res) => {
     if (!tutor) return res.status(404).json({ message: 'Tutor not found' });
 
     if (req.body.isActive) {
+      const liveMsg = `Hi ${tutor.user.name},\n\n🎉 Great news! Your tutor profile has been reviewed and is now *live* on Naija & Overseas. Students can now find and book sessions with you.\n\nLog in to your dashboard to manage your profile and bookings.\n\n— Naija & Overseas Team`;
       await sendEmail({
         to: tutor.user.email,
         subject: 'Your Tutor Profile is Now Live! — Naija & Overseas',
         html: `<p>Hi ${tutor.user.name},</p><p>Great news! Your tutor profile has been reviewed and is now <strong>live</strong> on Naija & Overseas. Students can now find and book sessions with you.</p><p>Log in to your dashboard to manage your profile and bookings.</p>`,
       });
+      const tutorUser = await User.findById(tutor.user._id).select('phone').lean().catch(() => null);
+      sendWhatsApp({ to: tutorUser?.phone, message: liveMsg }).catch(() => {});
     }
 
     res.json({ tutor });

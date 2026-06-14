@@ -7,6 +7,7 @@ const TutorProfile  = require('../models/TutorProfile');
 const TutorAvailability = require('../models/TutorAvailability');
 const { protect } = require('../middleware/auth');
 const sendEmail   = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 const { localToUTC, formatTimeInTZ, getDayInTZ } = require('../utils/timezone');
 
 // ── Paystack helpers ──────────────────────────────────────────────────────────
@@ -201,6 +202,11 @@ router.post('/activate', protect, async (req, res) => {
       .map(b => `${new Date(b.date).toDateString()} at ${b.timeSlot}`)
       .join('<br/>');
 
+    const plainDateList = createdBookings
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .map(b => `${new Date(b.date).toDateString()} at ${b.timeSlot}`)
+      .join('\n');
+
     await sendEmail({
       to:      req.user.email,
       subject: `Subscription Confirmed — ${timesPerWeek}× per week with ${tutorName}`,
@@ -210,6 +216,10 @@ router.post('/activate', protect, async (req, res) => {
 <p><strong>Monthly rate:</strong> ₦${monthlyRate.toLocaleString()}</p>
 <p>Your next renewal date is <strong>${renewalDate.toDateString()}</strong>. You will receive a reminder before then.</p>
 <p>— Naija &amp; Overseas Team</p>`,
+    }).catch(() => {});
+    sendWhatsApp({
+      to: req.user.phone,
+      message: `Hi ${req.user.name},\n\nYour monthly tutoring subscription with *${tutorName}* is now *active*! 🎉\n\n📅 *Sessions booked (${createdBookings.length} total):*\n${plainDateList}\n\n💰 *Monthly rate:* ₦${monthlyRate.toLocaleString()}\n📆 *Next renewal:* ${renewalDate.toDateString()}\n\n— Naija & Overseas Team`,
     }).catch(() => {});
 
     // ── Email: tutor ───────────────────────────────────────────────────────
@@ -221,6 +231,11 @@ router.post('/activate', protect, async (req, res) => {
 <p><strong>${req.user.name}</strong> has subscribed to ${timesPerWeek} session${timesPerWeek > 1 ? 's' : ''} per week with you.</p>
 <p>${createdBookings.length} sessions have been auto-booked for the next month. Log in to your <a href="${process.env.CLIENT_URL}/schedule">schedule dashboard</a> to view them.</p>
 <p>— Naija &amp; Overseas Team</p>`,
+      }).catch(() => {});
+      const tutorUserDoc = await require('../models/User').findById(tutorProfile.user._id).select('phone').lean().catch(() => null);
+      sendWhatsApp({
+        to: tutorUserDoc?.phone,
+        message: `Hi ${tutorName},\n\n*${req.user.name}* has subscribed to ${timesPerWeek} session${timesPerWeek > 1 ? 's' : ''} per week with you. 🎓\n\n${createdBookings.length} sessions have been auto-booked for the next month. Log in to your schedule dashboard to view them.\n\n— Naija & Overseas Team`,
       }).catch(() => {});
     }
 

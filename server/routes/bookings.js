@@ -7,6 +7,7 @@ const TutorProfile = require('../models/TutorProfile');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'softsavvynaija@gmail.com';
 
@@ -30,13 +31,17 @@ router.post('/', optionalAuth, async (req, res) => {
 
     const dateStr = new Date(date).toDateString();
 
-    // Email the parent/requester
+    // Email + WhatsApp the parent/requester
     await sendEmail({
       to: email,
       subject: 'Booking Received — Naija and Overseas',
       html: `<p>Hi ${name},</p>
 <p>Your <strong>${service.replace(/-/g, ' ')}</strong> request for <strong>${dateStr}</strong> at <strong>${timeSlot}</strong> has been received. We'll confirm shortly.</p>
 <p>— Naija &amp; Overseas Team</p>`,
+    }).catch(() => {});
+    sendWhatsApp({
+      to: phone,
+      message: `Hi ${name},\n\nYour *${service.replace(/-/g, ' ')}* request for *${dateStr}* at *${timeSlot}* has been received. We'll confirm shortly.\n\n— Naija & Overseas Team`,
     }).catch(() => {});
 
     // If school visit — notify school owner + admin
@@ -157,6 +162,12 @@ router.patch('/:id/school-action', protect, async (req, res) => {
       ? `<p>Hi ${booking.name},</p><p>Your visit on <strong>${new Date(booking.date).toDateString()}</strong> at <strong>${booking.timeSlot}</strong> has been <strong>confirmed</strong> by the school. See you there!</p>`
       : `<p>Hi ${booking.name},</p><p>Unfortunately your visit on <strong>${new Date(booking.date).toDateString()}</strong> could not be accommodated. Please try another date or contact the school directly.</p>`;
     await sendEmail({ to: booking.email, subject, html }).catch(() => {});
+    sendWhatsApp({
+      to: booking.phone,
+      message: action === 'confirm'
+        ? `Hi ${booking.name},\n\nYour school visit on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*. See you there!\n\n— Naija & Overseas`
+        : `Hi ${booking.name},\n\nUnfortunately your school visit on *${new Date(booking.date).toDateString()}* could not be accommodated. Please try another date or contact the school directly.\n\n— Naija & Overseas`,
+    }).catch(() => {});
 
     // Notify admin
     await sendEmail({
@@ -207,11 +218,19 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
 <p>Your tutoring session on <strong>${new Date(booking.date).toDateString()}</strong> at <strong>${booking.timeSlot}</strong> has been <strong>confirmed</strong>.</p>
 ${booking.callLink ? `<p>Join your class here: <a href="${booking.callLink}">${booking.callLink}</a></p>` : ''}`,
       }).catch(() => {});
+      sendWhatsApp({
+        to: booking.phone,
+        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*! ✅${booking.callLink ? `\n\n🔗 Join your class here: ${booking.callLink}` : ''}\n\n— Naija & Overseas`,
+      }).catch(() => {});
     } else {
       await sendEmail({
         to: booking.email,
         subject: 'Tutoring Session Update — Naija & Overseas',
         html: `<p>Hi ${booking.name},</p><p>Your tutoring session on <strong>${new Date(booking.date).toDateString()}</strong> could not be confirmed. Please book with another tutor.</p>`,
+      }).catch(() => {});
+      sendWhatsApp({
+        to: booking.phone,
+        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* could not be confirmed. Please book with another tutor.\n\n— Naija & Overseas`,
       }).catch(() => {});
     }
 
@@ -367,6 +386,10 @@ router.patch('/:id/status', protect, isAdmin, async (req, res) => {
         subject: `Your Consultation Link — ${formattedDate} at ${booking.timeSlot} | Naija & Overseas`,
         html: emailHtml,
       }).catch((err) => console.error('📧 Call-link email failed:', err.message));
+      sendWhatsApp({
+        to: booking.phone,
+        message: `Hi ${booking.name},\n\nYour study abroad consultation is confirmed for *${formattedDate}* at *${booking.timeSlot}*.\n\n🔗 Join your consultation here:\n${newLink}\n\nPlease join a few minutes early with a stable internet connection.\n\n— Naija & Overseas Team`,
+      }).catch(() => {});
     }
 
     res.json({ booking });

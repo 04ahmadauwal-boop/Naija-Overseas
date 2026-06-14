@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
   GraduationCap, Eye, EyeOff, User, Users, School,
-  CheckCircle, Globe, BookOpen, ChevronRight,
+  CheckCircle, Globe, BookOpen, ChevronRight, Mail, RefreshCw,
 } from 'lucide-react';
 
 const COUNTRIES = [
@@ -89,10 +90,12 @@ export default function Register() {
   const redirectTo = searchParams.get('redirect');
 
   const [role, setRole] = useState('student');
-  const [goal, setGoal] = useState('');        // only used for students
+  const [goal, setGoal] = useState('');
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', country: 'Nigeria' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [registered, setRegistered] = useState(false); // show "check email" screen
+  const [resending, setResending] = useState(false);
 
   const needsGoal = role === 'student';
   const canSubmit = !needsGoal || goal !== '';
@@ -104,16 +107,62 @@ export default function Register() {
     setLoading(true);
     try {
       const payload = { ...form, role, goal: needsGoal ? goal : 'both' };
-      const user = await register(payload);
-      toast.success(`Welcome, ${user.name.split(' ')[0]}! 🎉`);
-      if (redirectTo) { navigate(redirectTo); return; }
-      navigate(getRedirectPath(role, goal));
+      await register(payload);
+      setRegistered(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: form.email });
+      toast.success('Verification email resent! Check your inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // ── "Check your email" screen ──────────────────────────────────────────────
+  if (registered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail size={36} className="text-green-700" />
+          </div>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Check your email</h2>
+          <p className="text-gray-500 text-sm leading-relaxed mb-2">
+            We sent a verification link to
+          </p>
+          <p className="font-bold text-gray-800 text-sm mb-6 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 inline-block">
+            {form.email}
+          </p>
+          <p className="text-gray-400 text-xs leading-relaxed mb-8">
+            Click the link in the email to activate your account. The link expires in 24 hours.
+            Check your spam or junk folder if you don't see it.
+          </p>
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-60 text-sm"
+          >
+            <RefreshCw size={14} className={resending ? 'animate-spin' : ''} />
+            {resending ? 'Resending…' : 'Resend verification email'}
+          </button>
+          <p className="text-center text-sm text-gray-400 mt-5">
+            Already verified?{' '}
+            <Link to="/login" className="text-green-700 font-bold hover:underline">Sign in →</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white';
 

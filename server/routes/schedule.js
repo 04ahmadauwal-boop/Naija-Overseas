@@ -4,8 +4,10 @@ const TutorAvailability = require('../models/TutorAvailability');
 const TutorProfile = require('../models/TutorProfile');
 const Booking = require('../models/Booking');
 const TutorQuestion = require('../models/TutorQuestion');
+const User = require('../models/User');
 const { protect, optionalAuth } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 const { localToUTC, formatTimeInTZ, getDayInTZ, todayInTZ } = require('../utils/timezone');
 
 // ── GET /api/schedule/availability/:tutorId ─────────────────────────────────
@@ -317,6 +319,10 @@ router.post('/book', protect, async (req, res) => {
 <p>We'll notify you once the tutor confirms.</p>
 <p>— Naija &amp; Overseas Team</p>`,
     }).catch(() => {});
+    sendWhatsApp({
+      to: phone,
+      message: `Hi ${name},\n\nYour tutoring session with *${tutorProfile.displayName || tutorProfile.user?.name || 'your tutor'}* has been booked and is pending confirmation.\n\n*Session${created.length > 1 ? 's' : ''}:* ${datesList}\n\nWe'll notify you once the tutor confirms.\n\n— Naija & Overseas Team`,
+    }).catch(() => {});
 
     // Notify the tutor — include quiz results when present
     if (tutorProfile.user?.email) {
@@ -448,6 +454,21 @@ router.post('/book', protect, async (req, res) => {
 </body>
 </html>`,
       }).catch(() => {});
+
+      // WhatsApp to tutor
+      const tutorUser = await User.findById(tutorProfile.user._id).select('phone').lean().catch(() => null);
+      if (tutorUser?.phone) {
+        let waQuiz = '';
+        if (isTrial && quizResults?.answers?.length) {
+          const pct = Math.round((quizResults.score / quizResults.total) * 100);
+          const weak = [...new Set(quizResults.answers.filter(a => !a.isCorrect).map(a => a.topic).filter(Boolean))];
+          waQuiz = `\n\n📊 *Quiz Result (${quizResults.subject}):* ${quizResults.score}/${quizResults.total} (${pct}%)${weak.length ? `\n⚠️ Weak areas: ${weak.join(', ')}` : '\n🎉 All correct!'}`;
+        }
+        sendWhatsApp({
+          to: tutorUser.phone,
+          message: `Hi ${tutorName},\n\nYou have a new *${sessionType}* booking!\n\n👤 *Student:* ${name}\n📧 *Email:* ${email}\n📅 *Session${created.length > 1 ? 's' : ''}:* ${datesList}${waQuiz}\n\nLog in to confirm or decline the booking.\n\n— Naija & Overseas`,
+        }).catch(() => {});
+      }
     }
 
     res.status(201).json({

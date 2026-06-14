@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import toast from 'react-hot-toast';
-import { GraduationCap, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { GraduationCap, Eye, EyeOff, CheckCircle, Mail, RefreshCw } from 'lucide-react';
 
 const PERKS = [
   'Compare 500+ verified schools side by side',
@@ -19,17 +20,17 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setUnverified(false);
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      if (redirectTo) {
-        navigate(redirectTo);
-        return;
-      }
+      if (redirectTo) { navigate(redirectTo); return; }
       const dest = {
         admin:         '/admin',
         tutor:         '/dashboard/tutor',
@@ -39,9 +40,25 @@ export default function Login() {
       }[user.role] ?? '/';
       navigate(dest);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      if (err.response?.data?.unverified) {
+        setUnverified(true);
+      } else {
+        toast.error(err.response?.data?.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: form.email });
+      toast.success('Verification email sent! Check your inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -146,6 +163,30 @@ export default function Login() {
                 <Link to="/forgot-password" className="text-sm text-green-700 hover:underline font-medium">Forgot password?</Link>
               </div>
             </div>
+
+            {/* Unverified email banner */}
+            {unverified && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <Mail size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-amber-800">Email not verified</p>
+                    <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                      Please check your inbox for the verification link we sent to <strong>{form.email}</strong>.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900 transition disabled:opacity-60"
+                >
+                  <RefreshCw size={12} className={resending ? 'animate-spin' : ''} />
+                  {resending ? 'Sending…' : 'Resend verification email'}
+                </button>
+              </div>
+            )}
 
             <button type="submit" disabled={loading}
               className="w-full bg-green-700 text-white py-4 rounded-xl font-bold hover:bg-green-800 transition disabled:opacity-60 text-sm flex items-center justify-center gap-2">

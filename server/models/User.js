@@ -21,6 +21,8 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    emailVerificationToken:   { type: String },
+    emailVerificationExpires: { type: Date },
     dateOfBirth: { type: Date },
     gender: { type: String, enum: ['male', 'female', 'prefer-not-to-say'] },
     stateOfOrigin: { type: String },

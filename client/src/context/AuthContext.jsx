@@ -26,10 +26,14 @@ export function AuthProvider({ children }) {
 
   const register = async (payload) => {
     const { data } = await api.post('/auth/register', payload);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
-    return data.user;
+    // No token yet — user must verify email first
+    return data; // { message }
+  };
+
+  const loginWithToken = (token, userData) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
   const updateUser = (updates) => {
@@ -45,7 +49,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithToken, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

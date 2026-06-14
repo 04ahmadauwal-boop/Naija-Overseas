@@ -25,7 +25,8 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.7",
     "slugify": "^1.6.9",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "twilio": "^6.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

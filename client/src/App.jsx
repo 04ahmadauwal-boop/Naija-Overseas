@@ -17,6 +17,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import VerifyEmail from './pages/auth/VerifyEmail';
 import Dashboard from './pages/admin/Dashboard';
 import ManageSchools from './pages/admin/ManageSchools';
 import ManageBookings from './pages/admin/ManageBookings';
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/find-tutoring" element={<FindTutoring />} />
           <Route path="/tutors/:id" element={<TutorDetail />} />
           <Route path="/become-a-tutor" element={<BecomeTutor />} />

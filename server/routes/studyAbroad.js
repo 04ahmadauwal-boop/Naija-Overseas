@@ -8,6 +8,7 @@ const Coupon = require('../models/Coupon');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
+const sendWhatsApp = require('../utils/sendWhatsApp');
 
 // POST /api/study-abroad/consultation — paid consultation booking
 router.post('/consultation', optionalAuth, async (req, res) => {
@@ -46,6 +47,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
         password: crypto.randomBytes(16).toString('hex'), // temp password — user sets via link
         role: 'student',
         goal: 'study-abroad',
+        isVerified: true, // system-created — no email verification needed
         resetPasswordToken: hashedToken,
         resetPasswordExpires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
       });
@@ -251,6 +253,10 @@ router.post('/consultation', optionalAuth, async (req, res) => {
           html: adminEmailHtml,
         }),
       ]);
+      sendWhatsApp({
+        to: phone,
+        message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Naija & Overseas Team`,
+      }).catch(() => {});
     } catch (emailErr) {
       console.error('📧 EMAIL FAILED — booking saved but email not sent.');
       console.error('   Recipient :', email);
@@ -282,6 +288,10 @@ router.post('/', optionalAuth, async (req, res) => {
       subject: 'Study Abroad Application Received — Naija and Overseas',
       html: `<p>Hi ${req.body.fullName}, we have received your application to study in <strong>${req.body.destinationCountry}</strong>. Our team will review it and contact you within 48 hours.</p>`,
     });
+    sendWhatsApp({
+      to: req.body.phone,
+      message: `Hi ${req.body.fullName},\n\nWe have received your application to study in *${req.body.destinationCountry}*. 🎓\n\nOur team will review it and contact you within 48 hours.\n\n— Naija & Overseas Team`,
+    }).catch(() => {});
 
     res.status(201).json({ application, message: 'Application submitted successfully' });
   } catch (err) {
