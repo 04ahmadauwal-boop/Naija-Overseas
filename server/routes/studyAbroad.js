@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const StudyAbroadApplication = require('../models/StudyAbroadApplication');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const Coupon = require('../models/Coupon');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
@@ -11,10 +12,20 @@ const sendEmail = require('../utils/sendEmail');
 // POST /api/study-abroad/consultation — paid consultation booking
 router.post('/consultation', optionalAuth, async (req, res) => {
   try {
-    const { fullName, email, phone, destinationCountry, program, consultDate, consultTime, reference } = req.body;
+    const { fullName, email, phone, destinationCountry, program, educationLevel,
+            consultDate, consultTime, reference, couponCode, finalAmount } = req.body;
 
     if (!fullName || !email || !phone || !consultDate || !consultTime || !reference) {
       return res.status(400).json({ message: 'Missing required booking fields.' });
+    }
+
+    // ── 0. Validate & consume coupon (if provided) ───────────────
+    let appliedCoupon = null;
+    if (couponCode) {
+      appliedCoupon = await Coupon.findOne({ code: couponCode.trim().toUpperCase(), isActive: true });
+      if (appliedCoupon) {
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usedCount: 1 } });
+      }
     }
 
     // ── 1. Find or auto-create user account ──────────────────────
@@ -51,8 +62,13 @@ router.post('/consultation', optionalAuth, async (req, res) => {
       timeSlot: consultTime,
       status: 'pending',
       paymentRef: reference,
-      notes: [destinationCountry && `Destination: ${destinationCountry}`, program && `Program: ${program}`]
-        .filter(Boolean).join(' | '),
+      notes: [
+        educationLevel && `Education: ${educationLevel}`,
+        destinationCountry && `Destination: ${destinationCountry}`,
+        program && `Program: ${program}`,
+        appliedCoupon && `Coupon: ${appliedCoupon.code} (${appliedCoupon.type === 'full' ? 'Free' : appliedCoupon.value + '% off'})`,
+        finalAmount !== undefined && `Amount Paid: ₦${Number(finalAmount).toLocaleString()}`,
+      ].filter(Boolean).join(' | '),
     });
 
     // ── 3. Build email content ────────────────────────────────────
@@ -65,12 +81,16 @@ router.post('/consultation', optionalAuth, async (req, res) => {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     });
 
+    const paidAmount = finalAmount !== undefined ? Number(finalAmount) : 10000;
     const detailsRows = [
       ['Full Name', fullName],
       ['Date', formattedDate],
       ['Time', consultTime],
+      educationLevel && ['Education Level', educationLevel],
       destinationCountry && ['Destination', destinationCountry],
       program && ['Program / Course', program],
+      appliedCoupon && ['Coupon Applied', appliedCoupon.type === 'full' ? 'Full Discount (Free)' : `${appliedCoupon.value}% off`],
+      ['Amount Paid', paidAmount === 0 ? 'Free (Coupon Applied)' : `₦${paidAmount.toLocaleString()}`],
       ['Payment Reference', reference],
     ].filter(Boolean);
 
@@ -232,7 +252,10 @@ router.post('/consultation', optionalAuth, async (req, res) => {
         }),
       ]);
     } catch (emailErr) {
-      console.error('Consultation email send failed (booking saved):', emailErr.message);
+      console.error('📧 EMAIL FAILED — booking saved but email not sent.');
+      console.error('   Recipient :', email);
+      console.error('   Error     :', emailErr.message);
+      console.error('   EMAIL_USER:', process.env.EMAIL_USER || '(not set)');
     }
 
     res.status(201).json({

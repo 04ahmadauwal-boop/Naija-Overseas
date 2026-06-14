@@ -242,11 +242,133 @@ router.get('/', protect, isAdmin, async (req, res) => {
 // PATCH /api/bookings/:id/status — admin updates status and/or call link
 router.patch('/:id/status', protect, isAdmin, async (req, res) => {
   try {
+    const existing = await Booking.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: 'Booking not found' });
+
     const updates = {};
     if (req.body.status   !== undefined) updates.status   = req.body.status;
     if (req.body.callLink !== undefined) updates.callLink = req.body.callLink;
+
     const booking = await Booking.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    // Send email when a call link is set or changed on a consultation
+    const newLink = req.body.callLink;
+    const linkChanged = newLink && newLink !== existing.callLink;
+
+    if (linkChanged && booking.service === 'study-abroad-consultation') {
+      const formattedDate = new Date(booking.date).toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      });
+
+      const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#14532d;padding:28px 40px;text-align:center;">
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
+          </td>
+        </tr>
+
+        <!-- Hero -->
+        <tr>
+          <td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid #f0fdf4;">
+            <div style="width:52px;height:52px;background:#dcfce7;border-radius:50%;margin:0 auto 14px;font-size:24px;line-height:52px;">🔗</div>
+            <h1 style="margin:0 0 8px;font-size:20px;font-weight:800;color:#111827;">Your Consultation Link is Ready</h1>
+            <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
+              Hi <strong>${booking.name}</strong>, your consultation link has been set.
+              You can now join your session at the scheduled time.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Session details -->
+        <tr>
+          <td style="padding:24px 40px;">
+            <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;">Session Details</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
+              <tr>
+                <td style="padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:13px;color:#6b7280;font-weight:600;width:38%;">Date</td>
+                <td style="padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;">${formattedDate}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;background:#f9fafb;font-size:13px;color:#6b7280;font-weight:600;">Time</td>
+                <td style="padding:10px 16px;background:#fff;font-size:13px;color:#111827;">${booking.timeSlot}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td style="padding:0 40px 32px;text-align:center;">
+            <a href="${newLink}"
+               style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;
+                      font-size:15px;padding:16px 40px;border-radius:12px;text-decoration:none;
+                      box-shadow:0 4px 12px rgba(22,163,74,.3);">
+              Join Consultation &rarr;
+            </a>
+            <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
+              If the button doesn&apos;t work, copy and paste this link into your browser:<br>
+              <a href="${newLink}" style="color:#16a34a;word-break:break-all;font-size:11px;">${newLink}</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- Tips -->
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.05em;">Before You Join</p>
+              <ul style="margin:0;padding-left:18px;font-size:13px;color:#15803d;line-height:1.8;">
+                <li>Test your camera and microphone beforehand</li>
+                <li>Join from a quiet location with a stable internet connection</li>
+                <li>Have your documents and questions ready</li>
+                <li>Join a few minutes early to avoid delays</li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Contact -->
+        <tr>
+          <td style="padding:0 40px 20px;text-align:center;">
+            <p style="margin:0;font-size:13px;color:#6b7280;">
+              Questions? Email us at
+              <a href="mailto:info@naijaandoverseas.com" style="color:#16a34a;font-weight:600;text-decoration:none;">info@naijaandoverseas.com</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">
+              &copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+      sendEmail({
+        to: booking.email,
+        subject: `Your Consultation Link — ${formattedDate} at ${booking.timeSlot} | Naija & Overseas`,
+        html: emailHtml,
+      }).catch((err) => console.error('📧 Call-link email failed:', err.message));
+    }
+
     res.json({ booking });
   } catch (err) {
     res.status(500).json({ message: err.message });

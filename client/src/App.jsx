@@ -16,6 +16,7 @@ import BlogPost from './pages/BlogPost';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/admin/Dashboard';
 import ManageSchools from './pages/admin/ManageSchools';
 import ManageBookings from './pages/admin/ManageBookings';
@@ -39,6 +40,7 @@ import Videos from './pages/Videos';
 import ManageVideos from './pages/admin/ManageVideos';
 import ManageReviews from './pages/admin/ManageReviews';
 import ManageBanner from './pages/admin/ManageBanner';
+import ManageCoupons from './pages/admin/ManageCoupons';
 import AllReviews from './pages/AllReviews';
 import BookSession from './pages/schedule/BookSession';
 import SchedulePage from './pages/schedule/SchedulePage';
@@ -100,6 +102,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/find-tutoring" element={<FindTutoring />} />
           <Route path="/tutors/:id" element={<TutorDetail />} />
           <Route path="/become-a-tutor" element={<BecomeTutor />} />
@@ -117,6 +120,7 @@ export default function App() {
           <Route path="/admin/videos" element={<AdminRoute><ManageVideos /></AdminRoute>} />
           <Route path="/admin/reviews" element={<AdminRoute><ManageReviews /></AdminRoute>} />
           <Route path="/admin/banner" element={<AdminRoute><ManageBanner /></AdminRoute>} />
+          <Route path="/admin/coupons" element={<AdminRoute><ManageCoupons /></AdminRoute>} />
 
           <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />

@@ -175,15 +175,19 @@ export default function StudyAbroad() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [step, setStep] = useState(1);
-  const [payRef, setPayRef] = useState('');
+  const [, setPayRef] = useState('');
   const [calMonth, setCalMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
   const [form, setForm] = useState({
     fullName: '', email: '', phone: '', destinationCountry: '', program: '',
-    consultDate: '', consultTime: '',
+    educationLevel: '', consultDate: '', consultTime: '',
   });
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [coupon, setCoupon] = useState(null); // { type, value, discountAmount, finalAmount, message }
+  const [couponError, setCouponError] = useState('');
 
   const TIME_SLOTS = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
   const intervalRef = useRef(null);
@@ -222,29 +226,74 @@ export default function StudyAbroad() {
     setStep(2);
   };
 
-  const handlePayment = () => {
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError('');
+    setCoupon(null);
+    try {
+      const { data } = await api.post('/coupons/validate', { code });
+      setCoupon(data);
+    } catch (err) {
+      setCouponError(err.response?.data?.message || 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const saveBooking = async (reference, finalAmount) => {
+    setPayRef(reference);
+    await api.post('/study-abroad/consultation', {
+      ...form,
+      reference,
+      couponCode: coupon ? couponInput.trim().toUpperCase() : undefined,
+      finalAmount,
+    });
+  };
+
+  const handlePayment = async () => {
+    const finalAmount = coupon ? coupon.finalAmount : 10000;
+
+    // Free booking — skip Paystack entirely
+    if (finalAmount === 0) {
+      setLoading(true);
+      try {
+        await saveBooking(`FREE-${couponInput.trim().toUpperCase()}-${Date.now()}`, 0);
+        setSubmitted(true);
+      } catch (err) {
+        console.error('Booking save error:', err);
+        toast.error(err.response?.data?.message || 'Booking failed. Please contact us.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Paid booking — go through Paystack
     initializePaystack({
       email: form.email,
-      amount: 10000,
+      amount: finalAmount,
       metadata: {
         name: form.fullName,
         phone: form.phone,
+        educationLevel: form.educationLevel,
         destination: form.destinationCountry,
         program: form.program,
         consultDate: form.consultDate,
         consultTime: form.consultTime,
+        couponCode: coupon ? couponInput.trim().toUpperCase() : undefined,
       },
       onSuccess: async (reference) => {
-        setPayRef(reference);
         setLoading(true);
         try {
-          await api.post('/study-abroad/consultation', { ...form, reference, amount: 10000 });
+          await saveBooking(reference, finalAmount);
           setSubmitted(true);
         } catch (err) {
           console.error('Booking save error:', err);
           toast.error(
             err.response?.data?.message ||
-            'Payment received but booking record failed. Please contact us with your payment reference: ' + reference
+            'Payment received but booking record failed. Contact us with reference: ' + reference
           );
         } finally {
           setLoading(false);
@@ -259,7 +308,10 @@ export default function StudyAbroad() {
     setSubmitted(false);
     setStep(1);
     setPayRef('');
-    setForm({ fullName: '', email: '', phone: '', destinationCountry: '', program: '', consultDate: '', consultTime: '' });
+    setForm({ fullName: '', email: '', phone: '', destinationCountry: '', program: '', educationLevel: '', consultDate: '', consultTime: '' });
+    setCouponInput('');
+    setCoupon(null);
+    setCouponError('');
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
@@ -905,12 +957,27 @@ export default function StudyAbroad() {
                           onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })} className={inp}>
                           <option value="">Select a country</option>
                           {DESTINATIONS.map(({ country }) => <option key={country}>{country}</option>)}
+                          <option>Others</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Program / Course</label>
                         <input value={form.program}
                           onChange={(e) => setForm({ ...form, program: e.target.value })} className={inp} placeholder="e.g. Computer Science" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Highest Level of Education <span className="text-red-500">*</span></label>
+                        <select required value={form.educationLevel}
+                          onChange={(e) => setForm({ ...form, educationLevel: e.target.value })} className={inp}>
+                          <option value="">Select education level</option>
+                          <option>WAEC / SSCE (Secondary School)</option>
+                          <option>OND (Ordinary National Diploma)</option>
+                          <option>HND (Higher National Diploma)</option>
+                          <option>B.Sc / B.A (Bachelor's Degree)</option>
+                          <option>M.Sc / M.A (Master's Degree)</option>
+                          <option>PhD</option>
+                          <option>Other</option>
+                        </select>
                       </div>
                     </div>
 
@@ -1002,6 +1069,7 @@ export default function StudyAbroad() {
                       ['Name', form.fullName],
                       ['Email', form.email],
                       ['Phone', form.phone],
+                      ['Education Level', form.educationLevel || '—'],
                       ['Destination', form.destinationCountry || '—'],
                       ['Program', form.program || '—'],
                       ['Date', fmtDate(form.consultDate)],
@@ -1014,9 +1082,61 @@ export default function StudyAbroad() {
                     ))}
                   </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center justify-between mb-6">
-                    <span className="text-sm font-semibold text-green-900">Consultation Fee</span>
-                    <span className="text-xl font-extrabold text-green-700">₦10,000</span>
+                  {/* Coupon code */}
+                  <div className="mb-4">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      Coupon Code <span className="normal-case font-normal text-gray-400">(optional)</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
+                        onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                        className={`flex-1 border rounded-xl px-4 py-2.5 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 transition
+                          ${coupon ? 'border-green-400 bg-green-50 focus:ring-green-400' : couponError ? 'border-red-400 bg-red-50 focus:ring-red-400' : 'border-gray-200 bg-gray-50 focus:ring-green-500'}`}
+                        placeholder="ENTER CODE"
+                        disabled={!!coupon}
+                      />
+                      {coupon ? (
+                        <button type="button" onClick={() => { setCoupon(null); setCouponInput(''); setCouponError(''); }}
+                          className="px-4 py-2.5 text-xs font-bold border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-100 transition">
+                          Remove
+                        </button>
+                      ) : (
+                        <button type="button" onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
+                          className="px-4 py-2.5 text-xs font-bold bg-gray-800 text-white rounded-xl hover:bg-gray-700 disabled:opacity-40 transition">
+                          {couponLoading ? '...' : 'Apply'}
+                        </button>
+                      )}
+                    </div>
+                    {coupon && (
+                      <p className="mt-1.5 text-xs font-semibold text-green-700 flex items-center gap-1">
+                        <CheckCircle size={12} /> {coupon.message}
+                      </p>
+                    )}
+                    {couponError && (
+                      <p className="mt-1.5 text-xs font-semibold text-red-600">{couponError}</p>
+                    )}
+                  </div>
+
+                  {/* Fee breakdown */}
+                  <div className={`rounded-2xl p-4 mb-5 border ${coupon ? 'bg-green-50 border-green-200' : 'bg-green-50 border-green-200'}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-600">Consultation Fee</span>
+                      <span className={`text-sm font-semibold ${coupon ? 'line-through text-gray-400' : 'text-gray-800'}`}>₦10,000</span>
+                    </div>
+                    {coupon && coupon.discountAmount > 0 && (
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-green-700">Discount ({coupon.type === 'full' ? '100%' : coupon.value + '%'})</span>
+                        <span className="text-sm font-semibold text-green-700">− ₦{coupon.discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-green-200 mt-2">
+                      <span className="text-sm font-bold text-green-900">Total</span>
+                      <span className="text-xl font-extrabold text-green-700">
+                        {coupon && coupon.finalAmount === 0 ? 'FREE' : `₦${(coupon ? coupon.finalAmount : 10000).toLocaleString()}`}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex gap-3">
@@ -1028,10 +1148,14 @@ export default function StudyAbroad() {
                       className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
                       {loading
                         ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
-                        : <>Pay ₦10,000 <ArrowRight size={15} /></>}
+                        : coupon && coupon.finalAmount === 0
+                          ? <>Confirm Free Booking <ArrowRight size={15} /></>
+                          : <>Pay ₦{(coupon ? coupon.finalAmount : 10000).toLocaleString()} <ArrowRight size={15} /></>}
                     </button>
                   </div>
-                  <p className="text-center text-xs text-gray-400 mt-3">Secured by Paystack · SSL encrypted</p>
+                  <p className="text-center text-xs text-gray-400 mt-3">
+                    {coupon && coupon.finalAmount === 0 ? 'No payment required — coupon covers full fee' : 'Secured by Paystack · SSL encrypted'}
+                  </p>
                 </div>
               )}
             </div>
