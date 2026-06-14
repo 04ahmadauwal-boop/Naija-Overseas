@@ -1,5 +1,4 @@
 const http = require('http');
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -69,11 +68,7 @@ app.use('/api/banner', require('./routes/banner'));
 app.use('/api/coupons', require('./routes/coupons'));
 app.use('/api/tutor-quiz', require('./routes/tutorQuiz'));
 
-// Serve React frontend (production)
-app.use(express.static(path.join(__dirname, '../client/dist')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
-});
+app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
 
 async function seedDemoVideos() {
   try {
