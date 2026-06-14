@@ -361,7 +361,7 @@ router.patch('/:id/status', protect, isAdmin, async (req, res) => {
           <td style="padding:0 40px 20px;text-align:center;">
             <p style="margin:0;font-size:13px;color:#6b7280;">
               Questions? Email us at
-              <a href="mailto:info@naijaandoverseas.com" style="color:#16a34a;font-weight:600;text-decoration:none;">info@naijaandoverseas.com</a>
+              <a href="mailto:info@visiteno.com" style="color:#16a34a;font-weight:600;text-decoration:none;">info@visiteno.com</a>
             </p>
           </td>
         </tr>

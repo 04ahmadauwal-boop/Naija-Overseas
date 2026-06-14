@@ -127,9 +127,9 @@ export default function Footer() {
 
             {/* Contact */}
             <div className="flex flex-wrap gap-3 sm:gap-5 text-[11px] text-gray-600">
-              <a href="mailto:info@naijaandoverseas.com" className="flex items-center gap-1.5 hover:text-gray-400 transition">
+              <a href="mailto:info@visiteno.com" className="flex items-center gap-1.5 hover:text-gray-400 transition">
                 <Mail size={11} className="shrink-0" />
-                <span>info@naijaandoverseas.com</span>
+                <span>info@visiteno.com</span>
               </a>
               <a href="tel:+2348000000000" className="flex items-center gap-1.5 hover:text-gray-400 transition">
                 <Phone size={11} className="shrink-0" />

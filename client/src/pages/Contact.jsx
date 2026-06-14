@@ -4,7 +4,7 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 
 const CONTACT_INFO = [
-  { icon: Mail, label: 'Email Us', value: 'info@naijaandoverseas.com', href: 'mailto:info@naijaandoverseas.com', color: 'bg-blue-100 text-blue-700' },
+  { icon: Mail, label: 'Email Us', value: 'info@visiteno.com', href: 'mailto:info@visiteno.com', color: 'bg-blue-100 text-blue-700' },
   { icon: Phone, label: 'Call Us', value: '+234 800 000 0000', href: 'tel:+2348000000000', color: 'bg-green-100 text-green-700' },
   { icon: MessageSquare, label: 'WhatsApp', value: '+234 800 000 0000', href: 'https://wa.me/2348000000000', color: 'bg-emerald-100 text-emerald-700' },
   { icon: MapPin, label: 'Locations', value: 'Nigeria · Ghana · The Gambia · Cameroon', href: null, color: 'bg-orange-100 text-orange-700' },

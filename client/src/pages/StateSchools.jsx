@@ -231,7 +231,7 @@ function downloadCalendar(stateName, calData) {
   const lines = [
     `${stateName.toUpperCase()} STATE SCHOOL ACADEMIC CALENDAR ${calData.year}`,
     `Approved by: ${calData.authority}`,
-    `Downloaded from naijaandoverseas.com`,
+    `Downloaded from visiteno.com`,
     '',
     'ACADEMIC TERMS',
     'Term,Resumption Date,Closing Date,Duration',

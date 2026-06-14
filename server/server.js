@@ -1,4 +1,5 @@
 const http = require('http');
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -14,7 +15,8 @@ const server = http.createServer(app);
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://naija-overseas.onrender.com',
+  'https://www.visiteno.com',
+  'https://visiteno.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -67,7 +69,11 @@ app.use('/api/banner', require('./routes/banner'));
 app.use('/api/coupons', require('./routes/coupons'));
 app.use('/api/tutor-quiz', require('./routes/tutorQuiz'));
 
-app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
+// Serve React frontend (production)
+app.use(express.static(path.join(__dirname, '../client/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+});
 
 async function seedDemoVideos() {
   try {

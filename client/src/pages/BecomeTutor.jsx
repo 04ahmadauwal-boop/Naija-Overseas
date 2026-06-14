@@ -238,7 +238,7 @@ function VerificationStep({ form, set }) {
 
       {/* ── Profile Photo ─────────────────────────────────────────────── */}
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+        <label className="text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
           <Camera size={15} className="text-green-600" /> Profile Photo
           <span className="text-xs font-normal text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full ml-1">Appears on your profile</span>
         </label>
@@ -383,7 +383,7 @@ function VerificationStep({ form, set }) {
 
       {/* ── Intro Video ───────────────────────────────────────────────── */}
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+        <label className="text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
           <Video size={15} className="text-purple-600" /> Intro Video
           <span className="text-xs font-normal text-gray-400 ml-1">(optional)</span>
         </label>

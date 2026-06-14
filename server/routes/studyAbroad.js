@@ -74,7 +74,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
     });
 
     // ── 3. Build email content ────────────────────────────────────
-    const clientUrl = process.env.CLIENT_URL || 'https://naijaandoverseas.com';
+    const clientUrl = process.env.CLIENT_URL || 'https://www.visiteno.com';
     const setPasswordLink = isNewUser
       ? `${clientUrl}/reset-password/${passwordSetToken}`
       : null;
@@ -203,9 +203,9 @@ router.post('/consultation', optionalAuth, async (req, res) => {
             <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">
               Have a question before your session?
             </p>
-            <a href="mailto:info@naijaandoverseas.com"
+            <a href="mailto:info@visiteno.com"
                style="font-size:13px;color:#16a34a;font-weight:600;text-decoration:none;">
-              info@naijaandoverseas.com
+              info@visiteno.com
             </a>
           </td>
         </tr>

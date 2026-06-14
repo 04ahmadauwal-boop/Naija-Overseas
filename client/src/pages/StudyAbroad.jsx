@@ -834,7 +834,7 @@ export default function StudyAbroad() {
             </p>
             <div className="space-y-3">
               {[
-                { icon: Mail, text: 'info@naijaandoverseas.com' },
+                { icon: Mail, text: 'info@visiteno.com' },
                 { icon: Phone, text: '+234 800 000 0000' },
                 { icon: MapPin, text: 'Lagos, Nigeria (Serving all 36 states)' },
               ].map(({ icon: Icon, text }) => (
