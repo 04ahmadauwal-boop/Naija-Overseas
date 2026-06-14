@@ -361,7 +361,7 @@ export default function FindTutoring() {
     };
     setFilters(init);
     doFetch(1, init, 'featured');
-  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   const update = (key, val) => {
     const next = { ...filters, [key]: val };
@@ -413,7 +413,7 @@ export default function FindTutoring() {
         }}
       >
         {/* Dark green gradient overlay — keeps text readable */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-900/92 via-green-800/88 to-emerald-900/90" />
+        <div className="absolute inset-0 bg-linear-to-br from-green-900/92 via-green-800/88 to-emerald-900/90" />
 
         <div className="max-w-5xl mx-auto relative z-10">
           <h1 className="text-3xl sm:text-5xl md:text-[3.5rem] font-extrabold text-white tracking-tight leading-tight mb-4">
@@ -823,10 +823,10 @@ export default function FindTutoring() {
           <div className="relative">
 
             {/* Vertical connector — mobile */}
-            <div className="md:hidden absolute left-[26px] top-8 bottom-8 w-0.5 bg-gradient-to-b from-green-300 via-green-500 to-green-300" />
+            <div className="md:hidden absolute left-6.5 top-8 bottom-8 w-0.5 bg-linear-to-b from-green-300 via-green-500 to-green-300" />
 
             {/* Horizontal connector — desktop */}
-            <div className="hidden md:block absolute top-[52px] left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-green-200 via-green-500 to-green-200" style={{ zIndex: 0 }} />
+            <div className="hidden md:block absolute top-13 left-[10%] right-[10%] h-0.5 bg-linear-to-r from-green-200 via-green-500 to-green-200" style={{ zIndex: 0 }} />
 
             <div className="grid md:grid-cols-5 gap-0 md:gap-4 relative" style={{ zIndex: 1 }}>
               {[
@@ -879,7 +879,7 @@ export default function FindTutoring() {
                 <div key={n} className="flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center group pl-14 md:pl-0 pb-8 md:pb-0 last:pb-0 relative">
 
                   {/* Step bubble */}
-                  <div className={`absolute left-0 md:static md:mb-5 w-[52px] h-[52px] rounded-2xl ${color} flex items-center justify-center shadow-lg shrink-0 ring-4 ${ring} ring-offset-2 transition group-hover:scale-110`}>
+                  <div className={`absolute left-0 md:static md:mb-5 w-13 h-13 rounded-2xl ${color} flex items-center justify-center shadow-lg shrink-0 ring-4 ${ring} ring-offset-2 transition group-hover:scale-110`}>
                     {n === '05'
                       ? <Icon size={22} className="text-green-900" />
                       : <Icon size={22} className="text-white" />}
@@ -907,7 +907,7 @@ export default function FindTutoring() {
           </div>
 
           {/* Bottom CTA strip */}
-          <div className="mt-14 bg-gradient-to-r from-green-800 to-green-700 rounded-3xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="mt-14 bg-linear-to-r from-green-800 to-green-700 rounded-3xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
             <div>
               <p className="text-white font-extrabold text-lg leading-tight mb-1">Ready to get started?</p>
               <p className="text-green-200 text-sm">Book your first session at a discounted rate — try before you subscribe.</p>

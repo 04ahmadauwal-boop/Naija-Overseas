@@ -2072,7 +2072,7 @@ function StudentCalendarTab({ user: _user }) {
 
                 return (
                   <button key={key} onClick={() => setSelected(isSelected ? null : key)}
-                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-[44px]
+                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-11
                       ${isSelected ? 'bg-green-700 border-green-700 text-white'
                         : isToday  ? 'border-green-500 bg-green-50 text-green-700'
                         : 'border-transparent hover:bg-gray-50 text-gray-700'}
@@ -2125,7 +2125,7 @@ function StudentCalendarTab({ user: _user }) {
           {/* ── Day detail panel ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
             {!selected ? (
-              <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] p-6 text-center">
+              <div className="flex flex-col items-center justify-center flex-1 min-h-75 p-6 text-center">
                 <CalendarCheck size={36} className="text-gray-200 mb-3" />
                 <p className="text-sm font-semibold text-gray-400">Tap a day to see sessions</p>
                 <p className="text-xs text-gray-300 mt-1">Days with sessions show a badge</p>

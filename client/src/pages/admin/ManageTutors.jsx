@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import {
   GraduationCap, CheckCircle, XCircle, Search, Clock,
   Star, Globe, BookOpen, Eye, RefreshCw,
+  FileText, Video, Camera, ShieldCheck, ShieldAlert, ExternalLink,
 } from 'lucide-react';
 
 const STATUS_TABS = [
@@ -189,14 +190,25 @@ export default function ManageTutors() {
                     }`}>
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
-                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-700 font-extrabold text-lg shrink-0">
-                        {(tutor.displayName || tutor.user?.name || '?').charAt(0).toUpperCase()}
+                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-700 font-extrabold text-lg shrink-0 overflow-hidden">
+                        {tutor.profilePhoto
+                          ? <img src={tutor.profilePhoto} alt="" className="w-full h-full object-cover" />
+                          : (tutor.displayName || tutor.user?.name || '?').charAt(0).toUpperCase()
+                        }
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-gray-900 text-sm">{tutor.displayName || tutor.user?.name}</p>
                           <StatusBadge isActive={tutor.isActive} isVerified={tutor.isVerified} />
+                          {(() => {
+                            const docs = tutor.verificationDocs || [];
+                            const hasId  = docs.some(d => d.name === 'Means of Identification');
+                            const hasAddr = docs.some(d => d.name === 'Proof of Address');
+                            return hasId && hasAddr
+                              ? <span className="flex items-center gap-0.5 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded-full"><ShieldCheck size={9} /> Docs OK</span>
+                              : <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full"><ShieldAlert size={9} /> Docs missing</span>;
+                          })()}
                         </div>
                         <p className="text-xs text-gray-400 mt-0.5 truncate">{tutor.user?.email}</p>
                         <p className="text-xs text-gray-600 mt-1 line-clamp-1">{tutor.headline}</p>
@@ -360,6 +372,117 @@ export default function ManageTutors() {
                       </div>
                     </div>
                   )}
+
+                  {/* ── Verification & Media ─────────────────────────── */}
+                  <div className="border-t border-gray-100 pt-4 space-y-4">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck size={13} className="text-blue-500" /> Verification &amp; Media
+                    </p>
+
+                    {/* Profile photo */}
+                    <div className="flex items-center gap-3">
+                      <Camera size={13} className="text-gray-400 shrink-0" />
+                      <span className="text-xs font-semibold text-gray-500 w-28 shrink-0">Profile Photo</span>
+                      {selected.profilePhoto ? (
+                        <div className="flex items-center gap-2">
+                          <img src={selected.profilePhoto} alt="Profile"
+                            className="w-10 h-10 rounded-xl object-cover border border-gray-200" />
+                          <a href={selected.profilePhoto} target="_blank" rel="noreferrer"
+                            className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                            View <ExternalLink size={10} />
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">Not uploaded</span>
+                      )}
+                    </div>
+
+                    {/* Verification documents */}
+                    {(() => {
+                      const docs = selected.verificationDocs || [];
+                      const idDoc      = docs.find(d => d.name === 'Means of Identification');
+                      const addressDoc = docs.find(d => d.name === 'Proof of Address');
+                      const extraDocs  = docs.filter(d => d.name !== 'Means of Identification' && d.name !== 'Proof of Address');
+
+                      return (
+                        <div className="space-y-2">
+                          {/* Required docs */}
+                          {[
+                            { label: 'Means of ID', doc: idDoc },
+                            { label: 'Proof of Address', doc: addressDoc },
+                          ].map(({ label, doc }) => (
+                            <div key={label} className="flex items-center gap-3">
+                              <FileText size={13} className={doc ? 'text-green-600' : 'text-red-400'} />
+                              <span className="text-xs font-semibold text-gray-500 w-28 shrink-0">{label}</span>
+                              {doc ? (
+                                <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+                                  className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-semibold">
+                                  View document <ExternalLink size={10} />
+                                </a>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-red-500 font-semibold">
+                                  <ShieldAlert size={12} /> Not submitted
+                                </span>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Extra docs */}
+                          {extraDocs.length > 0 && (
+                            <div className="pl-4 space-y-1.5 mt-1">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Additional Docs</p>
+                              {extraDocs.map((doc, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <FileText size={11} className="text-gray-400 shrink-0" />
+                                  <span className="text-xs text-gray-600 truncate flex-1">{doc.name}</span>
+                                  <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+                                    className="text-xs text-blue-600 hover:underline shrink-0 flex items-center gap-1">
+                                    View <ExternalLink size={9} />
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {docs.length === 0 && (
+                            <p className="text-xs text-red-500 font-semibold flex items-center gap-1 pl-4">
+                              <ShieldAlert size={12} /> No documents submitted
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Intro video */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <Video size={13} className={selected.introVideo ? 'text-purple-500' : 'text-gray-400'} />
+                        <span className="text-xs font-semibold text-gray-500">Intro Video</span>
+                        {!selected.introVideo && (
+                          <span className="text-xs text-gray-400 italic">Not uploaded</span>
+                        )}
+                      </div>
+                      {selected.introVideo && (
+                        <video src={selected.introVideo} controls
+                          className="w-full rounded-xl border border-gray-200 bg-black max-h-40" />
+                      )}
+                    </div>
+
+                    {/* Verification checklist summary */}
+                    <div className={`rounded-xl px-3 py-2.5 text-xs font-semibold flex items-center gap-2 ${
+                      (selected.verificationDocs || []).find(d => d.name === 'Means of Identification') &&
+                      (selected.verificationDocs || []).find(d => d.name === 'Proof of Address')
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-red-50 text-red-700'
+                    }`}>
+                      {(selected.verificationDocs || []).find(d => d.name === 'Means of Identification') &&
+                       (selected.verificationDocs || []).find(d => d.name === 'Proof of Address') ? (
+                        <><CheckCircle size={13} /> All required documents submitted — safe to approve</>
+                      ) : (
+                        <><ShieldAlert size={13} /> Missing required documents — review before approving</>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Action buttons */}
                   <div className="flex gap-3 pt-2 border-t border-gray-50">

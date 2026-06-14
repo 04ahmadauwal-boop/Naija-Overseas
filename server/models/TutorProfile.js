@@ -38,6 +38,13 @@ const tutorProfileSchema = new mongoose.Schema(
     availability: [{ type: String }],
     teachingStyle: [{ type: String }],
     timezone: { type: String },
+    introVideo:          { type: String },
+    introVideoPublicId:  { type: String },
+    verificationDocs: [{
+      name:      { type: String },
+      fileUrl:   { type: String },
+      publicId:  { type: String },
+    }],
   },
   { timestamps: true }
 );

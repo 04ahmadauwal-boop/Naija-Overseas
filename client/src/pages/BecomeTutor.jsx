@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   GraduationCap, CheckCircle, ChevronRight, ChevronLeft,
   Plus, Trash2, ArrowRight, Banknote, Globe, Shield,
+  Camera, FileText, Video, Upload, X, FileBadge,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
@@ -78,7 +79,7 @@ const SPECIALIZATION_OPTIONS = [
   'Coding & Tech Skills', 'Science Lab Practicals', 'Exam Time Management',
 ];
 
-const STEPS = ['About You', 'What You Teach', 'Rates & Setup'];
+const STEPS = ['About You', 'What You Teach', 'Verification & Media', 'Rates & Setup'];
 
 function ToggleChip({ label, active, onClick }) {
   return (
@@ -94,6 +95,350 @@ function ToggleChip({ label, active, onClick }) {
       {active && <CheckCircle size={12} className="inline mr-1.5" />}
       {label}
     </button>
+  );
+}
+
+// ─── Verification & Media Step ───────────────────────────────────────────────
+function RequiredDocSlot({ label, hint, accepts, formKey, form, set }) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const doc = form[formKey];
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('type', 'document');
+      const { data } = await api.post('/tutors/upload-media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      set(formKey, { fileUrl: data.url, publicId: data.publicId });
+      toast.success(`${label} uploaded!`);
+    } catch { toast.error(`${label} upload failed. Try again.`); }
+    finally { setUploading(false); if (inputRef.current) inputRef.current.value = ''; }
+  };
+
+  return (
+    <div className={`rounded-2xl border-2 p-4 transition ${doc ? 'border-green-300 bg-green-50/40' : 'border-red-200 bg-red-50/30'}`}>
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <p className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+            {doc
+              ? <CheckCircle size={15} className="text-green-600 shrink-0" />
+              : <span className="w-3.5 h-3.5 rounded-full border-2 border-red-400 inline-block shrink-0" />}
+            {label}
+            <span className="text-[11px] font-semibold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">Required</span>
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5 ml-5">{hint}</p>
+        </div>
+        {doc && (
+          <button type="button" onClick={() => set(formKey, null)}
+            className="text-gray-400 hover:text-red-500 transition shrink-0 p-1">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {doc ? (
+        <div className="ml-5 flex items-center gap-3 mt-2">
+          <FileText size={15} className="text-green-700 shrink-0" />
+          <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+            className="text-xs text-green-700 font-semibold hover:underline truncate">
+            View uploaded document →
+          </a>
+          <button type="button" onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="ml-auto text-xs text-gray-500 border border-gray-200 px-2.5 py-1 rounded-lg hover:bg-gray-50 transition shrink-0">
+            Replace
+          </button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+          className="ml-5 flex items-center gap-2 border-2 border-dashed border-gray-300 text-gray-600 text-xs font-semibold px-3 py-2 rounded-xl hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 transition disabled:opacity-60 mt-2">
+          <Upload size={12} />
+          {uploading ? 'Uploading…' : `Upload ${label}`}
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept={accepts} className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
+
+function VerificationStep({ form, set }) {
+  const photoRef = useRef(null);
+  const docRef   = useRef(null);
+  const videoRef = useRef(null);
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [docForm, setDocForm]   = useState({ name: '', uploading: false });
+  const [showDocForm, setShowDocForm] = useState(false);
+
+  const uploadFile = async (file, type) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('type', type);
+    const { data } = await api.post('/tutors/upload-media', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  };
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
+    setUploadingPhoto(true);
+    try {
+      const { url, publicId } = await uploadFile(file, 'photo');
+      set('profilePhotoUrl', url);
+      set('profilePhotoPublicId', publicId);
+      toast.success('Profile photo uploaded!');
+    } catch { toast.error('Photo upload failed'); }
+    finally { setUploadingPhoto(false); if (photoRef.current) photoRef.current.value = ''; }
+  };
+
+  const handleExtraDoc = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!docForm.name.trim()) { toast.error('Please enter a document name first'); return; }
+    setDocForm(f => ({ ...f, uploading: true }));
+    try {
+      const { url, publicId } = await uploadFile(file, 'document');
+      set('verificationDocs', [...form.verificationDocs, { name: docForm.name.trim(), fileUrl: url, publicId }]);
+      setDocForm({ name: '', uploading: false });
+      setShowDocForm(false);
+      toast.success('Document uploaded!');
+    } catch { toast.error('Document upload failed'); }
+    finally { setDocForm(f => ({ ...f, uploading: false })); if (docRef.current) docRef.current.value = ''; }
+  };
+
+  const handleVideo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) { toast.error('Please select a video file'); return; }
+    if (file.size > 100 * 1024 * 1024) { toast.error('Video must be under 100 MB'); return; }
+    setUploadingVideo(true);
+    try {
+      const { url, publicId } = await uploadFile(file, 'video');
+      set('introVideoUrl', url);
+      set('introVideoPublicId', publicId);
+      toast.success('Intro video uploaded!');
+    } catch { toast.error('Video upload failed. Try a smaller file.'); }
+    finally { setUploadingVideo(false); if (videoRef.current) videoRef.current.value = ''; }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Verification &amp; Media</h2>
+        <p className="text-gray-500 text-sm">Complete all required fields to continue. This helps us verify your identity and builds student trust.</p>
+      </div>
+
+      {/* ── Profile Photo ─────────────────────────────────────────────── */}
+      <div>
+        <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+          <Camera size={15} className="text-green-600" /> Profile Photo
+          <span className="text-xs font-normal text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full ml-1">Appears on your profile</span>
+        </label>
+        <p className="text-xs text-gray-400 mb-4">A clear, professional headshot. Square photos work best.</p>
+
+        <div className="flex items-center gap-5">
+          <div className="w-24 h-24 rounded-2xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shrink-0 relative">
+            {form.profilePhotoUrl ? (
+              <>
+                <img src={form.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                <button type="button"
+                  onClick={() => { set('profilePhotoUrl', ''); set('profilePhotoPublicId', ''); }}
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600">
+                  <X size={10} />
+                </button>
+              </>
+            ) : uploadingPhoto ? (
+              <div className="w-6 h-6 border-2 border-green-300 border-t-green-700 rounded-full animate-spin" />
+            ) : (
+              <Camera size={28} className="text-gray-300" />
+            )}
+          </div>
+          <div className="space-y-2">
+            <button type="button" onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}
+              className="flex items-center gap-2 bg-green-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-green-800 transition disabled:opacity-60">
+              <Upload size={14} />
+              {uploadingPhoto ? 'Uploading…' : form.profilePhotoUrl ? 'Change Photo' : 'Upload Photo'}
+            </button>
+            <p className="text-xs text-gray-400">JPG, PNG, WEBP · Max 5 MB</p>
+            <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-gray-100" />
+
+      {/* ── Required Documents ────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <FileBadge size={15} className="text-blue-600" />
+          <span className="text-sm font-bold text-gray-700">Identity &amp; Address Documents</span>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">Both documents below are <strong className="text-red-600">required</strong> before you can proceed. Accepted: PDF, JPG, PNG.</p>
+
+        <div className="space-y-3">
+          <RequiredDocSlot
+            label="Means of Identification"
+            hint="National ID card, International passport, Driver's licence, or Voter's card"
+            accepts=".pdf,image/*"
+            formKey="idDoc"
+            form={form}
+            set={set}
+          />
+          <RequiredDocSlot
+            label="Proof of Address"
+            hint="Utility bill, bank statement, or tenancy agreement (issued within last 3 months)"
+            accepts=".pdf,image/*"
+            formKey="addressDoc"
+            form={form}
+            set={set}
+          />
+        </div>
+
+        {/* Progress indicator */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-green-500 transition-all duration-500"
+              style={{ width: `${((form.idDoc ? 1 : 0) + (form.addressDoc ? 1 : 0)) * 50}%` }}
+            />
+          </div>
+          <span className="text-xs text-gray-500 shrink-0">
+            {(form.idDoc ? 1 : 0) + (form.addressDoc ? 1 : 0)}/2 required docs
+          </span>
+        </div>
+      </div>
+
+      {/* ── Additional Documents (optional) ──────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <FileText size={15} className="text-gray-500" />
+          <span className="text-sm font-semibold text-gray-600">Additional Documents</span>
+          <span className="text-xs font-normal text-gray-400">(optional)</span>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">Degree certificates, teaching licences, NYSC certificate, etc. Tutors with more credentials get verified faster.</p>
+
+        {form.verificationDocs.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {form.verificationDocs.map((doc) => (
+              <div key={doc.publicId} className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <FileText size={15} className="text-gray-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{doc.name}</p>
+                  <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+                    className="text-xs text-blue-600 hover:underline">View file →</a>
+                </div>
+                <button type="button"
+                  onClick={() => set('verificationDocs', form.verificationDocs.filter(d => d.publicId !== doc.publicId))}
+                  className="text-gray-400 hover:text-red-500 transition p-1 rounded-lg hover:bg-red-50">
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showDocForm ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
+            <p className="text-sm font-bold text-gray-700">Add a Document</p>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Document Name *</label>
+              <input
+                value={docForm.name}
+                onChange={e => setDocForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. B.Sc Mathematics Certificate, NYSC Certificate"
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Upload File *</label>
+              <button type="button"
+                onClick={() => { if (!docForm.name.trim()) { toast.error('Enter document name first'); return; } docRef.current?.click(); }}
+                disabled={docForm.uploading}
+                className="flex items-center gap-2 border-2 border-dashed border-blue-300 text-blue-700 bg-blue-50 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-100 transition w-full justify-center disabled:opacity-60">
+                <Upload size={14} />
+                {docForm.uploading ? 'Uploading…' : 'Choose File (PDF, JPG, PNG)'}
+              </button>
+              <input ref={docRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleExtraDoc} />
+            </div>
+            <button type="button" onClick={() => { setShowDocForm(false); setDocForm({ name: '', uploading: false }); }}
+              className="text-xs text-gray-400 hover:text-gray-600 transition">Cancel</button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => setShowDocForm(true)}
+            className="flex items-center gap-2 border-2 border-dashed border-gray-200 text-gray-500 text-sm font-semibold px-4 py-3 rounded-xl hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 transition w-full justify-center">
+            <Plus size={15} /> Add Extra Document
+          </button>
+        )}
+      </div>
+
+      <div className="h-px bg-gray-100" />
+
+      {/* ── Intro Video ───────────────────────────────────────────────── */}
+      <div>
+        <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+          <Video size={15} className="text-purple-600" /> Intro Video
+          <span className="text-xs font-normal text-gray-400 ml-1">(optional)</span>
+        </label>
+        <p className="text-xs text-gray-400 mb-4">
+          A 1–2 minute video introducing yourself and your teaching style. Tutors with a video get <strong className="text-gray-600">5× more</strong> profile views.
+        </p>
+
+        {form.introVideoUrl ? (
+          <div className="space-y-3">
+            <video src={form.introVideoUrl} controls className="w-full rounded-2xl border border-gray-200 max-h-56 bg-black" />
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => videoRef.current?.click()} disabled={uploadingVideo}
+                className="flex items-center gap-2 border border-gray-200 text-gray-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition disabled:opacity-60">
+                <Upload size={13} /> {uploadingVideo ? 'Uploading…' : 'Replace Video'}
+              </button>
+              <button type="button" onClick={() => { set('introVideoUrl', ''); set('introVideoPublicId', ''); }}
+                className="text-sm text-red-500 font-semibold hover:underline flex items-center gap-1">
+                <X size={13} /> Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" onClick={() => videoRef.current?.click()} disabled={uploadingVideo}
+            className="flex flex-col items-center gap-3 border-2 border-dashed border-purple-200 bg-purple-50/50 text-purple-700 rounded-2xl py-8 w-full hover:bg-purple-50 transition disabled:opacity-60">
+            {uploadingVideo ? (
+              <>
+                <div className="w-8 h-8 border-2 border-purple-300 border-t-purple-700 rounded-full animate-spin" />
+                <span className="text-sm font-semibold">Uploading video…</span>
+                <span className="text-xs text-purple-400">This may take a moment</span>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
+                  <Video size={22} className="text-purple-600" />
+                </div>
+                <span className="text-sm font-bold">Click to upload your intro video</span>
+                <span className="text-xs text-purple-500">MP4, MOV, WEBM · Max 100 MB</span>
+              </>
+            )}
+          </button>
+        )}
+        <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideo} />
+      </div>
+
+      {/* Info tip */}
+      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex gap-3">
+        <Shield size={18} className="text-amber-500 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-bold text-amber-800">Why verification matters</p>
+          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+            Your ID and address documents are reviewed privately by our team and never shown to students. Verified tutors earn a blue badge that increases student trust and bookings significantly.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -126,6 +471,14 @@ export default function BecomeTutor() {
     responseTime: 'Within 24 hours',
     availability: [],
     teachingStyle: [],
+    // Verification & Media (Step 2)
+    profilePhotoUrl:      '',
+    profilePhotoPublicId: '',
+    idDoc:            null, // { fileUrl, publicId } — Means of Identification (required)
+    addressDoc:       null, // { fileUrl, publicId } — Proof of Address (required)
+    verificationDocs:     [], // [{ name, fileUrl, publicId }] — additional optional docs
+    introVideoUrl:        '',
+    introVideoPublicId:   '',
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -146,7 +499,8 @@ export default function BecomeTutor() {
   const canNext = () => {
     if (step === 0) return form.headline.trim().length >= 10 && form.bio.trim().length >= 50;
     if (step === 1) return form.subjects.length >= 1 && form.levels.length >= 1 && form.teachingMode.length >= 1;
-    if (step === 2) return form.hourlyRateNaira > 0 || form.hourlyRateNaira === '';
+    if (step === 2) return !!form.idDoc && !!form.addressDoc;
+    if (step === 3) return form.hourlyRateNaira > 0 || form.hourlyRateNaira === '';
     return true;
   };
 
@@ -162,6 +516,14 @@ export default function BecomeTutor() {
         groupRateNaira: form.groupRateNaira ? Number(form.groupRateNaira) : undefined,
         yearsExperience: form.yearsExperience ? Number(form.yearsExperience) : 0,
         qualifications: form.qualifications.filter((q) => q.title.trim()),
+        profilePhoto:       form.profilePhotoUrl || undefined,
+        introVideo:         form.introVideoUrl || undefined,
+        introVideoPublicId: form.introVideoPublicId || undefined,
+        verificationDocs: [
+          form.idDoc      ? { name: 'Means of Identification', ...form.idDoc }  : null,
+          form.addressDoc ? { name: 'Proof of Address',        ...form.addressDoc } : null,
+          ...form.verificationDocs,
+        ].filter(Boolean),
       };
       await api.post('/tutors/register', payload);
       setDone(true);
@@ -502,8 +864,13 @@ export default function BecomeTutor() {
               </div>
             )}
 
-            {/* ── STEP 2: Rates & Setup ──────────────────────────────── */}
+            {/* ── STEP 2: Verification & Media ──────────────────────── */}
             {step === 2 && (
+              <VerificationStep form={form} set={set} user={user} />
+            )}
+
+            {/* ── STEP 3: Rates & Setup ──────────────────────────────── */}
+            {step === 3 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Rates & Setup</h2>
@@ -622,7 +989,7 @@ export default function BecomeTutor() {
 
                 {/* Summary preview */}
                 <div className="bg-gray-900 rounded-2xl p-6 text-white">
-                  <h3 className="font-bold text-base mb-4 text-gray-300 uppercase tracking-wider text-xs">Your Profile Preview</h3>
+                  <h3 className="font-bold mb-4 text-gray-300 uppercase tracking-wider text-xs">Your Profile Preview</h3>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-green-600 flex items-center justify-center text-white font-bold text-lg">
                       {user.name.charAt(0).toUpperCase()}

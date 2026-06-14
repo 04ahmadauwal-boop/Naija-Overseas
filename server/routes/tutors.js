@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const cloudinary = require('../utils/cloudinary');
 const TutorProfile = require('../models/TutorProfile');
 const TutorReview = require('../models/TutorReview');
 const Booking = require('../models/Booking');
@@ -7,6 +9,11 @@ const User = require('../models/User');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
+
+const uploadMedia = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB — needed for videos
+});
 
 // Maps student classLevel (onboarding value) → tutor levels[] values
 const LEVEL_MAP = {
@@ -221,6 +228,38 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST /api/tutors/upload-media — pre-registration media upload (photo / document / video)
+// Returns { url, publicId } — caller stores these and sends them in /register payload
+router.post('/upload-media', protect, uploadMedia.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file provided' });
+    const { type } = req.body; // 'photo' | 'document' | 'video'
+
+    const b64     = Buffer.from(req.file.buffer).toString('base64');
+    const dataUri = `data:${req.file.mimetype};base64,${b64}`;
+
+    let opts = { folder: `naija-overseas/tutor-verification/${req.user._id}`, resource_type: 'auto' };
+
+    if (type === 'photo') {
+      opts = {
+        folder:         'naija-overseas/tutor-photos',
+        public_id:      `tutor-applicant-${req.user._id}`,
+        overwrite:      true,
+        resource_type:  'image',
+        transformation: [{ width: 600, height: 600, crop: 'fill', gravity: 'face' }],
+      };
+    } else if (type === 'video') {
+      opts.folder        = 'naija-overseas/tutor-intros';
+      opts.resource_type = 'video';
+    }
+
+    const result = await cloudinary.uploader.upload(dataUri, opts);
+    res.json({ url: result.secure_url, publicId: result.public_id });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST /api/tutors/register — become a tutor
 router.post('/register', protect, async (req, res) => {
   try {
@@ -231,6 +270,7 @@ router.post('/register', protect, async (req, res) => {
       headline, bio, subjects, levels, teachingMode, country, state, city,
       currency, hourlyRateNaira, groupRateNaira, trialAvailable, trialDurationMins, trialDiscountPercent,
       languages, qualifications, yearsExperience, specializations,
+      profilePhoto, introVideo, introVideoPublicId, verificationDocs,
     } = req.body;
 
     const profile = await TutorProfile.create({
@@ -254,7 +294,16 @@ router.post('/register', protect, async (req, res) => {
       qualifications: qualifications || [],
       yearsExperience: yearsExperience || 0,
       specializations: specializations || [],
+      profilePhoto:        profilePhoto || undefined,
+      introVideo:          introVideo || undefined,
+      introVideoPublicId:  introVideoPublicId || undefined,
+      verificationDocs:    verificationDocs || [],
     });
+
+    // Keep User.profilePhoto in sync if photo was uploaded
+    if (profilePhoto) {
+      await User.findByIdAndUpdate(req.user._id, { profilePhoto }).catch(() => {});
+    }
 
     await sendEmail({
       to: req.user.email,
@@ -276,6 +325,7 @@ router.patch('/me', protect, async (req, res) => {
       'currency', 'hourlyRateNaira', 'groupRateNaira', 'trialAvailable', 'trialDurationMins', 'trialDiscountPercent',
       'languages', 'qualifications', 'yearsExperience', 'specializations', 'profilePhoto',
       'availability', 'teachingStyle', 'timezone',
+      'introVideo', 'introVideoPublicId', 'verificationDocs',
     ];
     const updates = {};
     allowed.forEach((k) => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });

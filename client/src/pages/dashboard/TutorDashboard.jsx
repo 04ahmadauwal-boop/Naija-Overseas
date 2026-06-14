@@ -156,7 +156,7 @@ function OverviewTab({ profile, bookings, setActiveTab }) {
       </div>
 
       {/* Class quick launch */}
-      <div className="bg-gradient-to-r from-green-700 to-emerald-700 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="bg-linear-to-r from-green-700 to-emerald-700 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
           <Video size={22} className="text-white" />
         </div>
@@ -178,7 +178,7 @@ function OverviewTab({ profile, bookings, setActiveTab }) {
 
       {/* Learning Hub CTA */}
       <Link to="/learning"
-        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 rounded-2xl p-5 flex items-center gap-4 text-white hover:opacity-95 transition">
+        className="w-full bg-linear-to-r from-purple-700 to-purple-600 rounded-2xl p-5 flex items-center gap-4 text-white hover:opacity-95 transition">
         <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
           <GraduationCap size={20} className="text-white" />
         </div>
@@ -350,7 +350,7 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                 </div>
 
                 {/* Session details */}
-                <div className="flex flex-col gap-1 sm:min-w-[160px]">
+                <div className="flex flex-col gap-1 sm:min-w-40">
                   <div className="flex items-center gap-1.5 text-xs text-gray-600">
                     <Clock size={11} className="text-gray-400" />
                     <span className="font-semibold">{formatDate(b.date)}</span>
@@ -362,7 +362,7 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                 </div>
 
                 {/* Status + actions */}
-                <div className="flex flex-col gap-2 sm:items-end sm:min-w-[180px]">
+                <div className="flex flex-col gap-2 sm:items-end sm:min-w-45">
                   <StatusBadge status={b.status} />
 
                   {/* Action buttons for pending */}
@@ -461,7 +461,7 @@ function SubscribersTab() {
 
       {/* Monthly revenue card */}
       {active.length > 0 && (
-        <div className="bg-gradient-to-r from-green-800 to-green-700 rounded-2xl p-5 text-white">
+        <div className="bg-linear-to-r from-green-800 to-green-700 rounded-2xl p-5 text-white">
           <p className="text-xs text-green-300 font-semibold uppercase tracking-wider mb-1">Monthly Subscription Revenue</p>
           <p className="text-3xl font-extrabold">
             ₦{active.reduce((sum, s) => sum + (s.monthlyRate || 0), 0).toLocaleString()}
@@ -1025,6 +1025,84 @@ function StudentDetailModal({ booking, allBookings, onClose }) {
             </div>
           )}
 
+          {/* Quiz Results — shown when the booking that was clicked is a trial with quiz data */}
+          {booking.isTrial && booking.quizResults?.answers?.length > 0 && (() => {
+            const qr      = booking.quizResults;
+            const pct     = Math.round((qr.score / qr.total) * 100);
+            const barColor = pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-amber-400' : 'bg-red-500';
+            const weakTopics = [...new Set(
+              qr.answers.filter(a => !a.isCorrect).map(a => a.topic).filter(Boolean)
+            )];
+            const LABELS = ['A','B','C','D','E'];
+            return (
+              <div className="border border-blue-200 rounded-2xl overflow-hidden">
+                {/* Score header */}
+                <div className="bg-blue-700 px-5 py-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-blue-200 uppercase tracking-wider">Pre-Session Quiz</p>
+                    <p className="text-white font-extrabold text-base mt-0.5">{qr.subject}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-2xl font-extrabold text-white">{pct}%</p>
+                    <p className="text-xs text-blue-200">{qr.score} / {qr.total} correct</p>
+                  </div>
+                </div>
+
+                {/* Score bar */}
+                <div className="px-5 pt-3 pb-1 bg-blue-50">
+                  <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+
+                {/* Weak areas */}
+                {weakTopics.length > 0 && (
+                  <div className="mx-5 mt-2 mb-1 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                    <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1">Areas needing attention</p>
+                    <div className="flex flex-wrap gap-1">
+                      {weakTopics.map(t => (
+                        <span key={t} className="text-[11px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Question-by-question breakdown */}
+                <div className="divide-y divide-gray-100 pb-2">
+                  {qr.answers.map((a, i) => (
+                    <div key={i} className={`px-5 py-3 ${a.isCorrect ? '' : 'bg-red-50/60'}`}>
+                      <div className="flex items-start gap-2 mb-1.5">
+                        <span className={`text-base shrink-0 leading-none mt-0.5 ${a.isCorrect ? 'text-green-600' : 'text-red-500'}`}>
+                          {a.isCorrect ? '✅' : '❌'}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          {a.topic && (
+                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full mr-1.5">{a.topic}</span>
+                          )}
+                          <p className="text-xs font-semibold text-gray-800 mt-1 leading-relaxed">{a.question}</p>
+                        </div>
+                      </div>
+                      <div className="ml-6 space-y-0.5">
+                        <p className={`text-[11px] flex items-center gap-1 ${a.isCorrect ? 'text-green-700 font-semibold' : 'text-red-600'}`}>
+                          <span className="font-bold">{LABELS[a.chosen] || '?'}:</span>
+                          {a.options?.[a.chosen] || '—'}
+                          <span className="ml-1 text-[10px] font-bold text-gray-400">(student's answer)</span>
+                        </p>
+                        {!a.isCorrect && (
+                          <p className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
+                            <span className="font-bold">{LABELS[a.correct]}:</span>
+                            {a.options?.[a.correct] || '—'}
+                            <span className="ml-1 text-[10px] font-bold text-gray-400">(correct)</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Booking history with this tutor */}
           <div>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
@@ -1160,7 +1238,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
 
                 return (
                   <button key={key} onClick={() => setSelected(isSelected ? null : key)}
-                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-[44px]
+                    className={`relative flex flex-col items-center justify-start pt-1.5 pb-1 gap-0.5 rounded-xl border-2 transition text-sm font-semibold min-h-11
                       ${isSelected ? 'bg-green-700 border-green-700 text-white' : isToday ? 'border-green-500 bg-green-50 text-green-700' : 'border-transparent hover:bg-gray-50 text-gray-700'}
                     `}>
                     <span className="leading-none text-sm">{day}</span>
@@ -1207,7 +1285,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
           {/* ── Day detail panel ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
             {!selected ? (
-              <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] p-6 text-center">
+              <div className="flex flex-col items-center justify-center flex-1 min-h-75 p-6 text-center">
                 <CalendarCheck size={36} className="text-gray-200 mb-3" />
                 <p className="text-sm font-semibold text-gray-400">Tap a day to see sessions</p>
                 <p className="text-xs text-gray-300 mt-1">Days with bookings show a number badge</p>
@@ -1656,6 +1734,7 @@ export default function TutorDashboard() {
   useEffect(() => {
     fetchProfile();
     fetchBookings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1695,7 +1774,7 @@ export default function TutorDashboard() {
           </div>
           <div>
             <p className="font-extrabold text-white text-sm leading-tight">Tutor Dashboard</p>
-            <p className="text-gray-400 text-xs truncate max-w-[120px]">{user?.name || 'Tutor'}</p>
+            <p className="text-gray-400 text-xs truncate max-w-30">{user?.name || 'Tutor'}</p>
           </div>
         </div>
       </div>

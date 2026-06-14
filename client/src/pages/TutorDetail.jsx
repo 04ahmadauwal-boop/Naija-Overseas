@@ -435,7 +435,7 @@ export default function TutorDetail() {
 
           {/* Primary CTA */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-green-800 to-green-700 px-6 pt-6 pb-5 text-white">
+            <div className="bg-linear-to-r from-green-800 to-green-700 px-6 pt-6 pb-5 text-white">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0 overflow-hidden border border-white/20">
                   {tutor.profilePhoto
