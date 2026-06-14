@@ -206,14 +206,14 @@ function TutorCard({ tutor }) {
           )}
           {tutor.trialAvailable && (
             <p className="text-[10px] text-green-600 font-bold mt-0.5">
-              Free {tutor.trialDurationMins || 30}-min trial
+              {tutor.trialDiscountPercent ?? 50}% off first session
             </p>
           )}
         </div>
 
         <Link to={`/tutors/${tutor._id}`}
           className="bg-green-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-green-800 transition shadow-sm whitespace-nowrap">
-          Book free trial
+          Book discounted session
         </Link>
       </div>
     </div>
@@ -429,7 +429,7 @@ export default function FindTutoring() {
           <div className="flex flex-wrap gap-2 mb-8">
             {[
               { icon: Shield, label: 'Verified tutors' },
-              { icon: Zap,    label: 'Free trial lesson' },
+              { icon: Zap,    label: 'Discounted first session' },
               { icon: Globe,  label: 'Online & In-Person' },
               { icon: Clock,  label: 'Flexible schedule' },
               { icon: Users,  label: 'All ages & levels' },
@@ -783,7 +783,7 @@ export default function FindTutoring() {
               { icon: Banknote,    text: 'Pay in your local currency', color: 'text-blue-600' },
               { icon: MapPin,      text: 'Online & in-person options', color: 'text-purple-600' },
               { icon: Shield,      text: '100% verified tutors', color: 'text-orange-500' },
-              { icon: UserCheck,   text: 'Free first trial lesson', color: 'text-green-600' },
+              { icon: UserCheck,   text: 'Discounted first session', color: 'text-green-600' },
               { icon: Users,       text: 'Group sessions available', color: 'text-blue-600' },
             ].map(({ icon: Icon, text, color }) => (
               <div key={text} className="flex items-center gap-2.5 text-sm text-gray-600">
@@ -844,9 +844,9 @@ export default function FindTutoring() {
                   icon: UserCheck,
                   color: 'bg-green-700',
                   ring: 'ring-green-200',
-                  title: 'Book a Free Trial',
-                  tagline: 'Zero risk, no payment',
-                  bullets: ['Pick your date & time online', 'No credit card needed', 'Tutor confirms fast'],
+                  title: 'Book a Discounted Session',
+                  tagline: 'Pay a discounted rate for your first class',
+                  bullets: ['Pick your date & time online', 'Pay a discounted first-session rate', 'Tutor confirms fast'],
                 },
                 {
                   n: '03',
@@ -910,7 +910,7 @@ export default function FindTutoring() {
           <div className="mt-14 bg-gradient-to-r from-green-800 to-green-700 rounded-3xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
             <div>
               <p className="text-white font-extrabold text-lg leading-tight mb-1">Ready to get started?</p>
-              <p className="text-green-200 text-sm">Your first trial session is completely free. No card, no commitment.</p>
+              <p className="text-green-200 text-sm">Book your first session at a discounted rate — try before you subscribe.</p>
             </div>
             <div className="flex gap-3 shrink-0">
               <Link to="/find-tutoring"
@@ -933,7 +933,7 @@ export default function FindTutoring() {
           <h2 className="text-2xl font-extrabold text-gray-900 mb-8">Frequently asked questions</h2>
           <div className="space-y-0 bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-100">
             {[
-              { q: 'How can I book a trial lesson?', a: 'Click "Book free trial" on any tutor card. Fill in your name, email, preferred date and time, and submit. The tutor will confirm within their response time. No payment is required for the trial.' },
+              { q: 'How can I book a first discounted session?', a: 'Click "Book discounted session" on any tutor card. Log in or create a free account, pick your date and time, and complete a small discounted payment. The tutor will confirm within their response time.' },
               { q: 'Which currencies are supported?', a: 'Tutors set their own rates in their local currency — Nigerian Naira (₦), US Dollar ($), British Pound (£), Euro (€), Ghanaian Cedis, Kenyan Shillings, and more. You see the tutor\'s rate in their currency.' },
               { q: 'Can I find tutors outside Nigeria?', a: 'Yes! Our platform is worldwide. You can find tutors from the UK, US, Canada, Ghana, Kenya, India, and many more countries. Use the Country filter to narrow your search.' },
               { q: 'Who are the tutors on this platform?', a: 'All tutors are manually reviewed before going live. We verify qualifications, teaching experience, and subject expertise. Look for the green verified badge on profiles.' },

@@ -23,6 +23,7 @@ const tutorProfileSchema = new mongoose.Schema(
     groupRateNaira: { type: Number, min: 0 },
     trialAvailable: { type: Boolean, default: true },
     trialDurationMins: { type: Number, default: 30 },
+    trialDiscountPercent: { type: Number, default: 50, min: 0, max: 100 },
     languages: [{ type: String }],
     qualifications: [qualificationSchema],
     yearsExperience: { type: Number, default: 0, min: 0 },

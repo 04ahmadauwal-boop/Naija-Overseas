@@ -218,7 +218,7 @@ export default function TutorDetail() {
                     )}
                     {tutor.trialAvailable && (
                       <span className="flex items-center gap-1.5 text-xs bg-green-50 text-green-700 border border-green-200 font-bold px-3 py-1.5 rounded-full">
-                        ✅ Free {tutor.trialDurationMins || 30}-min trial
+                        🏷️ {tutor.trialDiscountPercent ?? 50}% off first session
                       </span>
                     )}
                   </div>
@@ -309,8 +309,19 @@ export default function TutorDetail() {
             <div className="grid sm:grid-cols-3 gap-4">
               {tutor.trialAvailable && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-extrabold text-green-700">Free</p>
-                  <p className="text-xs font-bold text-green-600 mt-1">Trial Session</p>
+                  {tutor.hourlyRateNaira > 0 ? (
+                    <>
+                      <p className="text-2xl font-extrabold text-green-700">
+                        ₦{Math.round(tutor.hourlyRateNaira * (1 - (tutor.trialDiscountPercent ?? 50) / 100) * ((tutor.trialDurationMins || 60) / 60)).toLocaleString()}
+                      </p>
+                      <p className="text-xs font-bold text-green-600 mt-1">First Session ({tutor.trialDiscountPercent ?? 50}% off)</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-extrabold text-green-700">{tutor.trialDiscountPercent ?? 50}% off</p>
+                      <p className="text-xs font-bold text-green-600 mt-1">First Session Discount</p>
+                    </>
+                  )}
                   <p className="text-xs text-green-500 mt-0.5">{tutor.trialDurationMins || 30} minutes</p>
                 </div>
               )}
@@ -434,7 +445,7 @@ export default function TutorDetail() {
                 <div className="min-w-0">
                   <p className="font-extrabold text-base leading-tight truncate">{name}</p>
                   {tutor.trialAvailable && (
-                    <p className="text-green-200 text-xs mt-0.5">Free {tutor.trialDurationMins || 30}-min trial available</p>
+                    <p className="text-green-200 text-xs mt-0.5">{tutor.trialDiscountPercent ?? 50}% off your first session</p>
                   )}
                 </div>
               </div>
@@ -450,9 +461,9 @@ export default function TutorDetail() {
                 to={`/book/${id}`}
                 className="block w-full text-center bg-yellow-400 text-green-900 font-extrabold py-3.5 rounded-xl hover:bg-yellow-300 transition text-sm shadow-lg shadow-black/20"
               >
-                Book Free Trial Session →
+                Book Discounted Session →
               </Link>
-              <p className="text-center text-green-300 text-xs mt-2">No payment required · Instant confirmation</p>
+              <p className="text-center text-green-300 text-xs mt-2">{tutor.trialDiscountPercent ?? 50}% off your first session · {tutor.trialDurationMins || 30} minutes</p>
             </div>
 
             {/* Quick facts */}
@@ -514,8 +525,8 @@ export default function TutorDetail() {
                     n: '2',
                     icon: Video,
                     color: 'bg-blue-100 text-blue-700',
-                    title: 'Book your free trial',
-                    desc: 'Pick a date & time on the next page — no payment, no commitment.',
+                    title: 'Book your discounted session',
+                    desc: 'Pick a date & time on the next page and pay a discounted first-session rate.',
                   },
                   {
                     n: '3',

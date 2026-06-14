@@ -3,6 +3,7 @@ const router = express.Router();
 const TutorAvailability = require('../models/TutorAvailability');
 const TutorProfile = require('../models/TutorProfile');
 const Booking = require('../models/Booking');
+const TutorQuestion = require('../models/TutorQuestion');
 const { protect, optionalAuth } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 const { localToUTC, formatTimeInTZ, getDayInTZ, todayInTZ } = require('../utils/timezone');
@@ -174,6 +175,10 @@ router.post('/book', protect, async (req, res) => {
       recurrence,     // 'none' | 'weekly' | 'biweekly' | 'monthly'
       recurrenceCount,
       isTrial,
+      paymentRef,     // Paystack reference (required for discounted trial sessions)
+      paidAmount,     // amount paid in naira
+      quizAnswers,    // [{ questionId, chosenIndex }] — sent from student browser
+      quizSubject,    // label for the quiz in the email
     } = req.body;
 
     const name  = req.user.name  || req.user.email;
@@ -198,7 +203,7 @@ router.post('/book', protect, async (req, res) => {
       });
       if (existingTrial) {
         return res.status(400).json({
-          message: 'You have already booked a free trial with this tutor. Subscribe to continue learning with them.',
+          message: 'You have already booked a discounted session with this tutor. Subscribe to continue learning with them.',
           alreadyTrialled: true,
         });
       }
@@ -213,6 +218,42 @@ router.post('/book', protect, async (req, res) => {
     const intervalMs  = recurrence === 'weekly'   ? 7  * 86400000
                       : recurrence === 'biweekly' ? 14 * 86400000
                       : recurrence === 'monthly'  ? 30 * 86400000 : 0;
+
+    // ── Server-side quiz scoring (correct answers never touch the browser) ──────
+    let quizResults;
+    if (isTrial && Array.isArray(quizAnswers) && quizAnswers.length > 0) {
+      try {
+        const ids = quizAnswers.map(a => a.questionId).filter(Boolean);
+        const qs  = await TutorQuestion.find({ _id: { $in: ids }, tutor: tutorId });
+        const qMap = {};
+        qs.forEach(q => { qMap[q._id.toString()] = q; });
+
+        let score = 0;
+        const scoredAnswers = quizAnswers.map(a => {
+          const q = qMap[a.questionId?.toString()];
+          if (!q) return null;
+          const isCorrect = Number(a.chosenIndex) === q.correctIndex;
+          if (isCorrect) score++;
+          return {
+            topic:     q.topic || '',
+            question:  q.question,
+            options:   q.options,
+            chosen:    Number(a.chosenIndex),
+            correct:   q.correctIndex,
+            isCorrect,
+          };
+        }).filter(Boolean);
+
+        if (scoredAnswers.length > 0) {
+          quizResults = {
+            subject: quizSubject || qs[0]?.subject || 'Unknown',
+            score,
+            total:   scoredAnswers.length,
+            answers: scoredAnswers,
+          };
+        }
+      } catch { /* non-fatal — booking still saves without quiz */ }
+    }
 
     const baseDate = new Date(slotUTC);
     const created  = [];
@@ -229,10 +270,14 @@ router.post('/book', protect, async (req, res) => {
         date:            sessionDate,
         timeSlot,
         timezone:        timezone || tutorTz,
-        notes,
+        notes:           isTrial && paidAmount !== undefined
+                           ? [notes, `Discounted session — paid ₦${Number(paidAmount).toLocaleString()} (ref: ${paymentRef})`].filter(Boolean).join(' | ')
+                           : notes,
         recurrence:      recurrence || 'none',
         recurrenceCount: count,
         isTrial:         !!isTrial,
+        paymentRef:      isTrial ? paymentRef : undefined,
+        quizResults:     quizResults || undefined,
         status:          'pending',
         ...(i > 0 && created.length > 0 ? { parentBookingId: created[0]._id } : {}),
       });
@@ -273,16 +318,135 @@ router.post('/book', protect, async (req, res) => {
 <p>— Naija &amp; Overseas Team</p>`,
     }).catch(() => {});
 
-    // Notify the tutor
+    // Notify the tutor — include quiz results when present
     if (tutorProfile.user?.email) {
+      const LABELS = ['A', 'B', 'C', 'D', 'E'];
+
+      let quizHtml = '';
+      if (isTrial && quizResults && quizResults.answers?.length) {
+        const score   = quizResults.score || 0;
+        const total   = quizResults.total || quizResults.answers.length;
+        const pct     = Math.round((score / total) * 100);
+        const subject = quizResults.subject || 'Unknown';
+
+        const weakTopics = quizResults.answers
+          .filter(a => !a.isCorrect)
+          .map(a => a.topic)
+          .filter(Boolean);
+
+        const rowsHtml = quizResults.answers.map((a, i) => {
+          const chosen  = a.chosen !== undefined ? `${LABELS[a.chosen]}: ${a.options?.[a.chosen] || '—'}` : '—';
+          const correct = a.correct !== undefined ? `${LABELS[a.correct]}: ${a.options?.[a.correct] || '—'}` : '—';
+          const mark    = a.isCorrect ? '✅' : '❌';
+          return `
+            <tr>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#6b7280;white-space:nowrap;">${i + 1}. ${a.topic || ''}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#111827;">${a.question || ''}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;color:${a.isCorrect ? '#16a34a' : '#dc2626'};">${chosen}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#16a34a;">${correct}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:14px;text-align:center;">${mark}</td>
+            </tr>`;
+        }).join('');
+
+        const weakHtml = weakTopics.length
+          ? `<p style="margin:16px 0 0;font-size:13px;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;">
+               <strong>⚠️ Areas needing attention:</strong> ${[...new Set(weakTopics)].join(', ')}
+             </p>`
+          : `<p style="margin:16px 0 0;font-size:13px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;">
+               🎉 <strong>Excellent!</strong> The student answered all questions correctly.
+             </p>`;
+
+        quizHtml = `
+          <div style="margin:24px 0;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+            <div style="background:#1e40af;padding:14px 20px;">
+              <p style="margin:0;font-size:14px;font-weight:700;color:#fff;">📊 Pre-Session Quiz Results — ${subject}</p>
+              <p style="margin:4px 0 0;font-size:12px;color:#bfdbfe;">Score: ${score} / ${total} correct &nbsp;·&nbsp; ${pct}%</p>
+            </div>
+            <div style="overflow-x:auto;">
+              <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;min-width:500px;">
+                <thead>
+                  <tr style="background:#f9fafb;">
+                    <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e5e7eb;">Topic</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e5e7eb;">Question</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e5e7eb;">Student Answered</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e5e7eb;">Correct Answer</th>
+                    <th style="padding:8px 12px;text-align:center;font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e5e7eb;">Result</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+            </div>
+            <div style="padding:4px 20px 16px;">${weakHtml}</div>
+          </div>`;
+      }
+
+      const tutorName = tutorProfile.displayName || tutorProfile.user?.name || 'Tutor';
+      const sessionType = isTrial ? 'Discounted First Session' : `Session${created.length > 1 ? 's' : ''}`;
+
       await sendEmail({
         to: tutorProfile.user.email,
-        subject: `New Booking Request — ${name}`,
-        html: `<p>Hi ${tutorProfile.displayName || 'Tutor'},</p>
-<p>You have a new booking request from <strong>${name}</strong> (${email}).</p>
-<p><strong>Session${created.length > 1 ? 's' : ''}:</strong> ${datesList}</p>
-<p>Log in to your <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/schedule">schedule dashboard</a> to confirm or decline.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+        subject: `New Booking — ${name}${isTrial ? ' (Discounted Session + Quiz)' : ''}`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+        <tr>
+          <td style="background:#14532d;padding:24px 32px;">
+            <p style="margin:0;font-size:18px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">TUTOR NOTIFICATION</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px 8px;">
+            <h2 style="margin:0 0 6px;font-size:18px;font-weight:800;color:#111827;">New ${sessionType} Request</h2>
+            <p style="margin:0;font-size:14px;color:#6b7280;">Hi ${tutorName}, you have a new booking. Log in to confirm or decline.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:12px 32px 24px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
+              <tr>
+                <td style="padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:#6b7280;font-weight:600;width:36%;">Student</td>
+                <td style="padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;font-weight:700;">${name}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:#6b7280;font-weight:600;">Email</td>
+                <td style="padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;">${email}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:#6b7280;font-weight:600;">Session(s)</td>
+                <td style="padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;">${datesList}</td>
+              </tr>
+              ${isTrial ? `<tr>
+                <td style="padding:10px 16px;background:#f9fafb;font-size:12px;color:#6b7280;font-weight:600;">Type</td>
+                <td style="padding:10px 16px;background:#fff;font-size:13px;color:#d97706;font-weight:700;">🏷️ Discounted First Session</td>
+              </tr>` : ''}
+            </table>
+
+            ${quizHtml}
+
+            <div style="text-align:center;margin-top:24px;">
+              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/schedule"
+                 style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;font-size:14px;padding:13px 32px;border-radius:10px;text-decoration:none;">
+                View &amp; Confirm Booking →
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">© ${new Date().getFullYear()} Naija and Overseas · Lagos, Nigeria</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
       }).catch(() => {});
     }
 

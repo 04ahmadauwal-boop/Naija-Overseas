@@ -229,7 +229,7 @@ router.post('/register', protect, async (req, res) => {
 
     const {
       headline, bio, subjects, levels, teachingMode, country, state, city,
-      currency, hourlyRateNaira, groupRateNaira, trialAvailable, trialDurationMins,
+      currency, hourlyRateNaira, groupRateNaira, trialAvailable, trialDurationMins, trialDiscountPercent,
       languages, qualifications, yearsExperience, specializations,
     } = req.body;
 
@@ -249,6 +249,7 @@ router.post('/register', protect, async (req, res) => {
       groupRateNaira,
       trialAvailable: trialAvailable !== false,
       trialDurationMins: trialDurationMins || 30,
+      trialDiscountPercent: trialDiscountPercent !== undefined ? Number(trialDiscountPercent) : 50,
       languages: languages || [],
       qualifications: qualifications || [],
       yearsExperience: yearsExperience || 0,
@@ -272,7 +273,7 @@ router.patch('/me', protect, async (req, res) => {
   try {
     const allowed = [
       'headline', 'bio', 'subjects', 'levels', 'teachingMode', 'country', 'state', 'city',
-      'currency', 'hourlyRateNaira', 'groupRateNaira', 'trialAvailable', 'trialDurationMins',
+      'currency', 'hourlyRateNaira', 'groupRateNaira', 'trialAvailable', 'trialDurationMins', 'trialDiscountPercent',
       'languages', 'qualifications', 'yearsExperience', 'specializations', 'profilePhoto',
       'availability', 'teachingStyle', 'timezone',
     ];

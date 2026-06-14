@@ -7,7 +7,7 @@ import {
   LayoutDashboard, BookOpen, Star, Settings, Menu, X,
   LogOut, ExternalLink, CheckCircle, Clock, Video, MapPin,
   ChevronLeft, ChevronRight, Users, User, TrendingUp, GraduationCap,
-  Edit2, Save, AlertCircle, CalendarCheck, Camera,
+  Edit2, Save, AlertCircle, CalendarCheck, Camera, HelpCircle, Plus, Trash2,
 } from 'lucide-react';
 
 const CURRENCY_SYMBOLS = {
@@ -63,19 +63,20 @@ const ALL_LEVELS = [
 ];
 
 const TABS = [
-  { id: 'overview',     label: 'Overview',     icon: LayoutDashboard },
-  { id: 'bookings',     label: 'Bookings',     icon: BookOpen },
-  { id: 'subscribers',  label: 'Subscribers',  icon: Users },
-  { id: 'calendar',     label: 'Calendar',     icon: CalendarCheck },
-  { id: 'profile',      label: 'My Profile',   icon: Edit2 },
-  { id: 'reviews',      label: 'Reviews',      icon: Star },
-  { id: 'settings',     label: 'Settings',     icon: Settings },
+  { id: 'overview',     label: 'Overview',        icon: LayoutDashboard },
+  { id: 'bookings',     label: 'Bookings',        icon: BookOpen },
+  { id: 'subscribers',  label: 'Subscribers',     icon: Users },
+  { id: 'calendar',     label: 'Calendar',        icon: CalendarCheck },
+  { id: 'quiz',         label: 'Quiz Questions',  icon: HelpCircle },
+  { id: 'profile',      label: 'My Profile',      icon: Edit2 },
+  { id: 'reviews',      label: 'Reviews',         icon: Star },
+  { id: 'settings',     label: 'Settings',        icon: Settings },
 ];
 
 const BOTTOM_TABS = [
   { id: 'overview',     label: 'Home',        icon: LayoutDashboard },
   { id: 'bookings',     label: 'Bookings',    icon: BookOpen },
-  { id: 'subscribers',  label: 'Subscribers', icon: Users },
+  { id: 'quiz',         label: 'Quiz',        icon: HelpCircle },
   { id: 'profile',      label: 'Profile',     icon: Edit2 },
   { id: 'reviews',      label: 'Reviews',     icon: Star },
   { id: 'settings',     label: 'Settings',    icon: Settings },
@@ -337,7 +338,7 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-gray-900">{b.user?.name || b.name || 'Student'}</p>
                       {b.isTrial && (
-                        <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Trial</span>
+                        <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Discounted</span>
                       )}
                       {b.subscriptionId && (
                         <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Paid · ₦{(b.subscriptionId.monthlyRate || 0).toLocaleString()}/mo</span>
@@ -533,6 +534,7 @@ function ProfileTab({ profile, onRefresh }) {
     groupRateNaira: profile?.groupRateNaira || '',
     trialAvailable: profile?.trialAvailable !== false,
     trialDurationMins: profile?.trialDurationMins || 30,
+    trialDiscountPercent: profile?.trialDiscountPercent ?? 50,
     responseTime: profile?.responseTime || 'Within 24 hours',
   });
   const [saving, setSaving] = useState(false);
@@ -683,8 +685,8 @@ function ProfileTab({ profile, onRefresh }) {
         </div>
         <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
           <div>
-            <p className="text-sm font-bold text-gray-900">Free Trial Session</p>
-            <p className="text-xs text-gray-500">Tutors with free trials get 3× more bookings</p>
+            <p className="text-sm font-bold text-gray-900">Discounted First Session</p>
+            <p className="text-xs text-gray-500">Students get a discount on their first class with you</p>
           </div>
           <button type="button" onClick={() => set('trialAvailable', !form.trialAvailable)}
             className={`relative w-12 h-6 rounded-full transition-colors ${form.trialAvailable ? 'bg-green-600' : 'bg-gray-300'}`}>
@@ -692,13 +694,36 @@ function ProfileTab({ profile, onRefresh }) {
           </button>
         </div>
         {form.trialAvailable && (
-          <div className="flex gap-2">
-            {[30, 45, 60].map(m => (
-              <button key={m} type="button" onClick={() => set('trialDurationMins', m)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
-                  form.trialDurationMins === m ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400'
-                }`}>{m} min</button>
-            ))}
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Session Duration</p>
+              <div className="flex gap-2">
+                {[30, 45, 60].map(m => (
+                  <button key={m} type="button" onClick={() => set('trialDurationMins', m)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                      form.trialDurationMins === m ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400'
+                    }`}>{m} min</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Discount — student pays {100 - form.trialDiscountPercent}% of your rate
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {[10, 20, 30, 50, 70].map(pct => (
+                  <button key={pct} type="button" onClick={() => set('trialDiscountPercent', pct)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                      form.trialDiscountPercent === pct ? 'bg-green-700 border-green-700 text-white' : 'border-gray-200 text-gray-600 hover:border-green-400'
+                    }`}>{pct}% off</button>
+                ))}
+              </div>
+              {form.hourlyRateNaira > 0 && (
+                <p className="text-xs text-green-700 mt-2 font-semibold">
+                  Student pays ≈ ₦{Math.round(Number(form.hourlyRateNaira) * (1 - form.trialDiscountPercent / 100) * (form.trialDurationMins / 60)).toLocaleString()} for the first session
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -1168,7 +1193,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                 <span className="w-4 h-4 rounded-lg border-2 border-green-500 bg-green-50 inline-block" /> Today
               </div>
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">2T</span> Trial
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">2T</span> Discounted
               </div>
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold">3</span> Paid
@@ -1214,7 +1239,7 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <p className="text-sm font-bold text-gray-900 truncate">{b.user?.name || b.name || 'Student'}</p>
-                              {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Trial</span>}
+                              {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Discounted</span>}
                               {b.subscriptionId && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
                             </div>
                             <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
@@ -1269,6 +1294,306 @@ function CalendarTab({ bookings: initialBookings, loading }) {
           allBookings={localBookings}
           onClose={() => setModalBooking(null)}
         />
+      )}
+    </div>
+  );
+}
+
+// ─── QUIZ QUESTIONS TAB ──────────────────────────────────────────────────────
+function QuizTab({ profile }) {
+  const [questions,    setQuestions]    = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [showForm,     setShowForm]     = useState(false);
+  const [editId,       setEditId]       = useState(null);
+  const [saving,       setSaving]       = useState(false);
+  const [deleting,     setDeleting]     = useState(null);
+  const [subjectFilter, setSubjectFilter] = useState('all');
+
+  const emptyForm = {
+    subject: profile?.subjects?.[0] || '',
+    topic: '',
+    question: '',
+    options: ['', '', '', '', ''],
+    correctIndex: 0,
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  const fetchQuestions = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/tutor-quiz/my/questions');
+      setQuestions(data.questions || []);
+    } catch {
+      toast.error('Failed to load questions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchQuestions(); }, []);
+
+  const subjects  = ['all', ...new Set(questions.map(q => q.subject))];
+  const filtered  = subjectFilter === 'all' ? questions : questions.filter(q => q.subject === subjectFilter);
+
+  const handleSave = async () => {
+    const { subject, topic, question, options, correctIndex } = form;
+    if (!subject || !question.trim()) return toast.error('Subject and question are required');
+    const filledOpts = options.filter(o => o.trim());
+    if (filledOpts.length < 2) return toast.error('At least 2 options are required');
+    if (correctIndex >= filledOpts.length) return toast.error('Select a valid correct answer option');
+
+    setSaving(true);
+    try {
+      const body = {
+        subject,
+        topic:        topic.trim(),
+        question:     question.trim(),
+        options:      filledOpts,
+        correctIndex: Number(correctIndex),
+      };
+      if (editId) {
+        const { data } = await api.patch(`/tutor-quiz/my/questions/${editId}`, body);
+        setQuestions(prev => prev.map(q => q._id === editId ? data.question : q));
+        toast.success('Question updated!');
+      } else {
+        const { data } = await api.post('/tutor-quiz/my/questions', body);
+        setQuestions(prev => [data.question, ...prev]);
+        toast.success('Question added!');
+      }
+      setForm(emptyForm);
+      setEditId(null);
+      setShowForm(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (q) => {
+    const opts = [...q.options, '', '', '', '', ''].slice(0, 5);
+    setForm({ subject: q.subject, topic: q.topic || '', question: q.question, options: opts, correctIndex: q.correctIndex });
+    setEditId(q._id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this question?')) return;
+    setDeleting(id);
+    try {
+      await api.delete(`/tutor-quiz/my/questions/${id}`);
+      setQuestions(prev => prev.filter(q => q._id !== id));
+      toast.success('Question deleted');
+    } catch {
+      toast.error('Failed to delete');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const LABELS = ['A', 'B', 'C', 'D', 'E'];
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Quiz Questions</h2>
+          <p className="text-sm text-gray-400 mt-0.5">{questions.length} / 30 questions · Students answer these before booking a discounted session</p>
+        </div>
+        <button
+          onClick={() => { setForm(emptyForm); setEditId(null); setShowForm(s => !s); }}
+          className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition flex items-center gap-2"
+        >
+          <Plus size={15} /> Add Question
+        </button>
+      </div>
+
+      {/* Info banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3">
+        <HelpCircle size={18} className="text-blue-600 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-blue-900">How This Works</p>
+          <p className="text-xs text-blue-700 mt-0.5">
+            When a student books a discounted session with you, they'll answer up to 30 of your questions (one at a time). Their answers and score are sent only to you by email — the student won't see a score. Use this to understand their level before you meet.
+          </p>
+        </div>
+      </div>
+
+      {/* Create / Edit form */}
+      {showForm && (
+        <div className="bg-white rounded-2xl border-2 border-blue-200 shadow-sm p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-gray-900 text-base">{editId ? 'Edit Question' : 'New Question'}</h3>
+            <button onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); }}
+              className="text-gray-400 hover:text-gray-600 transition p-1 rounded-lg hover:bg-gray-100">
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Subject */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject *</label>
+              <select
+                value={form.subject}
+                onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {(profile?.subjects?.length > 0 ? profile.subjects : [form.subject]).map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Topic */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Topic (optional)</label>
+              <input
+                value={form.topic}
+                onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
+                placeholder="e.g. Algebra, Photosynthesis, Past Tense"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Question text */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Question *</label>
+            <textarea
+              value={form.question}
+              onChange={e => setForm(f => ({ ...f, question: e.target.value }))}
+              placeholder="Enter the question text…"
+              rows={2}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+          </div>
+
+          {/* Options A-E with correct answer selector */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Options &amp; Correct Answer</label>
+            <div className="space-y-2">
+              {LABELS.map((label, i) => (
+                <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-xl border-2 transition ${form.correctIndex === i ? 'border-green-400 bg-green-50' : 'border-gray-100 bg-gray-50'}`}>
+                  <input
+                    type="radio"
+                    name="correctIndex"
+                    checked={form.correctIndex === i}
+                    onChange={() => setForm(f => ({ ...f, correctIndex: i }))}
+                    className="w-4 h-4 text-green-600 shrink-0 accent-green-600"
+                  />
+                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 ${form.correctIndex === i ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {label}
+                  </span>
+                  <input
+                    value={form.options[i]}
+                    onChange={e => setForm(f => {
+                      const opts = [...f.options];
+                      opts[i] = e.target.value;
+                      return { ...f, options: opts };
+                    })}
+                    placeholder={i < 2 ? `Option ${label} (required)` : `Option ${label} (optional)`}
+                    className="flex-1 bg-transparent text-sm focus:outline-none text-gray-800 placeholder-gray-400"
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1.5">Click the radio button next to the correct answer. Leave optional options blank.</p>
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <button onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); }}
+              className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+              Cancel
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition disabled:opacity-60 flex items-center justify-center gap-2">
+              {saving
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+                : editId ? 'Update Question' : 'Add Question'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Subject filter pills */}
+      {!loading && questions.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {subjects.map(s => (
+            <button key={s} onClick={() => setSubjectFilter(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                subjectFilter === s ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
+              }`}>
+              {s === 'all' ? `All (${questions.length})` : `${s} (${questions.filter(q => q.subject === s).length})`}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Questions list */}
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading questions…</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <HelpCircle size={36} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">{questions.length === 0 ? 'No questions yet' : 'No questions for this subject'}</p>
+          <p className="text-gray-400 text-sm mt-1">
+            {questions.length === 0
+              ? 'Add questions to quiz students before their discounted session.'
+              : 'Switch to a different subject filter.'}
+          </p>
+          {questions.length === 0 && (
+            <button onClick={() => { setShowForm(true); setEditId(null); setForm(emptyForm); }}
+              className="mt-4 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition">
+              Add First Question
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((q, i) => (
+            <div key={q._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="w-6 h-6 bg-blue-50 text-blue-600 text-[11px] font-extrabold rounded-full flex items-center justify-center border border-blue-100 shrink-0">
+                    {i + 1}
+                  </span>
+                  <span className="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">{q.subject}</span>
+                  {q.topic && <span className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">{q.topic}</span>}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => handleEdit(q)}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => handleDelete(q._id)} disabled={deleting === q._id}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
+                    {deleting === q._id
+                      ? <span className="w-3 h-3 border border-gray-200 border-t-red-500 rounded-full animate-spin block" />
+                      : <Trash2 size={13} />}
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 mb-2.5 leading-relaxed">{q.question}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                {q.options.map((opt, oi) => (
+                  <div key={oi} className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg ${oi === q.correctIndex ? 'bg-green-50 border border-green-100 text-green-800 font-semibold' : 'text-gray-500'}`}>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${oi === q.correctIndex ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                      {LABELS[oi]}
+                    </span>
+                    <span className="leading-snug">{opt}</span>
+                    {oi === q.correctIndex && <CheckCircle size={11} className="text-green-600 ml-auto shrink-0" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -1349,14 +1674,15 @@ export default function TutorDashboard() {
     );
 
     switch (activeTab) {
-      case 'overview':  return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
+      case 'overview':     return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
       case 'bookings':     return <BookingsTab bookings={bookings} loading={loadingBookings} />;
       case 'subscribers':  return <SubscribersTab />;
       case 'calendar':     return <CalendarTab bookings={bookings} loading={loadingBookings} />;
+      case 'quiz':         return <QuizTab profile={profile} />;
       case 'profile':      return <ProfileTab profile={profile} onRefresh={fetchProfile} />;
-      case 'reviews':   return <ReviewsTab profile={profile} reviews={reviews} loadingReviews={loadingReviews} />;
-      case 'settings':  return <SettingsTab user={user} profile={profile} />;
-      default:          return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
+      case 'reviews':      return <ReviewsTab profile={profile} reviews={reviews} loadingReviews={loadingReviews} />;
+      case 'settings':     return <SettingsTab user={user} profile={profile} />;
+      default:             return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
     }
   };
 

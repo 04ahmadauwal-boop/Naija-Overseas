@@ -539,7 +539,7 @@ function OverviewTab({ user, applications, consultations, loading, setActiveTab 
         {/* CTA banner */}
         <div className="bg-linear-to-r from-blue-700 to-blue-600 rounded-2xl p-6 text-white">
           <h3 className="font-bold text-base mb-1">Ready to start learning?</h3>
-          <p className="text-blue-200 text-sm mb-4">Choose from hundreds of expert tutors. First session free for trials!</p>
+          <p className="text-blue-200 text-sm mb-4">Choose from hundreds of expert tutors. Get a discount on your first session!</p>
           <Link to="/find-tutoring"
             className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition text-sm">
             <Users size={14} /> Browse All Tutors →
@@ -1794,7 +1794,7 @@ function TutoringTab({ user: _user }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-green-900">
-                    Trial with {tutorName} complete!
+                    First session with {tutorName} complete!
                   </p>
                   <p className="text-xs text-green-700 mt-0.5">
                     Subscribe for weekly sessions — choose your schedule and pay monthly.
@@ -1883,7 +1883,7 @@ function TutoringTab({ user: _user }) {
                   <div className="flex items-center gap-2">
                     {s.isTrial ? (
                       <span className="flex items-center gap-1 text-amber-700 text-xs font-bold bg-amber-100 px-2 py-0.5 rounded-full">
-                        <Zap size={10} /> Free Trial
+                        <Zap size={10} /> Discounted Session
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-green-700 text-xs font-bold bg-green-100 px-2 py-0.5 rounded-full">
@@ -2166,7 +2166,7 @@ function StudentCalendarTab({ user: _user }) {
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <p className="text-sm font-bold text-gray-900 truncate">{tutorName}</p>
                                 {s.isTrial
-                                  ? <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Trial</span>
+                                  ? <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Discounted</span>
                                   : <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Regular</span>
                                 }
                               </div>

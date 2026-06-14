@@ -29,6 +29,12 @@ const bookingSchema = new mongoose.Schema(
     reminderSent1h:   { type: Boolean, default: false },
     isTrial:          { type: Boolean, default: false },
     subscriptionId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription' },
+    quizResults: {
+      subject:  { type: String },
+      score:    { type: Number },
+      total:    { type: Number },
+      answers:  [{ type: mongoose.Schema.Types.Mixed }],
+    },
   },
   { timestamps: true }
 );

@@ -122,6 +122,7 @@ export default function BecomeTutor() {
     groupRateNaira: '',
     trialAvailable: true,
     trialDurationMins: 30,
+    trialDiscountPercent: 50,
     responseTime: 'Within 24 hours',
     availability: [],
     teachingStyle: [],
@@ -521,7 +522,7 @@ export default function BecomeTutor() {
 
                 {/* Pricing tip */}
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 text-sm text-blue-700">
-                  <strong>💡 Pricing tip:</strong> Set a competitive rate for your country and subject. A free trial gets you 3× more first bookings.
+                  <strong>💡 Pricing tip:</strong> Set a competitive rate for your country and subject. Offering a discounted first session gets you 3× more bookings.
                 </div>
 
                 {/* Rates */}
@@ -553,12 +554,12 @@ export default function BecomeTutor() {
                   );
                 })()}
 
-                {/* Trial session */}
+                {/* Discounted first session */}
                 <div className="bg-green-50 rounded-2xl p-5 border border-green-100">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-bold text-gray-900 text-sm">Offer a Free Trial Session?</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Tutors with free trials get 3× more bookings</p>
+                      <p className="font-bold text-gray-900 text-sm">Offer a Discounted First Session?</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Tutors with a discounted first session get 3× more bookings</p>
                     </div>
                     <button
                       type="button"
@@ -569,23 +570,51 @@ export default function BecomeTutor() {
                     </button>
                   </div>
                   {form.trialAvailable && (
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Trial Duration</label>
-                      <div className="flex gap-2">
-                        {[30, 45, 60].map((mins) => (
-                          <button
-                            type="button"
-                            key={mins}
-                            onClick={() => set('trialDurationMins', mins)}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
-                              form.trialDurationMins === mins
-                                ? 'bg-green-700 border-green-700 text-white'
-                                : 'border-gray-200 text-gray-600 hover:border-green-400 bg-white'
-                            }`}
-                          >
-                            {mins} min
-                          </button>
-                        ))}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Session Duration</label>
+                        <div className="flex gap-2">
+                          {[30, 45, 60].map((mins) => (
+                            <button
+                              type="button"
+                              key={mins}
+                              onClick={() => set('trialDurationMins', mins)}
+                              className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                                form.trialDurationMins === mins
+                                  ? 'bg-green-700 border-green-700 text-white'
+                                  : 'border-gray-200 text-gray-600 hover:border-green-400 bg-white'
+                              }`}
+                            >
+                              {mins} min
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+                          Discount Percentage — student pays {100 - form.trialDiscountPercent}% of your rate
+                        </label>
+                        <div className="flex gap-2 flex-wrap">
+                          {[10, 20, 30, 50, 70].map((pct) => (
+                            <button
+                              type="button"
+                              key={pct}
+                              onClick={() => set('trialDiscountPercent', pct)}
+                              className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                                form.trialDiscountPercent === pct
+                                  ? 'bg-green-700 border-green-700 text-white'
+                                  : 'border-gray-200 text-gray-600 hover:border-green-400 bg-white'
+                              }`}
+                            >
+                              {pct}% off
+                            </button>
+                          ))}
+                        </div>
+                        {form.hourlyRateNaira > 0 && (
+                          <p className="text-xs text-green-700 mt-2 font-semibold">
+                            Student pays ≈ ₦{Math.round(Number(form.hourlyRateNaira) * (1 - form.trialDiscountPercent / 100) * (form.trialDurationMins / 60)).toLocaleString()} for this first session
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}

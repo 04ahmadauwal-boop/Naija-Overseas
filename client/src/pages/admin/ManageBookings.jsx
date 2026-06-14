@@ -177,7 +177,7 @@ export default function ManageBookings() {
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-gray-500">
                       <span className="capitalize">{b.service?.replace(/-/g, ' ')}</span>
-                      {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Trial</span>}
+                      {b.isTrial && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Discounted</span>}
                       {b.subscriptionId && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Subscribed</span>}
                       <span className="flex items-center gap-1">
                         <CalendarCheck size={11} />
