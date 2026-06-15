@@ -14,7 +14,31 @@ const sendWhatsApp = require('../utils/sendWhatsApp');
 
 const CLIENT_URL = process.env.CLIENT_URL || 'https://www.visiteno.com';
 
-// POST /api/study-abroad/send-otp — check duplicate then send OTP before payment
+// POST /api/study-abroad/check-email — duplicate booking check before payment
+router.post('/check-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
+
+    const duplicate = await Booking.findOne({
+      email: email.toLowerCase(),
+      service: 'study-abroad-consultation',
+    });
+    if (duplicate) {
+      return res.status(400).json({
+        message: 'This email has already been used to book a consultation. Our team will be in touch with you shortly.',
+        alreadyBooked: true,
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('check-email error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/study-abroad/send-otp — kept for backwards compatibility (unused by frontend)
 router.post('/send-otp', async (req, res) => {
   try {
     const { email } = req.body;
@@ -129,27 +153,13 @@ router.post('/verify-otp', async (req, res) => {
 router.post('/consultation', optionalAuth, async (req, res) => {
   try {
     const { fullName, email, phone, destinationCountry, program, educationLevel,
-            consultDate, consultTime, reference, couponCode, finalAmount,
-            verificationToken } = req.body;
+            consultDate, consultTime, reference, couponCode, finalAmount } = req.body;
 
     if (!fullName || !email || !phone || !consultDate || !consultTime || !reference) {
       return res.status(400).json({ message: 'Missing required booking fields.' });
     }
 
-    // Require email verification token
-    if (!verificationToken) {
-      return res.status(400).json({ message: 'Email verification is required before booking.' });
-    }
-    try {
-      const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
-      if (!decoded.verified || decoded.email !== email.toLowerCase()) {
-        return res.status(400).json({ message: 'Verification token does not match this email.' });
-      }
-    } catch {
-      return res.status(400).json({ message: 'Verification expired. Please verify your email again.' });
-    }
-
-    // Safety-net duplicate check (primary check is in send-otp)
+    // Duplicate check (primary check is in /check-email, this is the safety net)
     const duplicate = await Booking.findOne({
       email: email.toLowerCase(),
       service: 'study-abroad-consultation',

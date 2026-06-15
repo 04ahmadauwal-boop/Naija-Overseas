@@ -188,10 +188,6 @@ export default function StudyAbroad() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [coupon, setCoupon] = useState(null); // { type, value, discountAmount, finalAmount, message }
   const [couponError, setCouponError] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [verificationToken, setVerificationToken] = useState('');
 
   const TIME_SLOTS = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
   const intervalRef = useRef(null);
@@ -227,45 +223,14 @@ export default function StudyAbroad() {
     e.preventDefault();
     if (!form.consultDate) { toast.error('Please select a consultation date.'); return; }
     if (!form.consultTime) { toast.error('Please select a consultation time.'); return; }
-    setOtpSending(true);
+    setLoading(true);
     try {
-      await api.post('/study-abroad/send-otp', { email: form.email });
-      toast.success('Verification code sent to ' + form.email);
-      setOtp('');
+      await api.post('/study-abroad/check-email', { email: form.email });
       setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not send verification code. Please try again.');
+      toast.error(err.response?.data?.message || 'Please try again.');
     } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setOtpSending(true);
-    try {
-      await api.post('/study-abroad/send-otp', { email: form.email });
-      toast.success('New code sent to ' + form.email);
-      setOtp('');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not resend code.');
-    } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    if (otp.length !== 6) { toast.error('Please enter the 6-digit code.'); return; }
-    setOtpVerifying(true);
-    try {
-      const { data } = await api.post('/study-abroad/verify-otp', { email: form.email, otp });
-      setVerificationToken(data.verificationToken);
-      toast.success('Email verified!');
-      setStep(3);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Incorrect code. Please try again.');
-    } finally {
-      setOtpVerifying(false);
+      setLoading(false);
     }
   };
 
@@ -292,7 +257,6 @@ export default function StudyAbroad() {
       reference,
       couponCode: coupon ? couponInput.trim().toUpperCase() : undefined,
       finalAmount,
-      verificationToken,
     });
   };
 
@@ -356,8 +320,6 @@ export default function StudyAbroad() {
     setCouponInput('');
     setCoupon(null);
     setCouponError('');
-    setOtp('');
-    setVerificationToken('');
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
@@ -933,7 +895,7 @@ export default function StudyAbroad() {
                     {submitted ? 'Booking Confirmed!' : step === 1 ? 'Book a Consultation' : 'Review & Pay'}
                   </h2>
                   <p className="text-green-300 text-xs mt-0.5">
-                    {submitted ? 'Your slot is reserved' : step === 1 ? 'Pick a date and time that works for you' : step === 2 ? 'Check your email for the 6-digit code' : 'Consultation fee — ₦10,000'}
+                    {submitted ? 'Your slot is reserved' : step === 1 ? 'Pick a date and time that works for you' : 'Consultation fee — ₦10,000'}
                   </p>
                 </div>
                 <button onClick={resetForm}
@@ -945,7 +907,7 @@ export default function StudyAbroad() {
               {/* Step indicator */}
               {!submitted && (
                 <div className="flex border-b border-gray-100">
-                  {['Your Details', 'Verify Email', 'Confirm & Pay'].map((label, i) => (
+                  {['Your Details', 'Confirm & Pay'].map((label, i) => (
                     <div key={label} className={`flex-1 py-2.5 text-center text-xs font-semibold transition
                       ${step === i + 1 ? 'text-green-700 border-b-2 border-green-600' : 'text-gray-400'}`}>
                       {i + 1}. {label}
@@ -1098,69 +1060,18 @@ export default function StudyAbroad() {
                       className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
                       Cancel
                     </button>
-                    <button type="submit" disabled={otpSending}
+                    <button type="submit" disabled={loading}
                       className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                      {otpSending
-                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending Code…</>
+                      {loading
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Checking…</>
                         : <>Continue <ArrowRight size={15} /></>}
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* ── STEP 2: Verify Email ── */}
+              {/* ── STEP 2: Review & Pay ── */}
               {!submitted && step === 2 && (
-                <form onSubmit={handleVerifyOTP} className="p-7">
-                  <div className="text-center mb-6">
-                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">✉️</div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      We sent a 6-digit code to<br />
-                      <strong className="text-gray-900">{form.email}</strong>
-                    </p>
-                  </div>
-
-                  <div className="mb-5">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      Verification Code
-                    </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-2xl font-extrabold tracking-[0.5em] text-center text-gray-900 focus:outline-none focus:border-green-500 bg-gray-50 transition"
-                      placeholder="_ _ _ _ _ _"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex gap-3 mb-4">
-                    <button type="button" onClick={() => setStep(1)}
-                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
-                      <ChevronLeft size={15} /> Back
-                    </button>
-                    <button type="submit" disabled={otpVerifying || otp.length !== 6}
-                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                      {otpVerifying
-                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying…</>
-                        : <>Verify & Continue <ArrowRight size={15} /></>}
-                    </button>
-                  </div>
-
-                  <p className="text-center text-xs text-gray-400">
-                    Didn&apos;t receive it?{' '}
-                    <button type="button" onClick={handleResendOTP} disabled={otpSending}
-                      className="text-green-700 font-semibold hover:underline disabled:opacity-50">
-                      {otpSending ? 'Sending…' : 'Resend code'}
-                    </button>
-                    {' · '}Check your spam folder too.
-                  </p>
-                </form>
-              )}
-
-              {/* ── STEP 3: Review & Pay ── */}
-              {!submitted && step === 3 && (
                 <div className="p-7">
                   <div className="bg-gray-50 rounded-2xl p-5 mb-5 space-y-3 border border-gray-100">
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Booking Summary</p>
@@ -1239,7 +1150,7 @@ export default function StudyAbroad() {
                   </div>
 
                   <div className="flex gap-3">
-                    <button type="button" onClick={() => setStep(2)}
+                    <button type="button" onClick={() => setStep(1)}
                       className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
                       <ChevronLeft size={15} /> Back
                     </button>
