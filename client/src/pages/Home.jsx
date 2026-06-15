@@ -316,8 +316,11 @@ export default function Home() {
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
-  const [mobileSchoolIdx, setMobileSchoolIdx] = useState(0);
   const [featureSlide, setFeatureSlide] = useState(0);
+  const [featuredSchools, setFeaturedSchools] = useState([]);
+  const [featuredSchoolSlide, setFeaturedSchoolSlide] = useState(0);
+  const [featuredPaused, setFeaturedPaused] = useState(false);
+  const [showAllMobile, setShowAllMobile] = useState(false);
 
   // Featured blog post (admin-chosen) + 4 most recent
   const [featuredPost, setFeaturedPost] = useState(null);
@@ -474,7 +477,18 @@ export default function Home() {
   };
 
   const clearFilters = () => { setFilters(EMPTY_FILTERS); doFetch(1, EMPTY_FILTERS); };
-  useEffect(() => { setMobileSchoolIdx(0); }, [schools]);
+
+  useEffect(() => {
+    api.get('/schools', { params: { featured: 'true', limit: 8 } })
+      .then(({ data }) => setFeaturedSchools(data.schools || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (featuredPaused || featuredSchools.length <= 1) return;
+    const t = setInterval(() => setFeaturedSchoolSlide((s) => (s + 1) % featuredSchools.length), 3500);
+    return () => clearInterval(t);
+  }, [featuredPaused, featuredSchools.length]);
 
   const activeCount = [
     filters.state, filters.type, filters.level, filters.curriculum,
@@ -1124,62 +1138,133 @@ export default function Home() {
             </div>
           )}
 
-          {/* School Grid */}
+          {/* ── MOBILE: featured schools carousel ─────────────────── */}
+          <div className="sm:hidden">
+            {!showAllMobile ? (
+              <>
+                {/* Carousel */}
+                {featuredSchools.length === 0 ? (
+                  <div className="bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
+                ) : (
+                  <div
+                    onMouseEnter={() => setFeaturedPaused(true)}
+                    onMouseLeave={() => setFeaturedPaused(false)}
+                    onTouchStart={() => setFeaturedPaused(true)}
+                    onTouchEnd={() => setFeaturedPaused(false)}
+                  >
+                    {/* Sliding track */}
+                    <div className="overflow-hidden rounded-2xl">
+                      <div
+                        className="flex transition-transform duration-500 ease-in-out"
+                        style={{ transform: `translateX(-${featuredSchoolSlide * 100}%)` }}
+                      >
+                        {featuredSchools.map((school) => (
+                          <div key={school._id} className="w-full shrink-0">
+                            <SchoolCard school={school} onCompare={handleCompare}
+                              isSelected={!!selected.find((s) => s._id === school._id)} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Prev / Next arrows */}
+                    <div className="flex items-center justify-between mt-3 px-1">
+                      <button
+                        onClick={() => { setFeaturedSchoolSlide((s) => (s - 1 + featuredSchools.length) % featuredSchools.length); setFeaturedPaused(true); }}
+                        className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-green-500 hover:text-green-700 transition"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+
+                      {/* Dot indicators */}
+                      <div className="flex items-center gap-1.5">
+                        {featuredSchools.map((_, i) => (
+                          <button key={i} onClick={() => { setFeaturedSchoolSlide(i); setFeaturedPaused(true); }}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${i === featuredSchoolSlide ? 'w-5 bg-green-600' : 'w-1.5 bg-gray-300'}`} />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => { setFeaturedSchoolSlide((s) => (s + 1) % featuredSchools.length); setFeaturedPaused(true); }}
+                        className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-green-500 hover:text-green-700 transition"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* View All Schools button */}
+                <button
+                  onClick={() => setShowAllMobile(true)}
+                  className="mt-5 w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-green-600 text-green-700 font-bold text-sm hover:bg-green-50 transition"
+                >
+                  View All Schools <ArrowRight size={15} />
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Back link */}
+                <button
+                  onClick={() => setShowAllMobile(false)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-green-700 mb-4 transition"
+                >
+                  <ChevronLeft size={15} /> Back to Featured
+                </button>
+
+                {/* All schools list */}
+                {loading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="bg-white rounded-2xl h-64 skeleton-shimmer border border-gray-100" />
+                    ))}
+                  </div>
+                ) : schools.length === 0 ? (
+                  <div className="text-center py-16 text-gray-400">
+                    <BookOpen size={36} className="mx-auto mb-3 opacity-40" />
+                    <p className="font-medium text-gray-600 text-sm">No schools found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {schools.map((school) => (
+                      <SchoolCard key={school._id} school={school} onCompare={handleCompare}
+                        isSelected={!!selected.find((s) => s._id === school._id)} />
+                    ))}
+                  </div>
+                )}
+                <Pagination page={currentPage} pages={pages} onPage={fetchSchools} />
+              </>
+            )}
+          </div>
+
+          {/* ── DESKTOP: full grid ─────────────────────────────────── */}
           {loading ? (
-            <>
-              {/* Mobile skeleton */}
-              <div className="sm:hidden bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
-              {/* Desktop skeleton */}
-              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
-                ))}
-              </div>
-            </>
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
+              ))}
+            </div>
           ) : schools.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">
+            <div className="hidden sm:block text-center py-20 text-gray-400">
               <BookOpen size={40} className="mx-auto mb-3 opacity-40" />
               <p className="font-medium text-gray-600">No schools found</p>
               <p className="text-sm mt-1">Try adjusting your filters or search term</p>
             </div>
           ) : (
-            <>
-              {/* Mobile: single card slideshow */}
-              <div className="sm:hidden">
-                <SchoolCard school={schools[mobileSchoolIdx]} onCompare={handleCompare}
-                  isSelected={!!selected.find((s) => s._id === schools[mobileSchoolIdx]._id)} />
-                <div className="flex items-center justify-between mt-3 px-1">
-                  <button
-                    onClick={() => setMobileSchoolIdx((i) => Math.max(0, i - 1))}
-                    disabled={mobileSchoolIdx === 0}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-green-400 hover:text-green-700 transition"
-                  >
-                    <ChevronLeft size={15} /> Prev
-                  </button>
-                  <span className="text-xs text-gray-400 font-medium">{mobileSchoolIdx + 1} / {schools.length}</span>
-                  <button
-                    onClick={() => setMobileSchoolIdx((i) => Math.min(schools.length - 1, i + 1))}
-                    disabled={mobileSchoolIdx === schools.length - 1}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-green-400 hover:text-green-700 transition"
-                  >
-                    Next <ChevronRight size={15} />
-                  </button>
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {schools.map((school) => (
+                <div key={school._id}>
+                  <SchoolCard school={school} onCompare={handleCompare}
+                    isSelected={!!selected.find((s) => s._id === school._id)} />
                 </div>
-              </div>
-              {/* Desktop grid */}
-              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {schools.map((school) => (
-                  <div key={school._id}>
-                    <SchoolCard school={school} onCompare={handleCompare}
-                      isSelected={!!selected.find((s) => s._id === school._id)} />
-                  </div>
-                ))}
-              </div>
-            </>
+              ))}
+            </div>
           )}
 
-          {/* Pagination */}
-          <Pagination page={currentPage} pages={pages} onPage={fetchSchools} />
+          {/* Pagination — desktop only */}
+          <div className="hidden sm:block">
+            <Pagination page={currentPage} pages={pages} onPage={fetchSchools} />
+          </div>
         </div>
       </section>
 
