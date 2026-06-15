@@ -17,6 +17,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect');
+  const sessionExpired = searchParams.get('session') === 'expired';
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -130,7 +131,12 @@ export default function Login() {
           </div>
 
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-gray-500 mb-8">Sign in to your account to continue</p>
+          <p className="text-gray-500 mb-6">Sign in to your account to continue</p>
+          {sessionExpired && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 font-medium">
+              Your session expired. Please log in again to continue.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>

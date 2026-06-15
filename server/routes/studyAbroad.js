@@ -1,33 +1,162 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const StudyAbroadApplication = require('../models/StudyAbroadApplication');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Coupon = require('../models/Coupon');
+const EmailOTP = require('../models/EmailOTP');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
 const sendWhatsApp = require('../utils/sendWhatsApp');
 
-// POST /api/study-abroad/consultation — paid consultation booking
-router.post('/consultation', optionalAuth, async (req, res) => {
+const CLIENT_URL = process.env.CLIENT_URL || 'https://www.visiteno.com';
+
+// POST /api/study-abroad/send-otp — check duplicate then send OTP before payment
+router.post('/send-otp', async (req, res) => {
   try {
-    const { fullName, email, phone, destinationCountry, program, educationLevel,
-            consultDate, consultTime, reference, couponCode, finalAmount } = req.body;
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
 
-    if (!fullName || !email || !phone || !consultDate || !consultTime || !reference) {
-      return res.status(400).json({ message: 'Missing required booking fields.' });
-    }
-
-    // Prevent duplicate consultation bookings per email
+    // Block if already booked
     const duplicate = await Booking.findOne({
       email: email.toLowerCase(),
       service: 'study-abroad-consultation',
     });
     if (duplicate) {
       return res.status(400).json({
-        message: 'You have already submitted a consultation request. Our team will be in touch with you shortly. Please check your email.',
+        message: 'This email has already been used to book a consultation. Our team will be in touch with you shortly.',
+        alreadyBooked: true,
+      });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+
+    await EmailOTP.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { otpHash, expires: new Date(Date.now() + 10 * 60 * 1000) },
+      { upsert: true }
+    );
+
+    res.json({ message: 'Verification code sent. Please check your email.' });
+
+    sendEmail({
+      to: email,
+      subject: 'Your Email Verification Code — Naija & Overseas',
+      html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+        <tr>
+          <td style="background:#14532d;padding:28px 40px;text-align:center;">
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px;text-align:center;">
+            <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;margin:0 auto 16px;font-size:26px;line-height:56px;">✉️</div>
+            <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111827;">Verify Your Email</h1>
+            <p style="margin:0 0 28px;font-size:14px;color:#6b7280;line-height:1.6;">
+              Use the code below to verify your email address and proceed to booking your consultation.<br/>
+              This code expires in <strong>10 minutes</strong>.
+            </p>
+            <div style="display:inline-block;background:#f0fdf4;border:2px solid #16a34a;border-radius:16px;padding:20px 48px;margin-bottom:24px;">
+              <p style="margin:0;font-size:42px;font-weight:900;color:#14532d;letter-spacing:12px;">${otp}</p>
+            </div>
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              If you did not request this, you can safely ignore this email.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">&copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+    }).catch((err) => console.error('📧 OTP email failed:', err.message));
+
+  } catch (err) {
+    console.error('send-otp error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/study-abroad/verify-otp — verify code and return a short-lived token
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and code are required.' });
+
+    const record = await EmailOTP.findOne({ email: email.toLowerCase() });
+    if (!record || record.expires < new Date()) {
+      return res.status(400).json({ message: 'Code expired. Please request a new one.' });
+    }
+
+    const hash = crypto.createHash('sha256').update(String(otp)).digest('hex');
+    if (hash !== record.otpHash) {
+      return res.status(400).json({ message: 'Incorrect code. Please try again.' });
+    }
+
+    await EmailOTP.deleteOne({ _id: record._id });
+
+    const verificationToken = jwt.sign(
+      { email: email.toLowerCase(), verified: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '30m' }
+    );
+
+    res.json({ verificationToken, message: 'Email verified. You may now proceed to payment.' });
+  } catch (err) {
+    console.error('verify-otp error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/study-abroad/consultation — paid consultation booking
+router.post('/consultation', optionalAuth, async (req, res) => {
+  try {
+    const { fullName, email, phone, destinationCountry, program, educationLevel,
+            consultDate, consultTime, reference, couponCode, finalAmount,
+            verificationToken } = req.body;
+
+    if (!fullName || !email || !phone || !consultDate || !consultTime || !reference) {
+      return res.status(400).json({ message: 'Missing required booking fields.' });
+    }
+
+    // Require email verification token
+    if (!verificationToken) {
+      return res.status(400).json({ message: 'Email verification is required before booking.' });
+    }
+    try {
+      const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
+      if (!decoded.verified || decoded.email !== email.toLowerCase()) {
+        return res.status(400).json({ message: 'Verification token does not match this email.' });
+      }
+    } catch {
+      return res.status(400).json({ message: 'Verification expired. Please verify your email again.' });
+    }
+
+    // Safety-net duplicate check (primary check is in send-otp)
+    const duplicate = await Booking.findOne({
+      email: email.toLowerCase(),
+      service: 'study-abroad-consultation',
+    });
+    if (duplicate) {
+      return res.status(400).json({
+        message: 'This email has already been used to book a consultation.',
       });
     }
 
@@ -115,26 +244,33 @@ router.post('/consultation', optionalAuth, async (req, res) => {
                    font-size:13px;color:#111827;vertical-align:top;">${value}</td>
       </tr>`).join('');
 
-    const accountSection = isNewUser ? `
-      <div style="margin:28px 0;padding:24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
-        <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#166534;">
-          We created an account for you
-        </p>
-        <p style="margin:0 0 16px;font-size:13px;color:#15803d;line-height:1.6;">
-          To track your consultation and access your study abroad dashboard, we have automatically
-          created an account using your email address. Click the button below to set your password
-          and activate your account.
-        </p>
-        <a href="${setPasswordLink}"
-           style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;
-                  font-size:14px;padding:12px 28px;border-radius:8px;text-decoration:none;">
-          Set My Password &rarr;
-        </a>
-        <p style="margin:12px 0 0;font-size:11px;color:#6b7280;">
-          This link expires in 7 days. If you did not request an account,
-          you can safely ignore this email.
-        </p>
-      </div>` : '';
+    const accountSection = isNewUser && setPasswordLink ? `
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
+              <tr>
+                <td style="padding:24px;">
+                  <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#166534;">
+                    🎉 We created an account for you
+                  </p>
+                  <p style="margin:0 0 18px;font-size:13px;color:#15803d;line-height:1.6;">
+                    Click the button below to set your password and access your study abroad dashboard.
+                    This link expires in <strong>7 days</strong>.
+                  </p>
+                  <a href="${setPasswordLink}"
+                     style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;
+                            font-size:14px;padding:13px 32px;border-radius:8px;text-decoration:none;">
+                    Set My Password &rarr;
+                  </a>
+                  <p style="margin:14px 0 0;font-size:11px;color:#6b7280;">
+                    Or copy this link: <a href="${setPasswordLink}" style="color:#16a34a;word-break:break-all;">${setPasswordLink}</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>` : '';
 
     const userEmailHtml = `
 <!DOCTYPE html>
@@ -206,7 +342,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
           </td>
         </tr>
 
-        ${accountSection ? `<tr><td style="padding:0 40px 24px;">${accountSection}</td></tr>` : ''}
+        ${accountSection}
 
         <!-- CTA -->
         <tr>
@@ -273,10 +409,19 @@ router.post('/consultation', optionalAuth, async (req, res) => {
       html: adminEmailHtml,
     }).catch((err) => console.error('📧 Admin notification email failed:', err.message));
 
+    // Booking confirmation WhatsApp (all users)
     sendWhatsApp({
       to: phone,
       message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Naija & Overseas Team`,
     }).catch(() => {});
+
+    // Set-password WhatsApp for new users (separate message so it stands out)
+    if (isNewUser && setPasswordLink) {
+      sendWhatsApp({
+        to: phone,
+        message: `Hi ${fullName},\n\nWe've created a Naija & Overseas account for you so you can track your consultation and application. 🎉\n\n🔐 *Set your password here:*\n${setPasswordLink}\n\n⚠️ This link expires in *7 days*. Keep it safe.\n\nOnce you set your password you can log in at any time to follow up on your application.\n\n— Naija & Overseas Team`,
+      }).catch(() => {});
+    }
   } catch (err) {
     console.error('Consultation booking error:', err);
     res.status(500).json({ message: err.message });
