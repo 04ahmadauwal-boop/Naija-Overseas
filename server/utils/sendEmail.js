@@ -6,7 +6,8 @@ const createTransporter = () =>
   nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
-    secure: true, // SSL — port 587 (STARTTLS) is blocked on this network
+    secure: true,
+    family: 4, // force IPv4 — IPv6 is unreachable on this network
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,

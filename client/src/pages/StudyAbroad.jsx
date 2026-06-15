@@ -920,7 +920,7 @@ export default function StudyAbroad() {
                     Your consultation is scheduled for<br />
                     <strong className="text-gray-800">{fmtDate(form.consultDate)} at {form.consultTime}</strong>.
                   </p>
-                  <p className="text-gray-400 text-xs mb-6">A confirmation will be sent to <strong>{form.email}</strong>. Our counsellor will reach out shortly before your slot.</p>
+                  <p className="text-gray-400 text-xs mb-6">A confirmation has been sent to <strong>{form.email}</strong> and via WhatsApp to <strong>{form.phone}</strong>. Our counsellor will reach out shortly before your slot.</p>
                   <button onClick={resetForm}
                     className="bg-green-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition text-sm">
                     Done
