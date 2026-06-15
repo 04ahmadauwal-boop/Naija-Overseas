@@ -20,6 +20,17 @@ router.post('/consultation', optionalAuth, async (req, res) => {
       return res.status(400).json({ message: 'Missing required booking fields.' });
     }
 
+    // Prevent duplicate consultation bookings per email
+    const duplicate = await Booking.findOne({
+      email: email.toLowerCase(),
+      service: 'study-abroad-consultation',
+    });
+    if (duplicate) {
+      return res.status(400).json({
+        message: 'You have already submitted a consultation request. Our team will be in touch with you shortly. Please check your email.',
+      });
+    }
+
     // ── 0. Validate & consume coupon (if provided) ───────────────
     let appliedCoupon = null;
     if (couponCode) {
@@ -76,7 +87,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
     // ── 3. Build email content ────────────────────────────────────
     const clientUrl = process.env.CLIENT_URL || 'https://www.visiteno.com';
     const setPasswordLink = isNewUser
-      ? `${clientUrl}/reset-password/${passwordSetToken}`
+      ? `${clientUrl}/set-password/${passwordSetToken}`
       : null;
 
     const formattedDate = new Date(consultDate).toLocaleDateString('en-GB', {
@@ -239,36 +250,33 @@ router.post('/consultation', optionalAuth, async (req, res) => {
   <p style="margin-top:16px;font-size:13px;color:#6b7280;">Booking ID: ${booking._id}</p>
 </div>`;
 
-    // ── 5. Send emails (non-fatal — booking is already saved) ────
-    try {
-      await Promise.all([
-        sendEmail({
-          to: email,
-          subject: `Consultation Confirmed — ${formattedDate} at ${consultTime} | Naija & Overseas`,
-          html: userEmailHtml,
-        }),
-        sendEmail({
-          to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
-          subject: `New Consultation Booking — ${fullName} (${formattedDate} ${consultTime})`,
-          html: adminEmailHtml,
-        }),
-      ]);
-      sendWhatsApp({
-        to: phone,
-        message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Naija & Overseas Team`,
-      }).catch(() => {});
-    } catch (emailErr) {
-      console.error('📧 EMAIL FAILED — booking saved but email not sent.');
-      console.error('   Recipient :', email);
-      console.error('   Error     :', emailErr.message);
-      console.error('   EMAIL_USER:', process.env.EMAIL_USER || '(not set)');
-    }
-
+    // ── 5. Respond immediately — send emails/WhatsApp in background ─
     res.status(201).json({
       message: 'Consultation booked successfully.',
       bookingId: booking._id,
       isNewUser,
     });
+
+    sendEmail({
+      to: email,
+      subject: `Consultation Confirmed — ${formattedDate} at ${consultTime} | Naija & Overseas`,
+      html: userEmailHtml,
+    }).catch((err) => {
+      console.error('📧 User confirmation email failed:', err.message);
+      console.error('   Recipient:', email);
+      console.error('   EMAIL_USER:', process.env.EMAIL_USER || '(not set)');
+    });
+
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+      subject: `New Consultation Booking — ${fullName} (${formattedDate} ${consultTime})`,
+      html: adminEmailHtml,
+    }).catch((err) => console.error('📧 Admin notification email failed:', err.message));
+
+    sendWhatsApp({
+      to: phone,
+      message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Naija & Overseas Team`,
+    }).catch(() => {});
   } catch (err) {
     console.error('Consultation booking error:', err);
     res.status(500).json({ message: err.message });
