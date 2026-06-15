@@ -156,18 +156,18 @@ function FAQItem({ q, a }) {
     <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${open ? 'border-green-700/50 bg-green-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4"
+        className="w-full flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 text-left gap-4"
       >
-        <span className="font-semibold text-white text-[14px] sm:text-[15px] leading-snug pr-2"
+        <span className="font-semibold text-white text-[12px] sm:text-[15px] leading-snug pr-2"
           style={{ fontFamily: "'Poppins', 'Georgia', sans-serif" }}>
           {q}
         </span>
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-green-600 text-white rotate-180' : 'bg-gray-800 text-gray-500'}`}>
-          <ChevronDown size={14} />
+        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-green-600 text-white rotate-180' : 'bg-gray-800 text-gray-500'}`}>
+          <ChevronDown size={13} />
         </div>
       </button>
       {open && (
-        <div className="px-5 pb-5 text-gray-400 text-[13px] sm:text-sm leading-relaxed border-t border-white/5 pt-3">
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-gray-400 text-[11px] sm:text-sm leading-relaxed border-t border-white/5 pt-3">
           {a}
         </div>
       )}
@@ -316,6 +316,8 @@ export default function Home() {
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
+  const [mobileSchoolIdx, setMobileSchoolIdx] = useState(0);
+  const [featureSlide, setFeatureSlide] = useState(0);
 
   // Featured blog post (admin-chosen) + 4 most recent
   const [featuredPost, setFeaturedPost] = useState(null);
@@ -472,6 +474,7 @@ export default function Home() {
   };
 
   const clearFilters = () => { setFilters(EMPTY_FILTERS); doFetch(1, EMPTY_FILTERS); };
+  useEffect(() => { setMobileSchoolIdx(0); }, [schools]);
 
   const activeCount = [
     filters.state, filters.type, filters.level, filters.curriculum,
@@ -779,11 +782,11 @@ export default function Home() {
 
               {/* State cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 sm:mb-8">
-                {pageStates.map(({ state, emoji, title, sub, color, border, hover }) => (
+                {pageStates.map(({ state, emoji, title, sub, color, border, hover }, idx) => (
                   <Link
                     key={state}
                     to={`/schools/state/${state}`}
-                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-linear-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-linear-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200${idx >= 6 ? ' hidden sm:flex' : ''}`}
                   >
                     <span className="text-2xl sm:text-3xl leading-none">{emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -1123,11 +1126,16 @@ export default function Home() {
 
           {/* School Grid */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
-              ))}
-            </div>
+            <>
+              {/* Mobile skeleton */}
+              <div className="sm:hidden bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
+              {/* Desktop skeleton */}
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl h-72 skeleton-shimmer border border-gray-100" />
+                ))}
+              </div>
+            </>
           ) : schools.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <BookOpen size={40} className="mx-auto mb-3 opacity-40" />
@@ -1135,14 +1143,39 @@ export default function Home() {
               <p className="text-sm mt-1">Try adjusting your filters or search term</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {schools.map((school, idx) => (
-                <div key={school._id} className={idx >= 4 ? 'hidden sm:block' : ''}>
-                  <SchoolCard school={school} onCompare={handleCompare}
-                    isSelected={!!selected.find((s) => s._id === school._id)} />
+            <>
+              {/* Mobile: single card slideshow */}
+              <div className="sm:hidden">
+                <SchoolCard school={schools[mobileSchoolIdx]} onCompare={handleCompare}
+                  isSelected={!!selected.find((s) => s._id === schools[mobileSchoolIdx]._id)} />
+                <div className="flex items-center justify-between mt-3 px-1">
+                  <button
+                    onClick={() => setMobileSchoolIdx((i) => Math.max(0, i - 1))}
+                    disabled={mobileSchoolIdx === 0}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-green-400 hover:text-green-700 transition"
+                  >
+                    <ChevronLeft size={15} /> Prev
+                  </button>
+                  <span className="text-xs text-gray-400 font-medium">{mobileSchoolIdx + 1} / {schools.length}</span>
+                  <button
+                    onClick={() => setMobileSchoolIdx((i) => Math.min(schools.length - 1, i + 1))}
+                    disabled={mobileSchoolIdx === schools.length - 1}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-green-400 hover:text-green-700 transition"
+                  >
+                    Next <ChevronRight size={15} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+              {/* Desktop grid */}
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {schools.map((school) => (
+                  <div key={school._id}>
+                    <SchoolCard school={school} onCompare={handleCompare}
+                      isSelected={!!selected.find((s) => s._id === school._id)} />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {/* Pagination */}
@@ -1170,7 +1203,6 @@ export default function Home() {
 
       {/* ── WHY NAIJA & OVERSEAS ──────────────────────────────────── */}
       <section
-        ref={featuresRef}
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(150deg,#050d08 0%,#071a0e 55%,#0b2415 100%)' }}
       >
@@ -1225,32 +1257,56 @@ export default function Home() {
 
           {/* ── RIGHT PANEL — feature cards ── */}
           <div className="flex-1 p-6 sm:p-8 lg:p-10 flex items-center">
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Mobile: slideshow (1 card at a time) */}
+            <div className="sm:hidden w-full">
+              {(() => {
+                const f = FEATURES[featureSlide];
+                const Icon = f.icon;
+                return (
+                  <div className="group relative rounded-2xl border border-white/[0.07] bg-white/3 p-5 flex flex-col overflow-hidden">
+                    <div className={`absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r ${f.accent}`} />
+                    <span className="absolute -top-2 -right-1 text-[64px] leading-none font-black text-white/[0.035] select-none pointer-events-none">{f.num}</span>
+                    <div className={`w-10 h-10 rounded-xl ${f.iconBg} flex items-center justify-center mb-4 shrink-0`}>
+                      <Icon size={18} className={f.iconFg} />
+                    </div>
+                    <h3 className="text-white/90 font-bold text-sm leading-snug mb-2 pr-6">{f.title}</h3>
+                    <p className="text-white/35 text-xs leading-relaxed flex-1">{f.desc}</p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-white/6 text-white/40 border border-white/8 w-fit shrink-0">
+                      <CheckCircle size={8} className="text-green-400" />{f.badge}
+                    </span>
+                  </div>
+                );
+              })()}
+              {/* Dot navigation */}
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <button onClick={() => setFeatureSlide((s) => Math.max(0, s - 1))} disabled={featureSlide === 0}
+                  className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white/50 disabled:opacity-20 hover:border-green-400 transition">
+                  <ChevronLeft size={13} />
+                </button>
+                {FEATURES.map((_, i) => (
+                  <button key={i} onClick={() => setFeatureSlide(i)}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${i === featureSlide ? 'bg-green-400 w-4' : 'bg-white/20'}`} />
+                ))}
+                <button onClick={() => setFeatureSlide((s) => Math.min(FEATURES.length - 1, s + 1))} disabled={featureSlide === FEATURES.length - 1}
+                  className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white/50 disabled:opacity-20 hover:border-green-400 transition">
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+            {/* SM+: grid */}
+            <div className="hidden sm:grid w-full sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {FEATURES.map(({ num, icon: Icon, title, desc, badge, accent, iconBg, iconFg }) => (
                 <div key={title}
                   className="group relative rounded-2xl border border-white/[0.07] bg-white/3 hover:bg-white/[0.07] hover:border-white/15 p-5 flex flex-col transition-all duration-300 overflow-hidden cursor-default">
-                  {/* Accent top bar */}
                   <div className={`absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                  {/* Number watermark */}
-                  <span className="absolute -top-2 -right-1 text-[64px] leading-none font-black text-white/[0.035] select-none pointer-events-none">
-                    {num}
-                  </span>
-
-                  {/* Icon */}
+                  <span className="absolute -top-2 -right-1 text-[64px] leading-none font-black text-white/[0.035] select-none pointer-events-none">{num}</span>
                   <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center mb-4 shrink-0 group-hover:scale-110 transition-transform duration-200`}>
                     <Icon size={18} className={iconFg} />
                   </div>
-
-                  {/* Title */}
                   <h3 className="text-white/90 font-bold text-sm leading-snug mb-2 pr-6">{title}</h3>
-
-                  {/* Desc */}
                   <p className="text-white/35 text-xs leading-relaxed flex-1 line-clamp-3">{desc}</p>
-
-                  {/* Badge */}
                   <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-white/6 text-white/40 border border-white/8 w-fit shrink-0">
-                    <CheckCircle size={8} className="text-green-400" />
-                    {badge}
+                    <CheckCircle size={8} className="text-green-400" />{badge}
                   </span>
                 </div>
               ))}
@@ -1316,54 +1372,72 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Right scrolling review columns */}
-          <div
-            className="flex-1 overflow-hidden relative flex gap-2 sm:gap-2.5 px-3 sm:px-4 pt-0 pb-5 lg:py-8"
-            style={{ height: 'clamp(160px, 40vw, 520px)' }}
-          >
-            {/* Top / bottom fades */}
-            <div className="absolute top-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+          {/* Right scrolling review area */}
+          <div className="flex-1 overflow-hidden">
 
-            {[0, 1, 2, 3].map((colIdx) => {
-              const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
-              const isDown = colIdx % 2 === 1;
-              /* mobile → 1 col | sm → 2 cols | md → 3 cols | lg → 4 cols */
-              const colClass =
-                colIdx === 1 ? 'hidden sm:block flex-1 overflow-hidden min-w-0'
-              : colIdx === 2 ? 'hidden md:block flex-1 overflow-hidden min-w-0'
-              : colIdx === 3 ? 'hidden lg:block flex-1 overflow-hidden min-w-0'
-              : 'flex-1 overflow-hidden min-w-0';
+            {/* Mobile: horizontal left-to-right scroll strip */}
+            <div className="sm:hidden overflow-hidden py-4 px-3">
+              <div className="flex gap-3 animate-[scroll-left_28s_linear_infinite] w-max">
+                {[...TESTIMONIALS, ...TESTIMONIALS].map((t, j) => (
+                  <div key={j} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm w-56 shrink-0">
+                    <div className="flex items-start gap-2">
+                      <div className={`w-7 h-7 rounded-full ${t.color} text-white text-[9px] font-bold flex items-center justify-center shrink-0`}>{t.initials}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-0.5 mb-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={8} className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'} />
+                          ))}
+                        </div>
+                        <p className="font-bold text-gray-900 text-[10px] leading-tight">{t.category}</p>
+                        <p className="text-gray-500 text-[9px] leading-snug mt-0.5 line-clamp-3">{t.text}</p>
+                        <p className="text-gray-400 text-[8px] mt-1 font-medium truncate">{t.name} · {t.role}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-              return (
-                <div key={colIdx} className={colClass}>
-                  <div className={isDown ? 'marquee-down' : 'marquee-up'}>
-                    {[...col, ...col].map((t, j) => (
-                      <div
-                        key={j}
-                        className="bg-white rounded-xl p-3 sm:p-3.5 mb-2 sm:mb-2.5 border border-gray-100 shadow-sm"
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${t.color} text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shrink-0`}>
-                            {t.initials}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-0.5 mb-0.5">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star key={i} size={8} className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'} />
-                              ))}
+            {/* SM+: vertical columns */}
+            <div
+              className="hidden sm:flex relative gap-2 sm:gap-2.5 px-3 sm:px-4 pt-0 pb-5 lg:py-8"
+              style={{ height: 'clamp(160px, 40vw, 520px)' }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-b from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-8 sm:h-12 bg-linear-to-t from-[#0b0f0e] to-transparent z-10 pointer-events-none" />
+              {[0, 1, 2, 3].map((colIdx) => {
+                const col = TESTIMONIALS.filter((_, i) => i % 4 === colIdx);
+                const isDown = colIdx % 2 === 1;
+                const colClass =
+                  colIdx === 1 ? 'flex-1 overflow-hidden min-w-0'
+                : colIdx === 2 ? 'hidden md:block flex-1 overflow-hidden min-w-0'
+                : colIdx === 3 ? 'hidden lg:block flex-1 overflow-hidden min-w-0'
+                : 'flex-1 overflow-hidden min-w-0';
+                return (
+                  <div key={colIdx} className={colClass}>
+                    <div className={isDown ? 'marquee-down' : 'marquee-up'}>
+                      {[...col, ...col].map((t, j) => (
+                        <div key={j} className="bg-white rounded-xl p-3 sm:p-3.5 mb-2 sm:mb-2.5 border border-gray-100 shadow-sm">
+                          <div className="flex items-start gap-2">
+                            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${t.color} text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shrink-0`}>{t.initials}</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-0.5 mb-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} size={8} className={i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'} />
+                                ))}
+                              </div>
+                              <p className="font-bold text-gray-900 text-[10px] sm:text-[11px] leading-tight">{t.category}</p>
+                              <p className="text-gray-500 text-[9px] sm:text-[10px] leading-snug mt-0.5 line-clamp-2 sm:line-clamp-3">{t.text}</p>
+                              <p className="text-gray-400 text-[8px] sm:text-[9px] mt-1 font-medium truncate">{t.name} · {t.role}</p>
                             </div>
-                            <p className="font-bold text-gray-900 text-[10px] sm:text-[11px] leading-tight">{t.category}</p>
-                            <p className="text-gray-500 text-[9px] sm:text-[10px] leading-snug mt-0.5 line-clamp-2 sm:line-clamp-3">{t.text}</p>
-                            <p className="text-gray-400 text-[8px] sm:text-[9px] mt-1 font-medium truncate">{t.name} · {t.role}</p>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
         </div>
@@ -1496,19 +1570,19 @@ export default function Home() {
       })()}
 
       {/* ── FAQ ───────────────────────────────────────────────────── */}
-      <section className="bg-gray-950 py-16 md:py-24 px-4">
+      <section className="bg-gray-950 py-10 md:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-[1fr_1.5fr] gap-10 lg:gap-16 items-start">
 
             {/* Left — sticky header */}
             <div className="lg:sticky lg:top-24">
               <span className="inline-block text-green-400 text-[11px] font-extrabold uppercase tracking-[0.2em] mb-4">FAQ</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight mb-4"
+              <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight mb-3 sm:mb-4"
                 style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                 Got questions?<br />
                 <em className="text-green-400 not-italic">We have answers.</em>
               </h2>
-              <p className="text-gray-500 text-sm sm:text-base leading-relaxed mb-6 max-w-xs">
+              <p className="text-gray-500 text-xs sm:text-base leading-relaxed mb-4 sm:mb-6 max-w-xs">
                 Everything you need to know about schools, listings, study abroad and more.
               </p>
               <Link to="/contact"
