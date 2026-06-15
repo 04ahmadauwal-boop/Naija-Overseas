@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const Booking = require('../models/Booking');
 const School = require('../models/School');
 const User = require('../models/User');
@@ -15,6 +16,19 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'softsavvynaija@gmail.com';
 router.post('/', optionalAuth, async (req, res) => {
   try {
     const { name, email, phone, service, date, timeSlot, notes, paymentRef, schoolId } = req.body;
+
+    // Prevent duplicate consultation bookings per email
+    if (service === 'study-abroad-consultation') {
+      const duplicate = await Booking.findOne({
+        email: email.toLowerCase(),
+        service: 'study-abroad-consultation',
+      });
+      if (duplicate) {
+        return res.status(400).json({
+          message: 'You have already submitted a consultation request. Our team will be in touch with you shortly. Please check your email.',
+        });
+      }
+    }
 
     const booking = await Booking.create({
       user: req.user?._id,
@@ -38,11 +52,91 @@ router.post('/', optionalAuth, async (req, res) => {
       html: `<p>Hi ${name},</p>
 <p>Your <strong>${service.replace(/-/g, ' ')}</strong> request for <strong>${dateStr}</strong> at <strong>${timeSlot}</strong> has been received. We'll confirm shortly.</p>
 <p>— Naija &amp; Overseas Team</p>`,
-    }).catch(() => {});
+    }).catch((err) => console.error('📧 Booking confirmation email failed:', err.message));
     sendWhatsApp({
       to: phone,
       message: `Hi ${name},\n\nYour *${service.replace(/-/g, ' ')}* request for *${dateStr}* at *${timeSlot}* has been received. We'll confirm shortly.\n\n— Naija & Overseas Team`,
     }).catch(() => {});
+
+    // Auto-create a student account for study-abroad consultations if one doesn't exist
+    if (service === 'study-abroad-consultation') {
+      const existingUser = await User.findOne({ email: email.toLowerCase() });
+      if (!existingUser) {
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+        await User.create({
+          name,
+          email: email.toLowerCase(),
+          password: crypto.randomBytes(20).toString('hex'), // placeholder — replaced when they set password
+          role: 'student',
+          goal: 'study-abroad',
+          phone,
+          isVerified: false,
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+
+        const setPasswordUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/set-password/${rawToken}`;
+
+        sendEmail({
+          to: email,
+          subject: 'Your Naija & Overseas Account is Ready — Choose a Password',
+          html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+        <tr>
+          <td style="background:#14532d;padding:28px 40px;text-align:center;">
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px;text-align:center;">
+            <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;margin:0 auto 16px;font-size:26px;line-height:56px;">🎉</div>
+            <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111827;">Your account is ready!</h1>
+            <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">
+              Hi <strong>${name}</strong>, your consultation has been booked.<br/>
+              We've created an account for you so you can track your application and communicate with our team.<br/><br/>
+              Click the button below to choose your password and access your dashboard.<br/>
+              This link expires in <strong>7 days</strong>.
+            </p>
+            <a href="${setPasswordUrl}"
+               style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;
+                      font-size:15px;padding:14px 36px;border-radius:10px;text-decoration:none;">
+              Choose My Password &rarr;
+            </a>
+            <p style="margin:20px 0 0;font-size:12px;color:#9ca3af;">
+              If the button doesn't work, copy and paste this link:<br/>
+              <a href="${setPasswordUrl}" style="color:#16a34a;word-break:break-all;">${setPasswordUrl}</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="margin:0;font-size:11px;color:#9ca3af;">
+              &copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+        }).catch((err) => console.error('📧 Set-password email failed:', err.message));
+
+        sendWhatsApp({
+          to: phone,
+          message: `Hi ${name}! 🎉\n\nYour consultation is booked and your Naija & Overseas account is ready.\n\n🔐 Click the link below to choose your password and access your dashboard:\n${setPasswordUrl}\n\n⏳ This link expires in 7 days.\n\n— Naija & Overseas Team`,
+        }).catch(() => {});
+      }
+    }
 
     // If school visit — notify school owner + admin
     if (service === 'school-visit') {

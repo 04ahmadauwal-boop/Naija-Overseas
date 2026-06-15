@@ -15,6 +15,10 @@ const createTransporter = () =>
   });
 
 const sendEmail = async ({ to, subject, html }) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('📧 sendEmail: EMAIL_USER or EMAIL_PASS env var is missing — email not sent');
+    return;
+  }
   const transporter = createTransporter();
   await transporter.sendMail({
     from: `"Naija and Overseas" <${process.env.EMAIL_USER}>`,

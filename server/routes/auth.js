@@ -253,6 +253,33 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
+// POST /api/auth/set-password/:token  — used after auto-account creation from consultation booking
+router.post('/set-password/:token', async (req, res) => {
+  try {
+    const hashed = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashed,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).json({ message: 'This link is invalid or has expired. Please contact support.' });
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    user.isVerified = true;
+    await user.save();
+
+    const token = signToken(user._id);
+    res.json({
+      token,
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
+      message: 'Password set! Welcome to Naija & Overseas.',
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST /api/auth/reset-password/:token
 router.post('/reset-password/:token', async (req, res) => {
   try {
