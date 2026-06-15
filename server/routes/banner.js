@@ -17,10 +17,11 @@ router.get('/', async (req, res) => {
 // PUT /api/banner — admin only, upsert the single banner document
 router.put('/', protect, isAdmin, async (req, res) => {
   try {
+    const { _id, __v, createdAt, updatedAt, ...fields } = req.body;
     const banner = await HomeBanner.findOneAndUpdate(
       {},
-      { $set: req.body },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { $set: fields },
+      { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
     );
     res.json({ banner });
   } catch (err) {

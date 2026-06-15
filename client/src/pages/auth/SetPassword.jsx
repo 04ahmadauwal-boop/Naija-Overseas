@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import api from '../../utils/api';
@@ -15,6 +15,13 @@ export default function SetPassword() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    if (done) {
+      const timer = setTimeout(() => navigate('/dashboard/student', { replace: true }), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [done, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) {
@@ -29,8 +36,8 @@ export default function SetPassword() {
     try {
       const { data } = await api.post(`/auth/set-password/${token}`, { password: form.password });
       loginWithToken(data.token, data.user);
+      toast.success('Password set! Welcome to Naija & Overseas.');
       setDone(true);
-      setTimeout(() => navigate('/dashboard/student'), 2000);
     } catch (err) {
       toast.error(err.response?.data?.message || 'This link is invalid or has expired. Please contact support.');
     } finally {

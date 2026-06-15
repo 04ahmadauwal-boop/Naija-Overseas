@@ -7,6 +7,8 @@ const sendEmail = require('../utils/sendEmail');
 const sendWhatsApp = require('../utils/sendWhatsApp');
 const { protect } = require('../middleware/auth');
 
+const CLIENT_URL = process.env.CLIENT_URL || 'https://www.visiteno.com';
+
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 
@@ -275,6 +277,14 @@ router.post('/set-password/:token', async (req, res) => {
       user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
       message: 'Password set! Welcome to Naija & Overseas.',
     });
+
+    // Send WhatsApp welcome after responding
+    if (user.phone) {
+      sendWhatsApp({
+        to: user.phone,
+        message: `Hi ${user.name}! 🎉\n\nYour Naija & Overseas account is now active.\n\nYou can log in anytime at:\n${CLIENT_URL}/login\n\nOur team will be in touch about your consultation soon.\n\n— Naija & Overseas Team`,
+      }).catch(() => {});
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

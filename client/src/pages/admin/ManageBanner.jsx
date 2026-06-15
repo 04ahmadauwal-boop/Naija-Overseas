@@ -87,8 +87,10 @@ export default function ManageBanner() {
     try {
       await api.put('/banner', form);
       toast.success('Banner saved — changes are live on the home page!');
-    } catch {
-      toast.error('Failed to save banner');
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Unknown error';
+      toast.error(`Failed to save banner: ${msg}`);
+      console.error('Banner save error:', err.response?.data || err.message);
     } finally {
       setSaving(false);
     }
