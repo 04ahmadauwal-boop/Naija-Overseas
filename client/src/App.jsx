@@ -38,6 +38,7 @@ import BecomeTutor from './pages/BecomeTutor';
 import StudentOnboarding from './pages/StudentOnboarding';
 import GoClass from './pages/GoClass';
 import StateSchools from './pages/StateSchools';
+import AllSchools from './pages/AllSchools';
 import Videos from './pages/Videos';
 import ManageVideos from './pages/admin/ManageVideos';
 import ManageReviews from './pages/admin/ManageReviews';
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/schools" element={<AllSchools />} />
           <Route path="/schools/state/:state" element={<StateSchools />} />
           <Route path="/videos" element={<Videos />} />
           <Route path="/reviews" element={<AllReviews />} />

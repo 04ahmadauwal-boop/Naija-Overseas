@@ -460,62 +460,69 @@ export default function StateSchools() {
                         <div className={`absolute inset-0 bg-linear-to-r ${meta.color}`} />
                       )}
                       {/* Subtle dark veil */}
-                      <div className="absolute inset-0 bg-linear-to-r from-black/25 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-r from-black/55 via-black/30 to-black/5" />
 
-                      {/* White content card — leaves right edge showing background */}
+                      {/* Glassy, slanted content card — leaves right edge showing background */}
                       <div className="relative z-10 p-4 sm:p-5" style={{ width: '88%' }}>
-                        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-xl">
-                          {/* Badge */}
-                          <span className="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full">
-                            👑 EDUCATION HUB
-                          </span>
+                        <div className="group -rotate-2 hover:rotate-0 transition-transform duration-500 ease-out [transform-3d]">
+                          <div className="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+                            {/* Glossy diagonal sheen */}
+                            <div className="pointer-events-none absolute -inset-x-12 -top-1/2 h-[220%] rotate-12 bg-linear-to-b from-white/30 via-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-10" />
+                            {/* Inner top highlight edge */}
+                            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-white/60 via-white/10 to-transparent" />
 
-                          {/* Title */}
-                          <h3 className="mt-3 text-xl sm:text-2xl font-black leading-tight" style={{ color: '#1a2b4a' }}>
-                            {lga}
-                          </h3>
-                          <p className="text-base sm:text-lg font-bold" style={{ color: '#1a2b4a' }}>
-                            Academic Excellence
-                          </p>
+                            {/* Badge */}
+                            <span className="relative inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-md shadow-amber-900/30">
+                              👑 EDUCATION HUB
+                            </span>
 
-                          {/* Description with amber left border */}
-                          <div className="border-l-4 border-amber-400 pl-3 mt-3 mb-4">
-                            <p className="text-sm text-gray-500 leading-relaxed">
-                              Discover the most prestigious schools in {lga}, {state} State — where quality education meets community.
+                            {/* Title */}
+                            <h3 className="relative mt-3 text-xl sm:text-2xl font-black leading-tight text-white drop-shadow-sm">
+                              {lga}
+                            </h3>
+                            <p className="relative text-base sm:text-lg font-bold text-white/85">
+                              Academic Excellence
                             </p>
+
+                            {/* Description with amber left border */}
+                            <div className="relative border-l-4 border-amber-400/80 pl-3 mt-3 mb-4">
+                              <p className="text-sm text-white/70 leading-relaxed">
+                                Discover the most prestigious schools in {lga}, {state} State — where quality education meets community.
+                              </p>
+                            </div>
+
+                            {/* Stats row */}
+                            {(() => {
+                              const counts = lgaCounts[lga];
+                              const isLoading = !(lga in lgaCounts);
+                              return (
+                                <div className="relative grid grid-cols-3 gap-2 mb-5">
+                                  {[
+                                    { label: 'Total Schools',      val: counts?.total      },
+                                    { label: 'Listed on Platform', val: counts?.total      },
+                                    { label: 'Top Schools',        val: counts?.featured   },
+                                  ].map(({ label, val }) => (
+                                    <div key={label} className="bg-white/10 backdrop-blur-sm rounded-xl px-2 py-3 text-center border border-white/20 shadow-sm">
+                                      {isLoading ? (
+                                        <div className="h-5 w-8 bg-white/20 rounded animate-pulse mx-auto mb-1" />
+                                      ) : (
+                                        <div className="text-xl font-black text-white">{val ?? 0}</div>
+                                      )}
+                                      <div className="text-[10px] text-white/70 font-semibold leading-tight mt-0.5">{label}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Explore button */}
+                            <button
+                              onClick={() => handleLgaClick(lga)}
+                              className="relative inline-flex items-center gap-2 bg-teal-900/90 hover:bg-teal-800 text-white text-sm font-bold px-6 py-2.5 rounded-full border border-white/10 shadow-lg shadow-black/30 transition-colors"
+                            >
+                              {isOpen ? `Hide ${lga}` : `Explore ${lga}`} {isOpen ? '↑' : '→'}
+                            </button>
                           </div>
-
-                          {/* Stats row */}
-                          {(() => {
-                            const counts = lgaCounts[lga];
-                            const isLoading = !(lga in lgaCounts);
-                            return (
-                              <div className="grid grid-cols-3 gap-2 mb-5">
-                                {[
-                                  { label: 'Total Schools',      val: counts?.total      },
-                                  { label: 'Listed on Platform', val: counts?.total      },
-                                  { label: 'Top Schools',        val: counts?.featured   },
-                                ].map(({ label, val }) => (
-                                  <div key={label} className="bg-white rounded-xl px-2 py-3 text-center border border-gray-100 shadow-sm">
-                                    {isLoading ? (
-                                      <div className="h-5 w-8 bg-gray-200 rounded animate-pulse mx-auto mb-1" />
-                                    ) : (
-                                      <div className="text-xl font-black text-gray-800">{val ?? 0}</div>
-                                    )}
-                                    <div className="text-[10px] text-gray-500 font-semibold leading-tight mt-0.5">{label}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Explore button */}
-                          <button
-                            onClick={() => handleLgaClick(lga)}
-                            className="inline-flex items-center gap-2 bg-teal-900 hover:bg-teal-800 text-white text-sm font-bold px-6 py-2.5 rounded-full transition-colors"
-                          >
-                            {isOpen ? `Hide ${lga}` : `Explore ${lga}`} {isOpen ? '↑' : '→'}
-                          </button>
                         </div>
                       </div>
                     </div>

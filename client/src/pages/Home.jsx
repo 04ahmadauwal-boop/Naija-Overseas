@@ -6,7 +6,7 @@ import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, BookOpen, Globe, BarChart3, Shield, X,
   ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
-  Clock, Eye,
+  Clock, Eye, MapPin,
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -14,14 +14,7 @@ import toast from 'react-hot-toast';
 import heroQualityDriven from '../assets/hero/quality-driven.png';
 import heroStudentsFocused from '../assets/hero/students-focused.png';
 import heroGlobalSourcing from '../assets/hero/global-sourcing.png';
-
-const NIGERIAN_STATES = [
-  'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
-  'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo',
-  'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos',
-  'Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers',
-  'Sokoto','Taraba','Yobe','Zamfara',
-];
+import { NIGERIAN_STATES, BUDGET_OPTIONS, EMPTY_FILTERS } from '../utils/schoolFilters';
 
 
 const FEATURES = [
@@ -298,15 +291,82 @@ const DEFAULT_BANNER = {
   bgImage: '',
 };
 
-const EMPTY_FILTERS = { search: '', state: '', type: '', level: '', curriculum: '', minFee: '', maxFee: '' };
+// Compact spotlight card used right under the hero — "top choice near you" / "featured pick"
+function SpotlightCard({ kicker, icon: Icon, accent, loading, school }) {
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="h-32 sm:h-40 bg-gray-200 animate-pulse" />
+        <div className="p-4 space-y-2.5">
+          <div className="h-3 w-24 bg-gray-200 rounded-full animate-pulse" />
+          <div className="h-4 w-4/5 bg-gray-200 rounded animate-pulse" />
+          <div className="h-3 w-1/2 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
-const BUDGET_OPTIONS = [
-  { label: 'Below ₦100k',     min: '',        max: '100000'  },
-  { label: '₦100k – ₦300k',   min: '100000',  max: '300000'  },
-  { label: '₦300k – ₦500k',   min: '300000',  max: '500000'  },
-  { label: '₦500k – ₦1M',     min: '500000',  max: '1000000' },
-  { label: 'Above ₦1M',       min: '1000000', max: ''        },
-];
+  if (!school) {
+    return (
+      <Link to="/schools" className="rounded-2xl border border-gray-100 bg-gray-50 p-6 flex flex-col items-center justify-center text-center gap-2 hover:shadow-md hover:bg-gray-100 transition min-h-52">
+        <Icon size={22} className="text-gray-400" />
+        <p className="text-sm font-semibold text-gray-600">More schools coming to this list soon</p>
+        <span className="text-xs text-green-700 font-bold inline-flex items-center gap-1">
+          Browse all schools <ArrowRight size={11} />
+        </span>
+      </Link>
+    );
+  }
+
+  const href = `/schools/${school.slug || school._id}`;
+  const place = [school.city, school.state].filter(Boolean).join(', ');
+
+  return (
+    <Link
+      to={href}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+    >
+      <div className="relative h-32 sm:h-40 overflow-hidden bg-linear-to-br from-emerald-50 to-green-100 shrink-0">
+        {school.images?.[0] ? (
+          <img
+            src={school.images[0]}
+            alt={school.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpen size={26} className="text-green-300" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/5 to-transparent" />
+        <span className={`absolute top-3 left-3 inline-flex items-center gap-1.5 bg-linear-to-r ${accent} text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-md`}>
+          <Icon size={11} /> {kicker}
+        </span>
+        {place && (
+          <div className="absolute bottom-2.5 left-3 right-3 flex items-center gap-1 text-white text-[11px] font-semibold">
+            <MapPin size={10} className="shrink-0" />
+            <span className="truncate">{place}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col gap-1.5 p-4 flex-1">
+        <h3 className="font-extrabold text-gray-900 text-[14px] sm:text-[15px] leading-snug line-clamp-1 group-hover:text-green-700 transition">
+          {school.name}
+        </h3>
+        {school.fees?.tuition ? (
+          <p className="text-xs text-gray-500">
+            <span className="font-bold text-gray-900">₦{Number(school.fees.tuition).toLocaleString()}</span> / year
+          </p>
+        ) : (
+          <p className="text-xs text-gray-400 capitalize">{school.type ? `${school.type} school` : 'Verified school'}</p>
+        )}
+        <span className="mt-auto inline-flex items-center gap-1 text-xs font-bold text-green-700 group-hover:gap-2 transition-all">
+          View Profile <ArrowRight size={12} />
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -324,6 +384,125 @@ export default function Home() {
   const [featuredSchoolSlide, setFeaturedSchoolSlide] = useState(0);
   const [featuredPaused, setFeaturedPaused] = useState(false);
   const [showAllMobile, setShowAllMobile] = useState(false);
+
+  // Spotlight row (right under hero) — top choice near you, featured pick, many more
+  const [detectedState, setDetectedState] = useState('');
+  const [detectedLga, setDetectedLga] = useState('');
+  const [spotlightNear, setSpotlightNear] = useState(null);
+  const [spotlightFeatured, setSpotlightFeatured] = useState(null);
+  const [spotlightLoading, setSpotlightLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const matchState = (region) => {
+      const r = region.toLowerCase();
+      if (r.includes('abuja') || r.includes('federal capital')) return 'FCT';
+      return NIGERIAN_STATES.find((s) => r.includes(s.toLowerCase()) || s.toLowerCase().includes(r)) || '';
+    };
+
+    // 1. Ask the browser for precise GPS coordinates (user gets a permission prompt).
+    const requestGPS = () => new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      const timer = setTimeout(() => resolve(null), 8000);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { clearTimeout(timer); resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }); },
+        () => { clearTimeout(timer); resolve(null); },
+        { timeout: 7000, maximumAge: 10 * 60 * 1000 }
+      );
+    });
+
+    // 2. Reverse-geocode those coordinates down to state + local government area.
+    const reverseGeocode = async ({ lat, lon }) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timer);
+        const data = await res.json();
+        if ((data.countryCode || '').toUpperCase() !== 'NG') return { state: '', lga: '' };
+        const state = matchState(data.principalSubdivision || '');
+        const lgaEntry = (data.localityInfo?.administrative || [])
+          .find((a) => (a.description || '').toLowerCase().includes('local government'));
+        const lga = (lgaEntry?.name || data.locality || '').trim();
+        return { state, lga };
+      } catch {
+        return { state: '', lga: '' };
+      }
+    };
+
+    // 3. Fallback if GPS is denied/unavailable — coarser IP-based state/city guess.
+    const detectViaIP = async () => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+        clearTimeout(timer);
+        const geo = await res.json();
+        if (geo?.success === false || geo?.country_code !== 'NG') return { state: '', lga: '' };
+        return { state: matchState(geo.region || ''), lga: (geo.city || '').trim() };
+      } catch {
+        return { state: '', lga: '' };
+      }
+    };
+
+    const detectLocation = async () => {
+      const gps = await requestGPS();
+      if (gps) {
+        const geo = await reverseGeocode(gps);
+        if (geo.state) return geo;
+      }
+      return detectViaIP();
+    };
+
+    (async () => {
+      const { state: userState, lga: userLga } = await detectLocation();
+      if (cancelled) return;
+      setDetectedState(userState);
+      setDetectedLga(userLga);
+
+      try {
+        // Near You — only schools actually in the user's detected state/LGA. No cross-state fallback.
+        let near = null;
+        if (userState) {
+          if (userLga) {
+            const lgaRes = await api.get('/schools', { params: { state: userState, lga: userLga, limit: 1 } });
+            near = lgaRes.data.schools?.[0] || null;
+            if (!near) {
+              const cityRes = await api.get('/schools', { params: { state: userState, city: userLga, limit: 1 } });
+              near = cityRes.data.schools?.[0] || null;
+            }
+          }
+          if (!near) {
+            const stateRes = await api.get('/schools', { params: { state: userState, limit: 1 } });
+            near = stateRes.data.schools?.[0] || null;
+          }
+        }
+        if (cancelled) return;
+        setSpotlightNear(near);
+
+        // Featured — if nothing is admin-featured, fall back to the highest-rated, most-reviewed school.
+        const featuredRes = await api.get('/schools', { params: { featured: 'true', limit: 2 } });
+        let featuredList = featuredRes.data.schools || [];
+        if (featuredList.length === 0) {
+          const topRated = await api.get('/schools', { params: { sort: 'rating', limit: 2 } });
+          featuredList = (topRated.data.schools || []).filter((s) => s.rating > 0);
+        }
+        if (cancelled) return;
+        const featuredPick = featuredList.find((s) => s._id !== near?._id) || featuredList[0] || null;
+        setSpotlightFeatured(featuredPick);
+      } catch {
+        /* silent — spotlight cards fall back to their empty state */
+      } finally {
+        if (!cancelled) setSpotlightLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
 
   // Featured blog post (admin-chosen) + 4 most recent
   const [featuredPost, setFeaturedPost] = useState(null);
@@ -724,6 +903,51 @@ export default function Home() {
               </p>
             </button>
           ))}
+        </div>
+      </section>
+
+      {/* ── SPOTLIGHT: TOP CHOICE NEAR YOU / FEATURED / MANY MORE ───── */}
+      <section className="px-4 pt-6 sm:pt-10 pb-8 sm:pb-12 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-5 sm:mb-7">
+            <p className="text-green-600 font-semibold text-[11px] sm:text-xs uppercase tracking-widest mb-1.5">Personalized For You</p>
+            <h2 className="text-lg sm:text-2xl font-extrabold text-gray-900 tracking-tight">Top Picks Right Now</h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
+            <SpotlightCard
+              loading={spotlightLoading}
+              school={spotlightNear}
+              kicker={detectedState ? `Near You · ${detectedLga ? `${detectedLga}, ` : ''}${detectedState}` : 'Top Choice'}
+              icon={MapPin}
+              accent="from-green-600 to-emerald-500"
+            />
+            <SpotlightCard
+              loading={spotlightLoading}
+              school={spotlightFeatured}
+              kicker="Featured Pick"
+              icon={Star}
+              accent="from-amber-500 to-orange-500"
+            />
+
+            {/* Many more — CTA tile */}
+            <Link
+              to="/schools"
+              className="group relative overflow-hidden rounded-2xl p-6 flex flex-col justify-between bg-linear-to-br from-emerald-700 via-emerald-800 to-gray-900 text-white shadow-sm hover:shadow-xl transition-all duration-300 min-h-52"
+            >
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+              <div className="relative z-10">
+                <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full">
+                  <Globe size={11} /> And Many More
+                </span>
+                <div className="mt-5 text-4xl sm:text-5xl font-black leading-none">{total ? `${total}+` : '500+'}</div>
+                <p className="text-white/70 text-sm mt-1.5">Verified schools across Nigeria</p>
+              </div>
+              <span className="relative z-10 mt-5 inline-flex items-center gap-2 bg-white text-emerald-900 font-bold text-sm px-5 py-2.5 rounded-xl group-hover:bg-emerald-50 transition w-fit">
+                Browse All Schools <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -15,7 +15,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 // GET /api/schools — public list with filters
 router.get('/', async (req, res) => {
   try {
-    const { state, lga, city, type, level, curriculum, minFee, maxFee, search, page = 1, limit = 12, featured } = req.query;
+    const { state, lga, city, type, level, curriculum, minFee, maxFee, search, page = 1, limit = 12, featured, sort } = req.query;
     const filter = { status: 'approved' };
 
     if (featured === 'true') filter.isFeatured = true;
@@ -32,10 +32,12 @@ router.get('/', async (req, res) => {
       if (maxFee) filter['fees.tuition'].$lte = Number(maxFee);
     }
 
+    const sortSpec = sort === 'rating' ? { rating: -1, reviewCount: -1 } : { isFeatured: -1, createdAt: -1 };
+
     const total = await School.countDocuments(filter);
     const schools = await School.find(filter)
       .populate('owner', 'name email')
-      .sort({ isFeatured: -1, createdAt: -1 })
+      .sort(sortSpec)
       .skip((page - 1) * limit)
       .limit(Number(limit));
 

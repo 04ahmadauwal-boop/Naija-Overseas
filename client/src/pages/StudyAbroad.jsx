@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Globe, BookOpen, Plane, FileText, CheckCircle, Star,
@@ -570,13 +570,20 @@ export default function StudyAbroad() {
                     </span>
                   </div>
 
-                  {/* Bottom content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="text-white font-extrabold text-xl leading-tight mb-1">{country}</h3>
-                    <p className="text-white/65 text-xs mb-3">{highlight}</p>
-                    <span className="inline-flex items-center gap-1.5 bg-green-600 group-hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors">
-                      Read More <ArrowRight size={12} />
-                    </span>
+                  {/* Bottom content — glassy frosted card */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <div className="relative overflow-hidden rounded-xl p-4 bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+                      {/* Glossy diagonal sheen */}
+                      <div className="pointer-events-none absolute -inset-x-12 -top-1/2 h-[220%] rotate-12 bg-linear-to-b from-white/30 via-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-10" />
+                      {/* Inner top highlight edge */}
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-white/60 via-white/10 to-transparent" />
+
+                      <h3 className="relative text-white font-extrabold text-xl leading-tight mb-1">{country}</h3>
+                      <p className="relative text-white/70 text-xs mb-3">{highlight}</p>
+                      <span className="relative inline-flex items-center gap-1.5 bg-green-600 group-hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors">
+                        Read More <ArrowRight size={12} />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>
