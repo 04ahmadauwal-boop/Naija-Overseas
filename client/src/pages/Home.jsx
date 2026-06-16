@@ -538,13 +538,13 @@ export default function Home() {
         ))}
 
         {/* Foreground person — desktop XL only */}
-        <div className="absolute inset-y-0 right-0 w-[40%] z-20 hidden xl:block pointer-events-none overflow-hidden">
+        <div className="absolute inset-y-0 right-0 w-[46%] z-20 hidden xl:block pointer-events-none overflow-hidden">
           {HERO_SLIDES.map((s, i) => (
             <img
               key={i}
               src={s.personImg}
               alt=""
-              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom transition-opacity duration-1000 ${i === slide ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom origin-bottom transition-all duration-1000 ${i === slide ? 'opacity-100' : 'opacity-0'} ${i === 0 ? 'scale-[1.3]' : 'scale-110'}`}
             />
           ))}
         </div>
@@ -648,7 +648,7 @@ export default function Home() {
             <div ref={ctaRef} className="flex gap-2 sm:gap-3 w-full sm:w-auto">
               {slide === 0 ? (
                 <>
-                  <Link to="/#browse"
+                  {/* <Link to="/#browse"
                     onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
                     Browse Schools <ArrowRight size={13} />
@@ -656,7 +656,7 @@ export default function Home() {
                   <Link to="/compare"
                     className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
                     Compare
-                  </Link>
+                  </Link> */}
                 </>
               ) : (
                 <>
