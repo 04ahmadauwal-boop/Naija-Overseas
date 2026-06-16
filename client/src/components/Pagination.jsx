@@ -22,10 +22,14 @@ export default function Pagination({ page, pages, onPage, dark = false, activeCl
 
   const items = getPages(page, pages);
 
-  const btn =
-    dark
-      ? 'w-9 h-9 flex items-center justify-center rounded-xl border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold'
-      : 'w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600 text-sm font-semibold';
+  const base =
+    'w-9 h-9 flex items-center justify-center rounded-xl border transition text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed';
+
+  const inactiveCls = dark
+    ? 'border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800'
+    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50';
+
+  const btn = `${base} ${inactiveCls}`;
 
   const activeCls = activeClass ?? 'bg-green-700 border-green-700 text-white shadow-sm';
 
@@ -53,7 +57,7 @@ export default function Pagination({ page, pages, onPage, dark = false, activeCl
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={`${btn} ${p === page ? activeCls : ''}`}
+            className={`${base} ${p === page ? activeCls : inactiveCls}`}
             aria-label={`Page ${p}`}
             aria-current={p === page ? 'page' : undefined}
           >

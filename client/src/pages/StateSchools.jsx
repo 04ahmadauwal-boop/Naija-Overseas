@@ -340,7 +340,7 @@ export default function StateSchools() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── HERO BANNER ─────────────────────────────────────── */}
-      <div className={`relative overflow-hidden bg-gradient-to-r ${meta.color} text-white`}>
+      <div className={`relative overflow-hidden bg-linear-to-r ${meta.color} text-white`}>
         {/* Landmark photo background */}
         {meta.image && !imgError && (
           <img
@@ -351,7 +351,7 @@ export default function StateSchools() {
           />
         )}
         {/* Gradient overlay for readability */}
-        <div className={`absolute inset-0 bg-gradient-to-r ${meta.color} ${meta.image && !imgError ? 'opacity-80' : 'opacity-100'}`} />
+        <div className={`absolute inset-0 bg-linear-to-r ${meta.color} ${meta.image && !imgError ? 'opacity-80' : 'opacity-100'}`} />
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12">
 
           <button
@@ -429,7 +429,7 @@ export default function StateSchools() {
             </div>
 
             <div className="space-y-4">
-              {filteredLgas.slice((lgaPage - 1) * LGA_PER_PAGE, lgaPage * LGA_PER_PAGE).map((lga, i) => {
+              {filteredLgas.slice((lgaPage - 1) * LGA_PER_PAGE, lgaPage * LGA_PER_PAGE).map((lga, ) => {
                 const isOpen = selectedLga === lga;
 
                 const SCHOOL_BADGES = [
@@ -457,10 +457,10 @@ export default function StateSchools() {
                           className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : (
-                        <div className={`absolute inset-0 bg-gradient-to-r ${meta.color}`} />
+                        <div className={`absolute inset-0 bg-linear-to-r ${meta.color}`} />
                       )}
                       {/* Subtle dark veil */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-r from-black/25 via-black/10 to-transparent" />
 
                       {/* White content card — leaves right edge showing background */}
                       <div className="relative z-10 p-4 sm:p-5" style={{ width: '88%' }}>
@@ -630,7 +630,7 @@ export default function StateSchools() {
           {/* Academic calendar card */}
           <div className="lg:w-[38%] bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
             {/* Card header */}
-            <div className={`bg-gradient-to-r ${meta.color} text-white px-5 py-4 rounded-t-2xl`}>
+            <div className={`bg-linear-to-r ${meta.color} text-white px-5 py-4 rounded-t-2xl`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} className="text-white/80" />
@@ -676,7 +676,7 @@ export default function StateSchools() {
             <div className="px-4 pb-4 pt-3 border-t border-gray-50">
               <button
                 onClick={handleDownload}
-                className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r ${meta.color} text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-90 transition shadow-sm`}
+                className={`w-full flex items-center justify-center gap-2 bg-linear-to-r ${meta.color} text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-90 transition shadow-sm`}
               >
                 <Download size={14} />
                 Download Calendar (.csv)

@@ -251,7 +251,7 @@ export default function AllReviews() {
           <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto scrollbar-hide pb-1">
             {CATEGORIES.map((c) => (
               <button key={c} onClick={() => setCategory(c)}
-                className={`text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border whitespace-nowrap transition flex-shrink-0 ${
+                className={`text-[10px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border whitespace-nowrap transition shrink-0 ${
                   category === c
                     ? 'bg-emerald-500 text-white border-emerald-500'
                     : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'

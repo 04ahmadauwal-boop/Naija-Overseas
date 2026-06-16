@@ -26,7 +26,7 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
       }`}
     >
       {/* ── IMAGE ──────────────────────────────────── */}
-      <Link to={href} className="block relative w-full h-48 overflow-hidden shrink-0 bg-linear-to-br from-emerald-50 to-green-100">
+      <Link to={href} className="block relative w-full aspect-5/5 overflow-hidden shrink-0 bg-linear-to-br from-emerald-50 to-green-100">
         {school.images?.[0] ? (
           <img
             ref={imageRef}
@@ -84,7 +84,7 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
       </Link>
 
       {/* ── CONTENT ────────────────────────────────── */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
+      <div className="flex flex-col gap-2 p-3">
 
         {/* School name + verified */}
         <Link to={href}>
@@ -94,17 +94,6 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
           </h3>
         </Link>
 
-        {/* Curriculum chips */}
-        {school.curriculum?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {school.curriculum.slice(0, 3).map((c) => (
-              <span key={c} className="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">
-                {c}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Fee */}
         {school.fees?.tuition ? (
           <div className="flex items-center gap-1.5 text-gray-500 text-xs">
@@ -112,9 +101,6 @@ export default function SchoolCard({ school, onCompare, isSelected }) {
             <span className="text-gray-400">/ year</span>
           </div>
         ) : null}
-
-        {/* Divider */}
-        <div className="h-px bg-gray-100 mt-auto" />
 
         {/* Actions */}
         <div className="flex gap-2">

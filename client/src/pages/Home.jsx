@@ -11,6 +11,9 @@ import {
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
 import toast from 'react-hot-toast';
+import heroQualityDriven from '../assets/hero/quality-driven.png';
+import heroStudentsFocused from '../assets/hero/students-focused.png';
+import heroGlobalSourcing from '../assets/hero/global-sourcing.png';
 
 const NIGERIAN_STATES = [
   'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
@@ -187,9 +190,9 @@ const HERO_SLIDES = [
     headline: 'Find the perfect school\nfor your child.',
     highlight: 'Compare & decide.',
     subtitle: "Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools across Nigeria and West Africa.",
-    // Warm, inviting classroom — children learning, bright natural light
-    bg: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
+    // Bright classroom — children raising hands, engaged learning
+    bg: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1920&q=80',
+    personImg: heroQualityDriven,
     // Deep forest-green gradient left → transparent right
     accent: 'from-emerald-950 via-green-900/75',
     bottomFade: 'from-emerald-950/60',
@@ -220,7 +223,7 @@ const HERO_SLIDES = [
     subtitle: "List your school on Nigeria's fastest-growing education platform. Reach parents actively searching for schools in your area — starting from ₦15,000.",
     // Prestigious school building exterior — architecture, blue sky, sunlight
     bg: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=80',
+    personImg: heroStudentsFocused,
     // Deep navy gradient left → transparent right
     accent: 'from-slate-950 via-blue-950/80',
     bottomFade: 'from-slate-950/60',
@@ -249,9 +252,9 @@ const HERO_SLIDES = [
     headline: 'Get into a top university\nabroad.',
     highlight: 'Your future starts here.',
     subtitle: "Expert guidance for Nigerian students seeking admission in the UK, Canada, USA, Australia, Germany and more. 95% visa success rate — end-to-end support.",
-    // World-class university campus — grand architecture, aspirational
-    bg: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80',
-    personImg: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80',
+    // Graduation moment — caps thrown, global academic success
+    bg: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80',
+    personImg: heroGlobalSourcing,
     // Deep royal violet/indigo gradient left → transparent right
     accent: 'from-violet-950 via-indigo-950/80',
     bottomFade: 'from-violet-950/60',
@@ -500,7 +503,7 @@ export default function Home() {
   useSlideIn('up', 0.8, 0.4);
   const ctaRef = useSlideIn('up', 0.8, 0.5);
   useScrollAnimation('fadeIn', { duration: 0.8 });
-  const featuresRef = useScrollAnimation('slideUp', { duration: 0.8 });
+  //const featuresRef = useScrollAnimation('slideUp', { duration: 0.8 });
 
   return (
     <div className="overflow-x-hidden">
@@ -541,8 +544,7 @@ export default function Home() {
               key={i}
               src={s.personImg}
               alt=""
-              className={`absolute bottom-0 right-0 h-full w-full object-cover object-top transition-opacity duration-1000 ${i === slide ? 'opacity-90' : 'opacity-0'}`}
-              style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 32%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 32%)' }}
+              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom transition-opacity duration-1000 ${i === slide ? 'opacity-100' : 'opacity-0'}`}
             />
           ))}
         </div>
@@ -554,13 +556,13 @@ export default function Home() {
             {/* Headline */}
             <h1
               ref={heroHeadingRef}
-              className="text-[1.85rem] xs:text-[2.1rem] sm:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.6rem] font-bold text-white leading-[1.12] mb-3 sm:mb-4 text-center sm:text-left"
+              className="font-inter text-[1.85rem] xs:text-[2.1rem] sm:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.6rem] font-bold text-white leading-[1.12] mb-3 sm:mb-4 text-center sm:text-left tracking-tight"
               style={{ textShadow: '0 2px 30px rgba(0,0,0,0.35)' }}
             >
               {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
                 <span key={i} className="block">{line}</span>
               ))}
-              <span className="text-green-400 italic">{HERO_SLIDES[slide].highlight}</span>
+              <span className="text-green-300">{HERO_SLIDES[slide].highlight}</span>
             </h1>
 
             {/* Search bar — glass morphism (slide 0), centered on mobile */}
