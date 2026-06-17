@@ -692,7 +692,7 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col overflow-hidden h-[60dvh] sm:h-dvh"
+        className="relative flex flex-col overflow-hidden"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -732,8 +732,8 @@ export default function Home() {
         </div>
 
         {/* Main content */}
-        <div className="relative z-20 flex-1 flex items-center p-0 m-0">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 py-6 sm:py-10 lg:py-14 flex flex-col items-center sm:items-start">
+        <div className="relative z-20">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-14 pb-6 sm:pt-16 sm:pb-8 md:pt-20 md:pb-10 flex flex-col items-center sm:items-start">
 
             {/* Headline */}
             <h1

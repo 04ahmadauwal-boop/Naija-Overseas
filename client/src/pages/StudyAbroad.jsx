@@ -343,7 +343,7 @@ export default function StudyAbroad() {
           SECTION 1 — HERO SLIDER
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="relative min-h-[90vh] flex flex-col overflow-hidden"
+        className="relative flex flex-col overflow-hidden"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}>
 
@@ -359,8 +359,8 @@ export default function StudyAbroad() {
         ))}
 
         {/* Content */}
-        <div className="relative z-20 flex-1 flex items-center">
-          <div className="max-w-7xl mx-auto px-6 pt-12 pb-5 w-full grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative z-20">
+          <div className="max-w-7xl mx-auto px-6 pt-14 pb-6 sm:pt-16 sm:pb-8 md:pt-20 md:pb-12 w-full grid lg:grid-cols-2 gap-12 items-center">
             {/* LEFT: Country info */}
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.06] mb-5 drop-shadow-lg">
