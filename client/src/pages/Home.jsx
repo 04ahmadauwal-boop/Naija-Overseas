@@ -6,7 +6,7 @@ import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, BookOpen, Globe, BarChart3, Shield, X,
   ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
-  Clock, Eye, MapPin,
+  Clock, Eye, MapPin, Building2, Wallet,
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 import heroQualityDriven from '../assets/hero/quality-driven.png';
 import heroStudentsFocused from '../assets/hero/students-focused.png';
 import heroGlobalSourcing from '../assets/hero/global-sourcing.png';
-import { NIGERIAN_STATES, BUDGET_OPTIONS, EMPTY_FILTERS } from '../utils/schoolFilters';
+import { NIGERIAN_STATES, NIGERIAN_LGAS, BUDGET_OPTIONS, EMPTY_FILTERS } from '../utils/schoolFilters';
 
 
 const FEATURES = [
@@ -590,6 +590,7 @@ export default function Home() {
       const params = { page, limit: 8 };
       if (f.search) params.search = f.search;
       if (f.state) params.state = f.state;
+      if (f.lga) params.lga = f.lga;
       if (f.type) params.type = f.type;
       if (f.level) params.level = f.level;
       if (f.curriculum) params.curriculum = f.curriculum;
@@ -614,6 +615,7 @@ export default function Home() {
     const urlFilters = {
       search:     sp.get('search')     || '',
       state:      sp.get('state')      || '',
+      lga:        sp.get('lga')        || '',
       type:       sp.get('type')       || '',
       level:      sp.get('level')      || '',
       curriculum: sp.get('curriculum') || '',
@@ -647,6 +649,7 @@ export default function Home() {
 
   const updateFilter = (key, value) => {
     const next = { ...filters, [key]: value };
+    if (key === 'state') next.lga = '';
     setFilters(next);
     doFetch(1, next);
   };
@@ -673,7 +676,7 @@ export default function Home() {
   }, [featuredPaused, featuredSchools.length]);
 
   const activeCount = [
-    filters.state, filters.type, filters.level, filters.curriculum,
+    filters.state, filters.lga, filters.type, filters.level, filters.curriculum,
     filters.minFee || filters.maxFee,
   ].filter(Boolean).length;
 
@@ -1179,70 +1182,96 @@ export default function Home() {
 
           {/* ── PRO FILTER PANEL ── */}
           {showFilters && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-8 overflow-hidden">
+            <div className="mb-8">
 
-              {/* Active filter chips row */}
+              {/* Active chips bar */}
               {activeCount > 0 && (
-                <div className="flex items-center gap-2 flex-wrap px-5 py-3 bg-green-50 border-b border-green-100">
-                  <span className="text-xs text-green-700 font-bold shrink-0">Active:</span>
+                <div className="flex items-center gap-2 flex-wrap mb-4 px-1">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0">Active:</span>
                   {filters.state && (
                     <button onClick={() => updateFilter('state', '')}
-                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
-                      {filters.state} <X size={10} />
+                      className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition">
+                      <MapPin size={10} /> {filters.state} <X size={9} />
+                    </button>
+                  )}
+                  {filters.lga && (
+                    <button onClick={() => updateFilter('lga', '')}
+                      className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition">
+                      <Building2 size={10} /> {filters.lga} <X size={9} />
                     </button>
                   )}
                   {filters.type && (
                     <button onClick={() => updateFilter('type', '')}
-                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition capitalize">
-                      {filters.type} <X size={10} />
+                      className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition capitalize">
+                      <LayoutDashboard size={10} /> {filters.type} <X size={9} />
                     </button>
                   )}
                   {filters.level && (
                     <button onClick={() => updateFilter('level', '')}
-                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition capitalize">
-                      {filters.level} <X size={10} />
+                      className="inline-flex items-center gap-1.5 bg-violet-50 border border-violet-200 text-violet-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition capitalize">
+                      <GraduationCap size={10} /> {filters.level} <X size={9} />
                     </button>
                   )}
                   {filters.curriculum && (
                     <button onClick={() => updateFilter('curriculum', '')}
-                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
-                      {filters.curriculum} <X size={10} />
+                      className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition">
+                      <BookOpen size={10} /> {filters.curriculum} <X size={9} />
                     </button>
                   )}
                   {(filters.minFee || filters.maxFee) && (
                     <button onClick={() => setBudget('', '')}
-                      className="flex items-center gap-1 bg-white border border-green-300 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                      className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition">
+                      <Wallet size={10} />
                       {filters.minFee ? `₦${Number(filters.minFee).toLocaleString()}` : '₦0'}
                       {' – '}
                       {filters.maxFee ? `₦${Number(filters.maxFee).toLocaleString()}` : 'Any'}
-                      <X size={10} />
+                      <X size={9} />
                     </button>
                   )}
                   <button onClick={clearFilters}
-                    className="ml-auto text-xs text-red-500 font-semibold hover:text-red-700 transition shrink-0">
-                    Clear all
+                    className="ml-auto inline-flex items-center gap-1 text-xs text-red-500 font-semibold hover:text-red-700 transition shrink-0">
+                    <X size={12} /> Clear all
                   </button>
                 </div>
               )}
 
-              <div className="p-5 space-y-6">
+              {/* 6-card filter grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                {/* Location */}
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Location / State</p>
-                  <div className="flex flex-col gap-3">
-                    <select value={filters.state} onChange={(e) => updateFilter('state', e.target.value)}
-                      className="w-full sm:w-64 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 bg-white transition">
+                {/* ── Card 1: State ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${filters.state ? 'border-emerald-300 shadow-emerald-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                      <MapPin size={15} className="text-emerald-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Location</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight truncate">
+                        {filters.state || 'All States'}
+                      </p>
+                    </div>
+                    {filters.state && (
+                      <button onClick={() => updateFilter('state', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <select
+                      value={filters.state}
+                      onChange={(e) => updateFilter('state', e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-gray-50 text-gray-700 transition appearance-none cursor-pointer">
                       <option value="">All States</option>
                       {NIGERIAN_STATES.map((s) => <option key={s}>{s}</option>)}
                     </select>
                     <div className="flex flex-wrap gap-1.5">
                       {['Lagos', 'FCT', 'Kano', 'Rivers', 'Ogun', 'Oyo'].map((s) => (
                         <button key={s} onClick={() => updateFilter('state', filters.state === s ? '' : s)}
-                          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border-2 transition ${
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${
                             filters.state === s
-                              ? 'bg-green-600 border-green-600 text-white shadow-sm'
-                              : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 bg-white'
+                              ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-200'
+                              : 'bg-gray-100 text-gray-500 hover:bg-emerald-50 hover:text-emerald-700'
                           }`}>
                           {s}
                         </button>
@@ -1251,96 +1280,207 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-100" />
-
-                {/* Type + Level row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">School Type</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'private',       label: 'Private'       },
-                        { value: 'public',        label: 'Public'        },
-                        { value: 'federal',       label: 'Federal'       },
-                        { value: 'international', label: 'International' },
-                      ].map(({ value, label }) => {
-                        const active = filters.type === value;
-                        return (
-                          <button key={value} onClick={() => updateFilter('type', active ? '' : value)}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
-                              active
-                                ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
-                                : 'border-gray-200 text-gray-600 hover:border-green-300 bg-white'
-                            }`}>
-                            {label}
-                          </button>
-                        );
-                      })}
+                {/* ── Card 2: LGA ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${filters.lga ? 'border-teal-300 shadow-teal-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                      <Building2 size={15} className="text-teal-600" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Local Gov. Area</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight truncate">
+                        {filters.lga || (filters.state ? `All LGAs` : 'Select state first')}
+                      </p>
+                    </div>
+                    {filters.lga && (
+                      <button onClick={() => updateFilter('lga', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
                   </div>
-
-                  <div>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">School Level</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'primary',   label: 'Primary'   },
-                        { value: 'secondary', label: 'Secondary' },
-                        { value: 'both',      label: 'All Levels'},
-                      ].map(({ value, label }) => {
-                        const active = filters.level === value;
-                        return (
-                          <button key={value} onClick={() => updateFilter('level', active ? '' : value)}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
-                              active
-                                ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm'
-                                : 'border-gray-200 text-gray-600 hover:border-blue-300 bg-white'
-                            }`}>
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  <div className="p-4">
+                    {!filters.state ? (
+                      <div className="flex flex-col items-center justify-center py-5 text-center">
+                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-2">
+                          <MapPin size={18} className="text-gray-200" />
+                        </div>
+                        <p className="text-xs text-gray-400 leading-snug">Select a state first to<br />filter by local government</p>
+                      </div>
+                    ) : (
+                      <select
+                        value={filters.lga}
+                        onChange={(e) => updateFilter('lga', e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 bg-gray-50 text-gray-700 transition appearance-none cursor-pointer">
+                        <option value="">All LGAs in {filters.state}</option>
+                        {(NIGERIAN_LGAS[filters.state] || []).map((l) => (
+                          <option key={l}>{l}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-100" />
-
-                {/* Curriculum */}
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Curriculum</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['WAEC', 'NECO', 'IGCSE', 'IB', 'Cambridge', 'BECE'].map((c) => {
-                      const active = filters.curriculum === c;
+                {/* ── Card 3: School Type ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${filters.type ? 'border-blue-300 shadow-blue-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                      <LayoutDashboard size={15} className="text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">School Type</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight truncate capitalize">
+                        {filters.type || 'Any Type'}
+                      </p>
+                    </div>
+                    {filters.type && (
+                      <button onClick={() => updateFilter('type', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'private',       label: 'Private',       emoji: '🏛️' },
+                      { value: 'public',        label: 'Public',        emoji: '🏫' },
+                      { value: 'federal',       label: 'Federal',       emoji: '🏦' },
+                      { value: 'international', label: 'International', emoji: '🌍' },
+                    ].map(({ value, label, emoji }) => {
+                      const active = filters.type === value;
                       return (
-                        <button key={c} onClick={() => updateFilter('curriculum', active ? '' : c)}
-                          className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                        <button key={value} onClick={() => updateFilter('type', active ? '' : value)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition ${
                             active
-                              ? 'bg-purple-50 border-purple-500 text-purple-700 shadow-sm'
-                              : 'border-gray-200 text-gray-600 hover:border-purple-300 bg-white'
+                              ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-sm'
+                              : 'border-gray-100 text-gray-600 hover:border-blue-200 hover:bg-blue-50/40 bg-gray-50/80'
                           }`}>
-                          {c}
+                          <span className="text-sm">{emoji}</span>
+                          <span>{label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-100" />
+                {/* ── Card 4: School Level ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${filters.level ? 'border-violet-300 shadow-violet-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                      <GraduationCap size={15} className="text-violet-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">School Level</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight truncate capitalize">
+                        {filters.level === 'both' ? 'All Levels' : filters.level || 'Any Level'}
+                      </p>
+                    </div>
+                    {filters.level && (
+                      <button onClick={() => updateFilter('level', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 flex flex-col gap-2">
+                    {[
+                      { value: 'primary',   label: 'Primary School',   sub: 'JSS 1 – 3' },
+                      { value: 'secondary', label: 'Secondary School', sub: 'SS 1 – 3' },
+                      { value: 'both',      label: 'All Levels',       sub: 'Primary + Secondary' },
+                    ].map(({ value, label, sub }) => {
+                      const active = filters.level === value;
+                      return (
+                        <button key={value} onClick={() => updateFilter('level', active ? '' : value)}
+                          className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs border-2 transition ${
+                            active
+                              ? 'bg-violet-50 border-violet-400 text-violet-800 shadow-sm'
+                              : 'border-gray-100 text-gray-600 hover:border-violet-200 hover:bg-violet-50/40 bg-gray-50/80'
+                          }`}>
+                          <span className="font-semibold">{label}</span>
+                          <span className={`text-[10px] ${active ? 'text-violet-500' : 'text-gray-400'}`}>{sub}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                {/* Budget */}
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Annual Fee Budget</p>
-                  <div className="flex flex-wrap gap-2">
+                {/* ── Card 5: Curriculum ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${filters.curriculum ? 'border-orange-300 shadow-orange-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                      <BookOpen size={15} className="text-orange-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Curriculum</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight">
+                        {filters.curriculum || 'Any Curriculum'}
+                      </p>
+                    </div>
+                    {filters.curriculum && (
+                      <button onClick={() => updateFilter('curriculum', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'WAEC',      color: 'bg-green-600'  },
+                      { value: 'NECO',      color: 'bg-blue-600'   },
+                      { value: 'IGCSE',     color: 'bg-purple-600' },
+                      { value: 'IB',        color: 'bg-red-600'    },
+                      { value: 'Cambridge', color: 'bg-indigo-600' },
+                      { value: 'BECE',      color: 'bg-teal-600'   },
+                    ].map(({ value, color }) => {
+                      const active = filters.curriculum === value;
+                      return (
+                        <button key={value} onClick={() => updateFilter('curriculum', active ? '' : value)}
+                          className={`relative py-2.5 rounded-xl text-xs font-bold border-2 transition text-center overflow-hidden ${
+                            active
+                              ? 'border-orange-400 text-orange-800 bg-orange-50 shadow-sm'
+                              : 'border-gray-100 text-gray-600 hover:border-orange-200 hover:bg-orange-50/40 bg-gray-50/80'
+                          }`}>
+                          {active && <span className={`absolute top-0 left-0 right-0 h-0.5 ${color}`} />}
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Card 6: Budget ── */}
+                <div className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden transition-all duration-200 ${(filters.minFee || filters.maxFee) ? 'border-rose-300 shadow-rose-50' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50">
+                    <div className="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                      <Wallet size={15} className="text-rose-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Annual Fee Budget</p>
+                      <p className="text-sm font-bold text-gray-800 leading-tight truncate">
+                        {(filters.minFee || filters.maxFee)
+                          ? `${filters.minFee ? `₦${Number(filters.minFee).toLocaleString()}` : '₦0'} – ${filters.maxFee ? `₦${Number(filters.maxFee).toLocaleString()}` : 'Any'}`
+                          : 'Any Budget'}
+                      </p>
+                    </div>
+                    {(filters.minFee || filters.maxFee) && (
+                      <button onClick={() => setBudget('', '')}
+                        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 flex flex-col gap-2">
                     {BUDGET_OPTIONS.map(({ label, min, max }) => {
                       const active = filters.minFee === min && filters.maxFee === max;
                       return (
                         <button key={label} onClick={() => setBudget(min, max)}
-                          className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition ${
+                          className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold border-2 transition ${
                             active
-                              ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-sm'
-                              : 'border-gray-200 text-gray-600 hover:border-orange-300 bg-white'
+                              ? 'bg-rose-50 border-rose-400 text-rose-800 shadow-sm'
+                              : 'border-gray-100 text-gray-600 hover:border-rose-200 hover:bg-rose-50/40 bg-gray-50/80'
                           }`}>
-                          {label}
+                          <span>{label}</span>
+                          {active && <CheckCircle size={13} className="text-rose-500 shrink-0" />}
                         </button>
                       );
                     })}
@@ -1349,15 +1489,18 @@ export default function Home() {
 
               </div>
 
-              {/* Filter footer */}
-              <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
-                <p className="text-xs text-gray-400">
-                  {loading ? 'Searching…' : `${total} school${total !== 1 ? 's' : ''} match your filters`}
+              {/* Footer summary */}
+              <div className="mt-4 flex items-center justify-between px-1">
+                <p className="text-sm text-gray-500">
+                  {loading
+                    ? <span className="text-gray-400">Searching…</span>
+                    : <><span className="font-bold text-gray-900">{total.toLocaleString()}</span> school{total !== 1 ? 's' : ''} match your filters</>
+                  }
                 </p>
                 {activeCount > 0 && (
                   <button onClick={clearFilters}
-                    className="text-xs text-red-500 font-semibold hover:text-red-700 transition">
-                    Clear all filters
+                    className="inline-flex items-center gap-1.5 text-sm text-red-500 font-semibold hover:text-red-700 transition">
+                    <X size={13} /> Clear all filters
                   </button>
                 )}
               </div>
