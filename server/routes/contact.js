@@ -11,14 +11,14 @@ router.post('/', async (req, res) => {
     const { name, email, phone, subject, message } = req.body;
     const contact = await Contact.create({ name, email, phone, subject, message });
 
-    await sendEmail({
-      to: process.env.EMAIL_USER,
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: `New Contact: ${subject || 'No subject'} — from ${name}`,
       html: `<p><strong>Name:</strong> ${name}</p>
              <p><strong>Email:</strong> ${email}</p>
              <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
              <p><strong>Message:</strong></p><p>${message}</p>`,
-    });
+    }).catch((err) => console.error('📧 Contact notification email failed:', err.message));
 
     res.status(201).json({ message: 'Message sent. We will get back to you soon.' });
   } catch (err) {

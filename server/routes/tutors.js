@@ -307,11 +307,11 @@ router.post('/register', protect, async (req, res) => {
     }
 
     const appMsg = `Hi ${req.user.name},\n\nThank you for applying to become a tutor on Education Naija & Overseas! We have received your application and will review it within 24–48 hours.\n\nOnce approved, your profile will go live and students will be able to book sessions with you.\n\nBest regards,\nThe Education Naija & Overseas Team`;
-    await sendEmail({
+    sendEmail({
       to: req.user.email,
       subject: 'Tutor Application Received — Education Naija & Overseas',
       html: `<p>Hi ${req.user.name},</p><p>Thank you for applying to become a tutor on Education Naija & Overseas! We have received your application and will review it within <strong>24–48 hours</strong>.</p><p>Once approved, your profile will go live and students will be able to book sessions with you.</p><p>Best regards,<br/>The Education Naija & Overseas Team</p>`,
-    });
+    }).catch((err) => console.error('📧 Tutor application email failed:', err.message));
     sendWhatsApp({ to: req.user.phone, message: appMsg }).catch(() => {});
 
     res.status(201).json({ profile, message: 'Application submitted! We will review and activate your profile within 24–48 hours.' });
@@ -382,11 +382,11 @@ router.post('/:id/book', optionalAuth, async (req, res) => {
     });
 
     const bookMsg = `Hi ${name},\n\nYour ${sessionType === 'trial' ? 'free trial lesson' : 'tutoring session'} with *${tutor.displayName || tutor.user?.name}* for *${subject || 'your chosen subject'}* on *${new Date(date).toDateString()}* at *${timeSlot}* has been received.\n\nWe will confirm your session shortly.\n\n— Education Naija & Overseas`;
-    await sendEmail({
+    sendEmail({
       to: email,
       subject: `${sessionType === 'trial' ? 'Free Trial' : 'Session'} Booking Confirmed — Education Naija & Overseas`,
       html: `<p>Hi ${name},</p><p>Your <strong>${sessionType === 'trial' ? 'free trial lesson' : 'tutoring session'}</strong> with <strong>${tutor.displayName || tutor.user?.name}</strong> for <strong>${subject || 'your chosen subject'}</strong> on <strong>${new Date(date).toDateString()}</strong> at <strong>${timeSlot}</strong> has been received.</p><p>We will confirm your session shortly.</p>`,
-    });
+    }).catch((err) => console.error('📧 Session booking email failed:', err.message));
     sendWhatsApp({ to: phone, message: bookMsg }).catch(() => {});
 
     res.status(201).json({ booking, message: 'Booking received! Check your email for confirmation.' });
@@ -436,11 +436,11 @@ router.patch('/:id/activate', protect, isAdmin, async (req, res) => {
 
     if (req.body.isActive) {
       const liveMsg = `Hi ${tutor.user.name},\n\n🎉 Great news! Your tutor profile has been reviewed and is now *live* on Education Naija & Overseas. Students can now find and book sessions with you.\n\nLog in to your dashboard to manage your profile and bookings.\n\n— Education Naija & Overseas Team`;
-      await sendEmail({
+      sendEmail({
         to: tutor.user.email,
         subject: 'Your Tutor Profile is Now Live! — Education Naija & Overseas',
         html: `<p>Hi ${tutor.user.name},</p><p>Great news! Your tutor profile has been reviewed and is now <strong>live</strong> on Education Naija & Overseas. Students can now find and book sessions with you.</p><p>Log in to your dashboard to manage your profile and bookings.</p>`,
-      });
+      }).catch((err) => console.error('📧 Tutor activation email failed:', err.message));
       const tutorUser = await User.findById(tutor.user._id).select('phone').lean().catch(() => null);
       sendWhatsApp({ to: tutorUser?.phone, message: liveMsg }).catch(() => {});
     }

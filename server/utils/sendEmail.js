@@ -22,7 +22,7 @@ const sendEmail = async ({ to, subject, html }) => {
   }
   const transporter = createTransporter();
   await transporter.sendMail({
-    from: `"Education Education Naija & Overseas" <${process.env.EMAIL_USER}>`,
+    from: `"Education Naija & Overseas" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
