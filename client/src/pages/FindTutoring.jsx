@@ -857,7 +857,7 @@ export default function FindTutoring() {
           {/* Mobile-only bottom cards */}
           <div className="lg:hidden mt-6 space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 space-y-3">
-              <p className="font-bold text-gray-900 text-sm">Why Naija &amp; Overseas?</p>
+              <p className="font-bold text-gray-900 text-sm">Why Education Naija &amp; Overseas?</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { icon: Globe,       text: 'Tutors from 30+ countries',   color: 'text-blue-600'   },
@@ -891,7 +891,7 @@ export default function FindTutoring() {
           <SmartMatchWidget onMatch={handleMatch} />
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-            <p className="font-bold text-gray-900 text-sm">Why Naija &amp; Overseas?</p>
+            <p className="font-bold text-gray-900 text-sm">Why Education Naija &amp; Overseas?</p>
             {[
               { icon: Globe,       text: 'Tutors from 30+ countries',   color: 'text-blue-600'   },
               { icon: GraduationCap,text: 'WAEC, JAMB & global exams', color: 'text-green-600'  },

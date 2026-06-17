@@ -7,6 +7,7 @@ import {
   GraduationCap, Eye, EyeOff, User, Users, School,
   CheckCircle, Globe, BookOpen, ChevronRight, Mail, RefreshCw,
 } from 'lucide-react';
+import Logo from '../../components/Logo';
 
 const COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'United Kingdom',
@@ -175,13 +176,8 @@ export default function Register() {
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-green-800 rounded-full opacity-40 translate-y-1/2 -translate-x-1/4" />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-              <GraduationCap size={20} className="text-white" />
-            </div>
-            <span className="text-white font-bold text-xl tracking-tight">
-              Naija<span className="text-green-400">&</span>Overseas
-            </span>
+          <div className="mb-10">
+            <Logo variant="dark" />
           </div>
 
           <h2 className="text-3xl font-extrabold text-white leading-tight mb-3">
@@ -221,11 +217,8 @@ export default function Register() {
         <div className="w-full max-w-lg">
 
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
-              <GraduationCap size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-gray-900">Naija<span className="text-green-600">&</span>Overseas</span>
+          <div className="mb-8 lg:hidden">
+            <Logo />
           </div>
 
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Create account</h1>

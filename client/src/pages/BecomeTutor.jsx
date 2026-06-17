@@ -539,7 +539,7 @@ export default function BecomeTutor() {
       <div className="text-center max-w-sm">
         <GraduationCap size={40} className="text-green-600 mx-auto mb-4" />
         <h2 className="font-bold text-gray-900 text-xl mb-2">Log in to register as a tutor</h2>
-        <p className="text-gray-500 text-sm mb-6">You need a free account to apply as a tutor on Naija & Overseas.</p>
+        <p className="text-gray-500 text-sm mb-6">You need a free account to apply as a tutor on Education Naija & Overseas.</p>
         <div className="flex gap-3 justify-center">
           <Link to="/login" className="bg-green-700 text-white font-bold px-6 py-3 rounded-xl hover:bg-green-800 transition text-sm">Log In</Link>
           <Link to="/register" className="border border-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl hover:bg-gray-50 transition text-sm">Create Account</Link>
@@ -1018,7 +1018,7 @@ export default function BecomeTutor() {
 
                 {/* Agreement */}
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  By submitting, you confirm that all information provided is accurate. Your profile will be reviewed within <strong className="text-gray-600">24–48 hours</strong> and you'll receive an email confirmation once approved. Naija & Overseas reserves the right to reject profiles that don't meet our quality standards.
+                  By submitting, you confirm that all information provided is accurate. Your profile will be reviewed within <strong className="text-gray-600">24–48 hours</strong> and you'll receive an email confirmation once approved. Education Naija & Overseas reserves the right to reject profiles that don't meet our quality standards.
                 </p>
               </div>
             )}

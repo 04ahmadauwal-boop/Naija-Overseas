@@ -191,7 +191,7 @@ export default function AllReviews() {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_80%_20%,#34d399,transparent_50%)]" />
 
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-10 sm:py-14 md:py-18" style={{ minHeight: 'clamp(240px, 40vw, 360px)' }}>
-          <p className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3">Naija &amp; Overseas</p>
+          <p className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3">Education Naija &amp; Overseas</p>
           <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 sm:mb-5 leading-tight max-w-xl">
             Find Reviews. Make the Right Choice.
           </h1>

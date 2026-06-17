@@ -312,16 +312,16 @@ router.post('/book', protect, async (req, res) => {
 
     await sendEmail({
       to: email,
-      subject: 'Tutoring Session Booked — Naija & Overseas',
+      subject: 'Tutoring Session Booked — Education Naija & Overseas',
       html: `<p>Hi ${name},</p>
 <p>Your tutoring session with <strong>${tutorProfile.displayName || tutorProfile.user?.name || 'your tutor'}</strong> has been booked and is pending confirmation.</p>
 <p><strong>Session${created.length > 1 ? 's' : ''}:</strong> ${datesList}</p>
 <p>We'll notify you once the tutor confirms.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
     }).catch(() => {});
     sendWhatsApp({
       to: phone,
-      message: `Hi ${name},\n\nYour tutoring session with *${tutorProfile.displayName || tutorProfile.user?.name || 'your tutor'}* has been booked and is pending confirmation.\n\n*Session${created.length > 1 ? 's' : ''}:* ${datesList}\n\nWe'll notify you once the tutor confirms.\n\n— Naija & Overseas Team`,
+      message: `Hi ${name},\n\nYour tutoring session with *${tutorProfile.displayName || tutorProfile.user?.name || 'your tutor'}* has been booked and is pending confirmation.\n\n*Session${created.length > 1 ? 's' : ''}:* ${datesList}\n\nWe'll notify you once the tutor confirms.\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
 
     // Notify the tutor — include quiz results when present
@@ -402,7 +402,7 @@ router.post('/book', protect, async (req, res) => {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
         <tr>
           <td style="background:#14532d;padding:24px 32px;">
-            <p style="margin:0;font-size:18px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:18px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">TUTOR NOTIFICATION</p>
           </td>
         </tr>
@@ -445,7 +445,7 @@ router.post('/book', protect, async (req, res) => {
         </tr>
         <tr>
           <td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-            <p style="margin:0;font-size:11px;color:#9ca3af;">© ${new Date().getFullYear()} Naija and Overseas · Lagos, Nigeria</p>
+            <p style="margin:0;font-size:11px;color:#9ca3af;">© ${new Date().getFullYear()} Education Education Naija & Overseas · Lagos, Nigeria</p>
           </td>
         </tr>
       </table>
@@ -466,7 +466,7 @@ router.post('/book', protect, async (req, res) => {
         }
         sendWhatsApp({
           to: tutorUser.phone,
-          message: `Hi ${tutorName},\n\nYou have a new *${sessionType}* booking!\n\n👤 *Student:* ${name}\n📧 *Email:* ${email}\n📅 *Session${created.length > 1 ? 's' : ''}:* ${datesList}${waQuiz}\n\nLog in to confirm or decline the booking.\n\n— Naija & Overseas`,
+          message: `Hi ${tutorName},\n\nYou have a new *${sessionType}* booking!\n\n👤 *Student:* ${name}\n📧 *Email:* ${email}\n📅 *Session${created.length > 1 ? 's' : ''}:* ${datesList}${waQuiz}\n\nLog in to confirm or decline the booking.\n\n— Education Naija & Overseas`,
         }).catch(() => {});
       }
     }

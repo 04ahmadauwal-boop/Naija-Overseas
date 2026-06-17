@@ -215,7 +215,7 @@ export default function Contact() {
 
             {/* Social / website */}
             <div className="bg-gray-950 rounded-2xl p-5 sm:p-6">
-              <p className="text-white font-bold text-sm mb-3">Naija &amp; Overseas</p>
+              <p className="text-white font-bold text-sm mb-3">Education Naija &amp; Overseas</p>
               <a href="https://naijaandoverseas.com" target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 text-green-400 text-xs font-semibold hover:underline mb-4">
                 <Globe size={13} /> naijaandoverseas.com

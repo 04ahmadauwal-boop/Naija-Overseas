@@ -1968,7 +1968,7 @@ export default function SchoolOwnerDashboard() {
             <GraduationCap size={18} className="text-white" />
           </div>
           <div>
-            <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
+            <p className="font-extrabold text-white text-sm leading-tight">Education Naija &amp; Overseas</p>
             <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">School Portal</p>
           </div>
         </div>

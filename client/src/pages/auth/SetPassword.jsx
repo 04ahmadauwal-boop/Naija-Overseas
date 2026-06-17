@@ -36,7 +36,7 @@ export default function SetPassword() {
     try {
       const { data } = await api.post(`/auth/set-password/${token}`, { password: form.password });
       loginWithToken(data.token, data.user);
-      toast.success('Password set! Welcome to Naija & Overseas.');
+      toast.success('Password set! Welcome to Education Naija & Overseas.');
       setDone(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'This link is invalid or has expired. Please contact support.');
@@ -59,7 +59,7 @@ export default function SetPassword() {
           <p className="text-gray-500 text-sm mt-1">
             {done
               ? 'Your account is active. Redirecting to your dashboard…'
-              : 'Create a password to access your Naija & Overseas account.'}
+              : 'Create a password to access your Education Naija & Overseas account.'}
           </p>
         </div>
 

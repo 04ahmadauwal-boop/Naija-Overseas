@@ -307,7 +307,7 @@ export default function BlogPost() {
               </div>
               <div>
                 <p className="font-bold text-gray-900 text-sm">{post.author?.name || 'N&O Editorial Team'}</p>
-                <p className="text-xs text-gray-400 mb-0.5">Educational Writer · Naija &amp; Overseas</p>
+                <p className="text-xs text-gray-400 mb-0.5">Educational Writer · Education Naija &amp; Overseas</p>
                 <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
                   Helping West African students navigate school choices, university admissions, and study abroad opportunities.
                 </p>

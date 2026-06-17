@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-import { CheckCircle, XCircle, Loader, GraduationCap } from 'lucide-react';
+import { CheckCircle, XCircle, Loader } from 'lucide-react';
+import Logo from '../../components/Logo';
 
 function getRedirectPath(role, goal) {
   if (role === 'tutor')        return '/become-a-tutor';
@@ -44,13 +45,8 @@ export default function VerifyEmail() {
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
 
         {/* Brand */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-9 h-9 bg-green-700 rounded-xl flex items-center justify-center">
-            <GraduationCap size={18} className="text-white" />
-          </div>
-          <span className="font-extrabold text-gray-900 text-lg">
-            Naija<span className="text-green-600">&</span>Overseas
-          </span>
+        <div className="flex justify-center mb-8">
+          <Logo />
         </div>
 
         {status === 'loading' && (
@@ -70,7 +66,7 @@ export default function VerifyEmail() {
             </div>
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Email verified!</h2>
             <p className="text-gray-500 text-sm leading-relaxed mb-6">
-              Welcome to Naija & Overseas, <strong>{userName}</strong>! 🎉<br/>
+              Welcome to Education Naija & Overseas, <strong>{userName}</strong>! 🎉<br/>
               Your account is now active. Redirecting you now…
             </p>
             <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">

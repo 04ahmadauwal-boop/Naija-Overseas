@@ -13,7 +13,7 @@ const SIX_REASONS = [
     icon: Users,
     color: 'bg-blue-50 text-blue-600',
     title: 'Reach 10,000+ Active Parents',
-    desc: 'Every month, thousands of parents and students visit Naija & Overseas actively searching for the right school. Your listing puts you directly in front of them.',
+    desc: 'Every month, thousands of parents and students visit Education Naija & Overseas actively searching for the right school. Your listing puts you directly in front of them.',
   },
   {
     icon: ShieldCheck,
@@ -43,7 +43,7 @@ const SIX_REASONS = [
     icon: Gift,
     color: 'bg-red-50 text-red-600',
     title: '100% Free — No Hidden Fees',
-    desc: 'Listing your school on Naija & Overseas is completely free. No monthly subscription, no listing fee, no hidden charges. Ever. Just create your profile and grow.',
+    desc: 'Listing your school on Education Naija & Overseas is completely free. No monthly subscription, no listing fee, no hidden charges. Ever. Just create your profile and grow.',
   },
 ];
 
@@ -320,7 +320,7 @@ export default function ListYourSchool() {
           <div className="text-center mb-10">
             <p className="text-green-600 font-semibold text-sm uppercase tracking-wider mb-2">Why list with us?</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
-              6 Reasons to Add Your School on Naija &amp; Overseas
+              6 Reasons to Add Your School on Education Naija &amp; Overseas
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">
               Join hundreds of schools already growing their admissions through Nigeria's most trusted school discovery platform.
@@ -366,7 +366,7 @@ export default function ListYourSchool() {
             {TUTORIAL_VIDEO_ID ? (
               <iframe
                 src={`https://www.youtube.com/embed/${TUTORIAL_VIDEO_ID}?rel=0&modestbranding=1`}
-                title="How to add your school on Naija and Overseas"
+                title="How to add your school on Education Education Naija & Overseas"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full"

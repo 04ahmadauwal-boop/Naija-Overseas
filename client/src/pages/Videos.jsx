@@ -182,7 +182,7 @@ export default function Videos() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
           <div>
             <h1 className="font-extrabold text-gray-900 text-lg sm:text-xl">
-              Naija &amp; Overseas <span className="text-green-600">Videos</span>
+              Education Naija &amp; Overseas <span className="text-green-600">Videos</span>
             </h1>
           </div>
 

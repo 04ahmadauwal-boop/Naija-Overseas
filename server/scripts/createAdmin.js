@@ -24,7 +24,7 @@ async function createAdmin() {
   } else {
     // Pass plaintext — the pre-save hook will hash it
     await User.create({
-      name: 'Naija And Overseas Admin',
+      name: 'Education Education Naija & Overseas Admin',
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD,
       role: 'admin',

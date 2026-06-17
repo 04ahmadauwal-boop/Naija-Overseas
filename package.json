@@ -1,7 +1,7 @@
 {
   "name": "naijaandoverseas",
   "version": "1.0.0",
-  "description": "Education Naija and Overseas - Smart school comparison and study abroad platform",
+  "description": "Education Education Naija & Overseas - Smart school comparison and study abroad platform",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",

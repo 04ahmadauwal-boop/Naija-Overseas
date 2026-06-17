@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import Logo from './Logo';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -48,7 +49,7 @@ export default function Footer() {
     setSubLoading(true);
     try {
       await api.post('/contact', { name: 'Newsletter', email, message: 'Newsletter subscription request', subject: 'Newsletter Signup' });
-      toast.success('Subscribed! Welcome to Naija & Overseas.');
+      toast.success('Subscribed! Welcome to Education Naija & Overseas.');
       setEmail('');
     } catch {
       toast.error('Could not subscribe. Please try again.');
@@ -71,13 +72,8 @@ export default function Footer() {
             {/* Brand + newsletter — spans 2 cols on lg */}
             <div className="lg:col-span-2">
               {/* Logo */}
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center shrink-0">
-                  <GraduationCap className="text-white" size={16} />
-                </div>
-                <span className="font-extrabold text-white text-[17px] tracking-tight">
-                  Naija<span className="text-green-500">&</span>Overseas
-                </span>
+              <div className="mb-4">
+                <Logo variant="dark" />
               </div>
               <p className="text-gray-600 text-[13px] leading-relaxed mb-4 max-w-xs">
                 West Africa's school discovery and international admissions platform — serving families across Nigeria, Ghana, The Gambia and Cameroon.
@@ -145,7 +141,7 @@ export default function Footer() {
             {/* Copyright + legal */}
             <div className="flex items-center gap-4 flex-wrap">
               <p className="text-gray-700 text-[11px] whitespace-nowrap">
-                &copy; {new Date().getFullYear()} Naija &amp; Overseas
+                &copy; {new Date().getFullYear()} Education Naija &amp; Overseas
               </p>
               <div className="flex gap-3 text-[11px] text-gray-700">
                 <a href="#" className="hover:text-gray-400 transition">Privacy</a>

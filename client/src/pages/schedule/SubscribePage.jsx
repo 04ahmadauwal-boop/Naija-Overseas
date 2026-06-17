@@ -141,7 +141,7 @@ export default function SubscribePage() {
           <div className="w-7 h-7 bg-green-700 rounded-lg flex items-center justify-center">
             <GraduationCap size={14} className="text-white" />
           </div>
-          <span className="text-sm font-bold text-gray-700">Naija &amp; Overseas</span>
+          <span className="text-sm font-bold text-gray-700">Education Naija &amp; Overseas</span>
         </div>
 
         {/* Tutor card */}

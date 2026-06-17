@@ -4,6 +4,7 @@ import {
   GraduationCap, CheckCircle, ArrowRight, ArrowLeft,
   BookOpen, Clock, Calendar, Zap, Star, Globe2,
 } from 'lucide-react';
+import Logo from '../components/Logo';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -153,14 +154,7 @@ export default function StudentOnboarding() {
 
       {/* Top bar */}
       <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
-            <GraduationCap size={16} className="text-white" />
-          </div>
-          <span className="font-bold text-gray-900 text-sm">
-            Naija<span className="text-green-600">&</span>Overseas
-          </span>
-        </div>
+        <Logo size="sm" />
         <button onClick={() => navigate('/find-tutoring')}
           className="text-xs text-gray-400 hover:text-gray-600 transition">
           Skip for now →

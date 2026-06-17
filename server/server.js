@@ -68,7 +68,7 @@ app.use('/api/banner', require('./routes/banner'));
 app.use('/api/coupons', require('./routes/coupons'));
 app.use('/api/tutor-quiz', require('./routes/tutorQuiz'));
 
-app.get('/', (req, res) => res.json({ message: 'Naija and Overseas API running' }));
+app.get('/', (req, res) => res.json({ message: 'Education Education Naija & Overseas API running' }));
 
 async function seedDemoVideos() {
   try {

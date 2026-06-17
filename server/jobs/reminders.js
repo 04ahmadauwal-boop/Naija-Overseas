@@ -28,15 +28,15 @@ function initReminders() {
       for (const b of b24) {
         await sendEmail({
           to:      b.email,
-          subject: 'Reminder: Tutoring Session Tomorrow — Naija & Overseas',
+          subject: 'Reminder: Tutoring Session Tomorrow — Education Naija & Overseas',
           html: `<p>Hi ${b.name},</p>
 <p>This is a friendly reminder that your tutoring session is <strong>tomorrow, ${new Date(b.date).toDateString()}</strong> at <strong>${b.timeSlot}</strong>.</p>
 ${b.callLink ? `<p><a href="${b.callLink}">Join your class here</a></p>` : ''}
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
         }).catch(() => {});
         sendWhatsApp({
           to: b.phone,
-          message: `Hi ${b.name},\n\n⏰ Reminder: Your tutoring session is *tomorrow, ${new Date(b.date).toDateString()}* at *${b.timeSlot}*.${b.callLink ? `\n\n🔗 Join your class here:\n${b.callLink}` : ''}\n\n— Naija & Overseas Team`,
+          message: `Hi ${b.name},\n\n⏰ Reminder: Your tutoring session is *tomorrow, ${new Date(b.date).toDateString()}* at *${b.timeSlot}*.${b.callLink ? `\n\n🔗 Join your class here:\n${b.callLink}` : ''}\n\n— Education Naija & Overseas Team`,
         }).catch(() => {});
         await Booking.findByIdAndUpdate(b._id, { reminderSent24h: true }).catch(() => {});
       }
@@ -52,15 +52,15 @@ ${b.callLink ? `<p><a href="${b.callLink}">Join your class here</a></p>` : ''}
       for (const b of b1h) {
         await sendEmail({
           to:      b.email,
-          subject: 'Starting Soon: Your Tutoring Session — Naija & Overseas',
+          subject: 'Starting Soon: Your Tutoring Session — Education Naija & Overseas',
           html: `<p>Hi ${b.name},</p>
 <p>Your tutoring session starts in about <strong>1 hour</strong> (${new Date(b.date).toDateString()} at ${b.timeSlot}).</p>
 ${b.callLink ? `<p><strong><a href="${b.callLink}">Join your class now</a></strong></p>` : ''}
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
         }).catch(() => {});
         sendWhatsApp({
           to: b.phone,
-          message: `Hi ${b.name},\n\n🚀 Your tutoring session starts in *1 hour* (${new Date(b.date).toDateString()} at ${b.timeSlot}).${b.callLink ? `\n\n🔗 Join now:\n${b.callLink}` : ''}\n\n— Naija & Overseas Team`,
+          message: `Hi ${b.name},\n\n🚀 Your tutoring session starts in *1 hour* (${new Date(b.date).toDateString()} at ${b.timeSlot}).${b.callLink ? `\n\n🔗 Join now:\n${b.callLink}` : ''}\n\n— Education Naija & Overseas Team`,
         }).catch(() => {});
         await Booking.findByIdAndUpdate(b._id, { reminderSent1h: true }).catch(() => {});
       }

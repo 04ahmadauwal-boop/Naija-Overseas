@@ -144,7 +144,7 @@ function buildContent(schools) {
   return `<p>Lagos is home to some of the finest educational institutions in Nigeria — from elite federal government colleges to world-class international schools. Whether you are a parent looking for the best learning environment for your child or a student researching options, this guide covers the top schools in Lagos State ranked by academic reputation, facilities, and student outcomes.</p>
 
 <h2>How We Ranked These Schools</h2>
-<p>Our ranking considers WAEC and JAMB performance data, school facilities, extracurricular programmes, alumni distinction, and feedback from parents and students on the Naija &amp; Overseas platform. Both public and private institutions are included so families across all budgets can find the right fit.</p>
+<p>Our ranking considers WAEC and JAMB performance data, school facilities, extracurricular programmes, alumni distinction, and feedback from parents and students on the Education Naija &amp; Overseas platform. Both public and private institutions are included so families across all budgets can find the right fit.</p>
 
 ${cards}
 
@@ -159,7 +159,7 @@ ${cards}
 </ul>
 
 <h2>Apply and Get Admission Assistance</h2>
-<p>Naija &amp; Overseas helps families navigate school admissions across Nigeria and abroad. Use our platform to compare schools, read verified reviews, and connect directly with admissions offices. Click <strong>Get Admission</strong> on any school above to start your application journey.</p>`;
+<p>Education Naija &amp; Overseas helps families navigate school admissions across Nigeria and abroad. Use our platform to compare schools, read verified reviews, and connect directly with admissions offices. Click <strong>Get Admission</strong> on any school above to start your application journey.</p>`;
 }
 
 // ---------- Main ----------

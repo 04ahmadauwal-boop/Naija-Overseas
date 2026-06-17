@@ -101,7 +101,7 @@ export function AdminNav() {
                   <GraduationCap size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-white text-xs leading-tight">Naija &amp; Overseas</p>
+                  <p className="font-extrabold text-white text-xs leading-tight">Education Naija &amp; Overseas</p>
                   <p className="text-gray-500 text-[10px]">Admin Panel</p>
                 </div>
               </div>
@@ -123,7 +123,7 @@ export function AdminNav() {
               <GraduationCap size={18} className="text-white" />
             </div>
             <div>
-              <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
+              <p className="font-extrabold text-white text-sm leading-tight">Education Naija &amp; Overseas</p>
               <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Admin Panel</p>
             </div>
           </div>

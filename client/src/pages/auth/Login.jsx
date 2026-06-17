@@ -3,7 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
-import { GraduationCap, Eye, EyeOff, CheckCircle, Mail, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, Mail, RefreshCw } from 'lucide-react';
+import Logo from '../../components/Logo';
 
 const PERKS = [
   'Compare 500+ verified schools side by side',
@@ -74,13 +75,8 @@ export default function Login() {
         <div className="absolute top-1/2 left-1/2 w-40 h-40 bg-green-600 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2" />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-              <GraduationCap size={20} className="text-white" />
-            </div>
-            <span className="text-white font-bold text-xl tracking-tight">
-              Naija<span className="text-green-400">&</span>Overseas
-            </span>
+          <div className="mb-12">
+            <Logo variant="dark" />
           </div>
 
           <h2 className="text-4xl font-extrabold text-white leading-tight mb-4">
@@ -105,7 +101,7 @@ export default function Login() {
         <div className="relative z-10">
           <div className="bg-green-800/50 backdrop-blur-sm rounded-2xl p-5 border border-green-700/50">
             <p className="text-green-200 text-sm italic leading-relaxed">
-              "Naija &amp; Overseas helped me compare schools in Lagos and Abuja in minutes. Found the perfect school for my daughter."
+              "Education Naija &amp; Overseas helped me compare schools in Lagos and Abuja in minutes. Found the perfect school for my daughter."
             </p>
             <div className="flex items-center gap-3 mt-4">
               <div className="w-9 h-9 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">AB</div>
@@ -123,11 +119,8 @@ export default function Login() {
         <div className="w-full max-w-md">
 
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
-              <GraduationCap size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-gray-900">Naija<span className="text-green-600">&</span>Overseas</span>
+          <div className="mb-8 lg:hidden">
+            <Logo />
           </div>
 
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Welcome back</h1>

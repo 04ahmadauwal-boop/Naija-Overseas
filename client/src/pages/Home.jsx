@@ -175,7 +175,7 @@ const HERO_SLIDES = [
   {
     step: '01',
     label: 'Quality Driven',
-    cardDesc: 'Naija & Overseas was founded with the promise of connecting families to the most verified, high-quality schools across Nigeria and West Africa — with smart tools to compare and decide with confidence.',
+    cardDesc: 'Education Naija & Overseas was founded with the promise of connecting families to the most verified, high-quality schools across Nigeria and West Africa — with smart tools to compare and decide with confidence.',
     cardBg: 'bg-white',
     cardText: 'text-gray-900',
     cardDesc2: 'text-gray-500',
@@ -720,13 +720,13 @@ export default function Home() {
         ))}
 
         {/* Foreground person — desktop XL only */}
-        <div className="absolute inset-y-0 right-0 w-[46%] z-20 hidden xl:block pointer-events-none overflow-hidden">
+        <div className="absolute bottom-0 right-0 w-[44%] z-20 hidden xl:block pointer-events-none overflow-hidden h-[85%]">
           {HERO_SLIDES.map((s, i) => (
             <img
               key={i}
               src={s.personImg}
               alt=""
-              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom origin-bottom transition-all duration-1000 ${i === slide ? 'opacity-100' : 'opacity-0'} ${i === 0 ? 'scale-[1.3]' : 'scale-110'}`}
+              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom transition-all duration-1000 ${i === slide ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
             />
           ))}
         </div>
@@ -1676,7 +1676,7 @@ export default function Home() {
 
             <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full mb-6 w-fit">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              Why Naija &amp; Overseas
+              Why Education Naija &amp; Overseas
             </span>
 
             <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-[2.6rem] leading-[1.12] tracking-tight mb-4">

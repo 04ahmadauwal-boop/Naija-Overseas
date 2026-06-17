@@ -33,7 +33,7 @@ const VALUES = [
 ];
 
 const MILESTONES = [
-  { year: '2022', event: 'Naija & Overseas founded in Lagos, Nigeria by Yusuf Abdullahi', badge: '01' },
+  { year: '2022', event: 'Education Naija & Overseas founded in Lagos, Nigeria by Yusuf Abdullahi', badge: '01' },
   { year: '2023', event: '100+ schools listed, first 1,000 families served across Nigeria', badge: '02' },
   { year: '2024', event: 'Study Abroad placement service launched — first overseas offers secured', badge: '03' },
   { year: '2025', event: 'Expanded to Ghana, The Gambia & Cameroon — 10,000+ families reached', badge: '04' },
@@ -145,7 +145,7 @@ export default function About() {
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4 sm:mb-5 leading-tight">Built by educators,<br className="hidden sm:block" /> for families</h2>
             <div className="space-y-3 sm:space-y-4 text-gray-500 leading-relaxed text-sm">
               <p>
-                Naija &amp; Overseas was born from a frustration every Nigerian parent knows: finding the right school required weeks of research, phone calls, and site visits — with no guarantee the information was accurate.
+                Education Naija &amp; Overseas was born from a frustration every Nigerian parent knows: finding the right school required weeks of research, phone calls, and site visits — with no guarantee the information was accurate.
               </p>
               <p>
                 Founder Yusuf Abdullahi set out to build something different — a platform where parents could search, compare, and decide with confidence, completely free. Starting in Lagos, the platform grew to cover hundreds of schools across Nigeria.
@@ -154,7 +154,7 @@ export default function About() {
                 Students asked for help abroad too. So we built a study abroad service with real counsellors who have placed students in universities across the UK, Canada, Australia, Germany, and more.
               </p>
               <p>
-                In 2026 we launched our tutor marketplace — making expert, one-on-one learning accessible to every student, wherever they are in the world. Today, Naija &amp; Overseas serves families across four countries. We&apos;re just getting started.
+                In 2026 we launched our tutor marketplace — making expert, one-on-one learning accessible to every student, wherever they are in the world. Today, Education Naija &amp; Overseas serves families across four countries. We&apos;re just getting started.
               </p>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
@@ -316,7 +316,7 @@ export default function About() {
             Ready to make a better<br className="hidden sm:block" /> education decision?
           </h2>
           <p className="text-green-200 mb-8 sm:mb-10 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
-            Join thousands of families already using Naija &amp; Overseas to search schools, explore study abroad, and find the perfect tutor.
+            Join thousands of families already using Education Naija &amp; Overseas to search schools, explore study abroad, and find the perfect tutor.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/"

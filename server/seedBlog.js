@@ -77,7 +77,7 @@ const POSTS = [
 
 <h2>How to Choose the Right School</h2>
 <p>When comparing schools, consider: proximity to your home, boarding vs. day option, curriculum (Nigerian WAEC, British IGCSE, or IB), fees relative to your budget, and the school's track record in the subjects your child is strongest in.</p>
-<p>Use our <strong>Compare Schools</strong> tool on Naija &amp; Overseas to filter schools by state, type, and fees in seconds.</p>`,
+<p>Use our <strong>Compare Schools</strong> tool on Education Naija &amp; Overseas to filter schools by state, type, and fees in seconds.</p>`,
   },
 
   {
@@ -874,7 +874,7 @@ const POSTS = [
 <h3>7. Location and Commute</h3>
 <p>For day schools, a 2-hour commute each way is debilitating for a 12-year-old. Proximity matters. For boarding, consider how often you can visit and the cost of travel.</p>
 
-<h2>Using Naija & Overseas Compare Tool</h2>
+<h2>Using Education Naija & Overseas Compare Tool</h2>
 <p>Our Compare Schools tool lets you select up to 4 schools and compare them side-by-side across all the above criteria — plus fees, state, type (federal/private/state), and more. Start your comparison today at naijaandoverseas.com.</p>`,
   },
 
@@ -1193,7 +1193,7 @@ const POSTS = [
 <p>A significant proportion of Nigerian families self-fund without applying for scholarships — either because they do not know about them or assume they will not qualify. Many scholarships exist specifically for Africans/Nigerians. The worst that can happen is rejection. Apply for every scholarship you qualify for.</p>
 
 <h2>Mistake 7: Relying on Agents Without Verification</h2>
-<p>Unscrupulous education consultants charge high fees, provide wrong advice, or disappear with deposits. Use only consultants registered with professional bodies (AIRC in the USA, ICEF-accredited agents). Ask for references from past clients. Naija & Overseas provides free initial consultation and transparent guidance.</p>`,
+<p>Unscrupulous education consultants charge high fees, provide wrong advice, or disappear with deposits. Use only consultants registered with professional bodies (AIRC in the USA, ICEF-accredited agents). Ask for references from past clients. Education Naija & Overseas provides free initial consultation and transparent guidance.</p>`,
   },
 ];
 

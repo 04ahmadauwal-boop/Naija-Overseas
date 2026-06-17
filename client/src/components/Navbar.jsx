@@ -7,6 +7,7 @@ import {
   BookOpen, Globe, School, Info, Mail, LogOut, User, Search, Users
 } from 'lucide-react';
 import SuggestSchoolModal from './SuggestSchoolModal';
+import Logo from './Logo';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: School, end: true },
@@ -74,13 +75,8 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-17">
 
             {/* Logo */}
-            <Link ref={logoRef} to="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
-                <GraduationCap className="text-white" size={17} />
-              </div>
-              <span className="font-bold text-gray-900 text-base tracking-tight">
-                Naija<span className="text-green-600">&</span>Overseas
-              </span>
+            <Link ref={logoRef} to="/">
+              <Logo />
             </Link>
 
             {/* Desktop Nav */}

@@ -301,7 +301,7 @@ export default function ParentDashboard() {
               <GraduationCap size={18} className="text-white" />
             </div>
             <div>
-              <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
+              <p className="font-extrabold text-white text-sm leading-tight">Education Naija &amp; Overseas</p>
               <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Parent Dashboard</p>
             </div>
           </div>
@@ -362,7 +362,7 @@ export default function ParentDashboard() {
               <GraduationCap size={16} className="text-white" />
             </div>
             <div>
-              <p className="font-extrabold text-white text-sm leading-tight">Naija &amp; Overseas</p>
+              <p className="font-extrabold text-white text-sm leading-tight">Education Naija &amp; Overseas</p>
               <p className="text-gray-500 text-[10px] uppercase tracking-wider">Parent Dashboard</p>
             </div>
           </div>
@@ -425,7 +425,7 @@ export default function ParentDashboard() {
             <h1 className="text-xl font-extrabold text-gray-900">
               {TABS.find((t) => t.id === activeTab)?.label || 'Dashboard'}
             </h1>
-            <p className="text-gray-400 text-xs mt-0.5">Naija &amp; Overseas — Parent Portal</p>
+            <p className="text-gray-400 text-xs mt-0.5">Education Naija &amp; Overseas — Parent Portal</p>
           </div>
           <div className="flex items-center gap-3">
             <button className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition">

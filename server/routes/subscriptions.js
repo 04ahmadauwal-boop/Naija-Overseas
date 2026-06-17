@@ -215,11 +215,11 @@ router.post('/activate', protect, async (req, res) => {
 <p><strong>Sessions booked (${createdBookings.length} total):</strong><br/>${dateList}</p>
 <p><strong>Monthly rate:</strong> ₦${monthlyRate.toLocaleString()}</p>
 <p>Your next renewal date is <strong>${renewalDate.toDateString()}</strong>. You will receive a reminder before then.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
     }).catch(() => {});
     sendWhatsApp({
       to: req.user.phone,
-      message: `Hi ${req.user.name},\n\nYour monthly tutoring subscription with *${tutorName}* is now *active*! 🎉\n\n📅 *Sessions booked (${createdBookings.length} total):*\n${plainDateList}\n\n💰 *Monthly rate:* ₦${monthlyRate.toLocaleString()}\n📆 *Next renewal:* ${renewalDate.toDateString()}\n\n— Naija & Overseas Team`,
+      message: `Hi ${req.user.name},\n\nYour monthly tutoring subscription with *${tutorName}* is now *active*! 🎉\n\n📅 *Sessions booked (${createdBookings.length} total):*\n${plainDateList}\n\n💰 *Monthly rate:* ₦${monthlyRate.toLocaleString()}\n📆 *Next renewal:* ${renewalDate.toDateString()}\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
 
     // ── Email: tutor ───────────────────────────────────────────────────────
@@ -230,12 +230,12 @@ router.post('/activate', protect, async (req, res) => {
         html: `<p>Hi ${tutorName},</p>
 <p><strong>${req.user.name}</strong> has subscribed to ${timesPerWeek} session${timesPerWeek > 1 ? 's' : ''} per week with you.</p>
 <p>${createdBookings.length} sessions have been auto-booked for the next month. Log in to your <a href="${process.env.CLIENT_URL}/schedule">schedule dashboard</a> to view them.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
       }).catch(() => {});
       const tutorUserDoc = await require('../models/User').findById(tutorProfile.user._id).select('phone').lean().catch(() => null);
       sendWhatsApp({
         to: tutorUserDoc?.phone,
-        message: `Hi ${tutorName},\n\n*${req.user.name}* has subscribed to ${timesPerWeek} session${timesPerWeek > 1 ? 's' : ''} per week with you. 🎓\n\n${createdBookings.length} sessions have been auto-booked for the next month. Log in to your schedule dashboard to view them.\n\n— Naija & Overseas Team`,
+        message: `Hi ${tutorName},\n\n*${req.user.name}* has subscribed to ${timesPerWeek} session${timesPerWeek > 1 ? 's' : ''} per week with you. 🎓\n\n${createdBookings.length} sessions have been auto-booked for the next month. Log in to your schedule dashboard to view them.\n\n— Education Naija & Overseas Team`,
       }).catch(() => {});
     }
 

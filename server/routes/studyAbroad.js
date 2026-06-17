@@ -69,7 +69,7 @@ router.post('/send-otp', async (req, res) => {
 
     sendEmail({
       to: email,
-      subject: 'Your Email Verification Code — Naija & Overseas',
+      subject: 'Your Email Verification Code — Education Naija & Overseas',
       html: `
 <!DOCTYPE html>
 <html>
@@ -80,7 +80,7 @@ router.post('/send-otp', async (req, res) => {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
         <tr>
           <td style="background:#14532d;padding:28px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
           </td>
         </tr>
@@ -102,7 +102,7 @@ router.post('/send-otp', async (req, res) => {
         </tr>
         <tr>
           <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
-            <p style="margin:0;font-size:11px;color:#9ca3af;">&copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria</p>
+            <p style="margin:0;font-size:11px;color:#9ca3af;">&copy; ${new Date().getFullYear()} Education Education Naija & Overseas &bull; Lagos, Nigeria</p>
           </td>
         </tr>
       </table>
@@ -295,7 +295,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
         <tr>
           <td style="background:#14532d;padding:32px 40px;text-align:center;">
             <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px;">
-              Naija &amp; Overseas
+              Education Naija &amp; Overseas
             </p>
             <p style="margin:4px 0 0;font-size:12px;color:#86efac;letter-spacing:.05em;">
               INTERNATIONAL EDUCATIONAL CONSULTANCY
@@ -372,7 +372,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
           <td style="background:#f9fafb;padding:20px 40px;text-align:center;
                      border-top:1px solid #e5e7eb;">
             <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.6;">
-              &copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria<br>
+              &copy; ${new Date().getFullYear()} Education Education Naija & Overseas &bull; Lagos, Nigeria<br>
               You are receiving this because you booked a consultation with us.
             </p>
           </td>
@@ -405,7 +405,7 @@ router.post('/consultation', optionalAuth, async (req, res) => {
 
     sendEmail({
       to: email,
-      subject: `Consultation Confirmed — ${formattedDate} at ${consultTime} | Naija & Overseas`,
+      subject: `Consultation Confirmed — ${formattedDate} at ${consultTime} | Education Naija & Overseas`,
       html: userEmailHtml,
     }).catch((err) => {
       console.error('📧 User confirmation email failed:', err.message);
@@ -422,14 +422,14 @@ router.post('/consultation', optionalAuth, async (req, res) => {
     // Booking confirmation WhatsApp (all users)
     sendWhatsApp({
       to: phone,
-      message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Naija & Overseas Team`,
+      message: `Hi ${fullName},\n\nYour study abroad consultation has been booked! ✅\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${consultTime}${destinationCountry ? `\n🌍 *Destination:* ${destinationCountry}` : ''}\n\nOur team will send you a meeting link before your session.\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
 
     // Set-password WhatsApp for new users (separate message so it stands out)
     if (isNewUser && setPasswordLink) {
       sendWhatsApp({
         to: phone,
-        message: `Hi ${fullName},\n\nWe've created a Naija & Overseas account for you so you can track your consultation and application. 🎉\n\n🔐 *Set your password here:*\n${setPasswordLink}\n\n⚠️ This link expires in *7 days*. Keep it safe.\n\nOnce you set your password you can log in at any time to follow up on your application.\n\n— Naija & Overseas Team`,
+        message: `Hi ${fullName},\n\nWe've created a Education Naija & Overseas account for you so you can track your consultation and application. 🎉\n\n🔐 *Set your password here:*\n${setPasswordLink}\n\n⚠️ This link expires in *7 days*. Keep it safe.\n\nOnce you set your password you can log in at any time to follow up on your application.\n\n— Education Naija & Overseas Team`,
       }).catch(() => {});
     }
   } catch (err) {
@@ -448,12 +448,12 @@ router.post('/', optionalAuth, async (req, res) => {
 
     await sendEmail({
       to: req.body.email,
-      subject: 'Study Abroad Application Received — Naija and Overseas',
+      subject: 'Study Abroad Application Received — Education Education Naija & Overseas',
       html: `<p>Hi ${req.body.fullName}, we have received your application to study in <strong>${req.body.destinationCountry}</strong>. Our team will review it and contact you within 48 hours.</p>`,
     });
     sendWhatsApp({
       to: req.body.phone,
-      message: `Hi ${req.body.fullName},\n\nWe have received your application to study in *${req.body.destinationCountry}*. 🎓\n\nOur team will review it and contact you within 48 hours.\n\n— Naija & Overseas Team`,
+      message: `Hi ${req.body.fullName},\n\nWe have received your application to study in *${req.body.destinationCountry}*. 🎓\n\nOur team will review it and contact you within 48 hours.\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
 
     res.status(201).json({ application, message: 'Application submitted successfully' });

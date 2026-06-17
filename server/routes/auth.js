@@ -39,7 +39,7 @@ router.post('/register', async (req, res) => {
 
     await sendEmail({
       to: user.email,
-      subject: 'Verify Your Email — Naija & Overseas',
+      subject: 'Verify Your Email — Education Naija & Overseas',
       html: `
 <!DOCTYPE html>
 <html>
@@ -50,7 +50,7 @@ router.post('/register', async (req, res) => {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
         <tr>
           <td style="background:#14532d;padding:28px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
           </td>
         </tr>
@@ -59,7 +59,7 @@ router.post('/register', async (req, res) => {
             <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;margin:0 auto 16px;font-size:26px;line-height:56px;">✅</div>
             <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111827;">Verify your email</h1>
             <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">
-              Hi <strong>${user.name}</strong>, thanks for joining Naija & Overseas!<br/>
+              Hi <strong>${user.name}</strong>, thanks for joining Education Naija & Overseas!<br/>
               Click the button below to verify your email address and activate your account.<br/>
               This link expires in <strong>24 hours</strong>.
             </p>
@@ -114,7 +114,7 @@ router.get('/verify-email/:token', async (req, res) => {
     res.json({
       token,
       user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
-      message: 'Email verified successfully! Welcome to Naija & Overseas.',
+      message: 'Email verified successfully! Welcome to Education Naija & Overseas.',
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -139,7 +139,7 @@ router.post('/resend-verification', async (req, res) => {
 
     sendEmail({
       to: user.email,
-      subject: 'Verify Your Email — Naija & Overseas',
+      subject: 'Verify Your Email — Education Naija & Overseas',
       html: `<p>Hi ${user.name},</p><p>Here is your new verification link (valid 24 hours):</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
     }).catch((err) => console.error('📧 Resend verification failed:', err.message));
   } catch (err) {
@@ -200,7 +200,7 @@ router.post('/forgot-password', async (req, res) => {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
         <tr>
           <td style="background:#14532d;padding:28px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
           </td>
         </tr>
@@ -242,13 +242,13 @@ router.post('/forgot-password', async (req, res) => {
     // Send email in the background after responding
     sendEmail({
       to: user.email,
-      subject: 'Reset Your Password — Naija & Overseas',
+      subject: 'Reset Your Password — Education Naija & Overseas',
       html: emailHtml,
     }).catch((err) => console.error('📧 Forgot-password email failed:', err.message));
 
     sendWhatsApp({
       to: user.phone,
-      message: `Hi ${user.name},\n\nWe received a request to reset your Naija & Overseas password.\n\nClick the link below to reset it (valid for 1 hour):\n${process.env.CLIENT_URL}/reset-password/${token}\n\nIf you did not request this, please ignore this message.\n\n— Naija & Overseas Team`,
+      message: `Hi ${user.name},\n\nWe received a request to reset your Education Naija & Overseas password.\n\nClick the link below to reset it (valid for 1 hour):\n${process.env.CLIENT_URL}/reset-password/${token}\n\nIf you did not request this, please ignore this message.\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -275,14 +275,14 @@ router.post('/set-password/:token', async (req, res) => {
     res.json({
       token,
       user: { _id: user._id, name: user.name, email: user.email, role: user.role, goal: user.goal },
-      message: 'Password set! Welcome to Naija & Overseas.',
+      message: 'Password set! Welcome to Education Naija & Overseas.',
     });
 
     // Send WhatsApp welcome after responding
     if (user.phone) {
       sendWhatsApp({
         to: user.phone,
-        message: `Hi ${user.name}! 🎉\n\nYour Naija & Overseas account is now active.\n\nYou can log in anytime at:\n${CLIENT_URL}/login\n\nOur team will be in touch about your consultation soon.\n\n— Naija & Overseas Team`,
+        message: `Hi ${user.name}! 🎉\n\nYour Education Naija & Overseas account is now active.\n\nYou can log in anytime at:\n${CLIENT_URL}/login\n\nOur team will be in touch about your consultation soon.\n\n— Education Naija & Overseas Team`,
       }).catch(() => {});
     }
   } catch (err) {

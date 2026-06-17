@@ -112,7 +112,7 @@ const WHY_US = [
 ];
 
 const TESTIMONIALS = [
-  { name: 'Chukwuemeka Obi', dest: 'University of Toronto, Canada', course: 'MSc Computer Science', text: 'I tried applying alone twice and got rejected both times. Naija & Overseas identified exactly what was wrong with my applications, fixed my personal statement, and I got admitted with a partial scholarship. I start in September.', init: 'CO', col: 'bg-blue-700', rating: 5 },
+  { name: 'Chukwuemeka Obi', dest: 'University of Toronto, Canada', course: 'MSc Computer Science', text: 'I tried applying alone twice and got rejected both times. Education Naija & Overseas identified exactly what was wrong with my applications, fixed my personal statement, and I got admitted with a partial scholarship. I start in September.', init: 'CO', col: 'bg-blue-700', rating: 5 },
   { name: 'Fatima Al-Hassan', dest: "King's College London, UK", course: 'LLM International Law', text: 'My visa was approved first attempt, which shocked everyone who told me getting a UK visa was hard. Their document checklist and interview coaching made all the difference. Now studying my Masters.', init: 'FA', col: 'bg-green-700', rating: 5 },
   { name: 'Adaeze Nwosu', dest: 'University of Melbourne, Australia', course: 'MBA', text: 'What impressed me most was how they found scholarships I had no idea existed. I got a partial scholarship worth AUD 8,000. Their knowledge of Australian admissions is exceptional.', init: 'AN', col: 'bg-purple-700', rating: 5 },
   { name: 'Ibrahim Musa', dest: 'TU Munich, Germany', course: 'MEng Mechanical Engineering', text: 'Germany was not even on my radar until they suggested it. Tuition-free at one of the world\'s best engineering schools — I would never have found this path without their guidance.', init: 'IM', col: 'bg-orange-600', rating: 5 },
@@ -508,7 +508,7 @@ export default function StudyAbroad() {
             </h2>
             <div className="space-y-4 text-gray-500 text-sm leading-relaxed">
               <p>
-                Naija &amp; Overseas is West Africa's leading educational consultancy, helping Nigerian students achieve their dream of studying at world-class universities across the United Kingdom, Canada, United States, Australia, Germany, Ireland, Netherlands, and New Zealand.
+                Education Naija &amp; Overseas is West Africa's leading educational consultancy, helping Nigerian students achieve their dream of studying at world-class universities across the United Kingdom, Canada, United States, Australia, Germany, Ireland, Netherlands, and New Zealand.
               </p>
               <p>
                 Since our founding, we have placed over <strong className="text-gray-800">2,000 students</strong> in top international universities, with a <strong className="text-gray-800">95% visa success rate</strong> — the highest among Nigerian consultancies. Our team of certified admissions counsellors has direct relationships with over 50 partner universities worldwide.
@@ -668,7 +668,7 @@ export default function StudyAbroad() {
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             <div>
               <div className="inline-block bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">Our Edge</div>
-              <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 mb-5">Why Choose Naija &amp; Overseas?</h2>
+              <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 mb-5">Why Choose Education Naija &amp; Overseas?</h2>
               <p className="text-gray-500 mb-8 leading-relaxed text-sm">
                 There are many study abroad consultancies in Nigeria. Here is why thousands of students and families trust us above the rest.
               </p>

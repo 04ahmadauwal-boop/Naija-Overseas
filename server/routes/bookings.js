@@ -48,14 +48,14 @@ router.post('/', optionalAuth, async (req, res) => {
     // Email + WhatsApp the parent/requester
     await sendEmail({
       to: email,
-      subject: 'Booking Received — Naija and Overseas',
+      subject: 'Booking Received — Education Education Naija & Overseas',
       html: `<p>Hi ${name},</p>
 <p>Your <strong>${service.replace(/-/g, ' ')}</strong> request for <strong>${dateStr}</strong> at <strong>${timeSlot}</strong> has been received. We'll confirm shortly.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
     }).catch((err) => console.error('📧 Booking confirmation email failed:', err.message));
     sendWhatsApp({
       to: phone,
-      message: `Hi ${name},\n\nYour *${service.replace(/-/g, ' ')}* request for *${dateStr}* at *${timeSlot}* has been received. We'll confirm shortly.\n\n— Naija & Overseas Team`,
+      message: `Hi ${name},\n\nYour *${service.replace(/-/g, ' ')}* request for *${dateStr}* at *${timeSlot}* has been received. We'll confirm shortly.\n\n— Education Naija & Overseas Team`,
     }).catch(() => {});
 
     // Auto-create a student account for study-abroad consultations if one doesn't exist
@@ -81,7 +81,7 @@ router.post('/', optionalAuth, async (req, res) => {
 
         sendEmail({
           to: email,
-          subject: 'Your Naija & Overseas Account is Ready — Choose a Password',
+          subject: 'Your Education Naija & Overseas Account is Ready — Choose a Password',
           html: `
 <!DOCTYPE html>
 <html>
@@ -92,7 +92,7 @@ router.post('/', optionalAuth, async (req, res) => {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
         <tr>
           <td style="background:#14532d;padding:28px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
           </td>
         </tr>
@@ -120,7 +120,7 @@ router.post('/', optionalAuth, async (req, res) => {
         <tr>
           <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
             <p style="margin:0;font-size:11px;color:#9ca3af;">
-              &copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria
+              &copy; ${new Date().getFullYear()} Education Education Naija & Overseas &bull; Lagos, Nigeria
             </p>
           </td>
         </tr>
@@ -133,7 +133,7 @@ router.post('/', optionalAuth, async (req, res) => {
 
         sendWhatsApp({
           to: phone,
-          message: `Hi ${name}! 🎉\n\nYour consultation is booked and your Naija & Overseas account is ready.\n\n🔐 Click the link below to choose your password and access your dashboard:\n${setPasswordUrl}\n\n⏳ This link expires in 7 days.\n\n— Naija & Overseas Team`,
+          message: `Hi ${name}! 🎉\n\nYour consultation is booked and your Education Naija & Overseas account is ready.\n\n🔐 Click the link below to choose your password and access your dashboard:\n${setPasswordUrl}\n\n⏳ This link expires in 7 days.\n\n— Education Naija & Overseas Team`,
         }).catch(() => {});
       }
     }
@@ -161,7 +161,7 @@ router.post('/', optionalAuth, async (req, res) => {
         if (school?.owner?.email) {
           await sendEmail({
             to: school.owner.email,
-            subject: `New Visit Request for ${school.name} — Naija & Overseas`,
+            subject: `New Visit Request for ${school.name} — Education Naija & Overseas`,
             html: `<p>Hi ${school.owner.name},</p>
 <p>A parent has requested a visit to <strong>${school.name}</strong>.</p>
 <ul>
@@ -171,7 +171,7 @@ router.post('/', optionalAuth, async (req, res) => {
   ${notes ? `<li><strong>Notes:</strong> ${notes}</li>` : ''}
 </ul>
 <p>Log in to your <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard/school-owner">School Dashboard</a> to confirm or manage this visit.</p>
-<p>— Naija &amp; Overseas Team</p>`,
+<p>— Education Naija &amp; Overseas Team</p>`,
           }).catch(() => {});
         }
       }
@@ -250,8 +250,8 @@ router.patch('/:id/school-action', protect, async (req, res) => {
 
     // Notify parent
     const subject = action === 'confirm'
-      ? 'Your School Visit is Confirmed — Naija & Overseas'
-      : 'School Visit Update — Naija & Overseas';
+      ? 'Your School Visit is Confirmed — Education Naija & Overseas'
+      : 'School Visit Update — Education Naija & Overseas';
     const html = action === 'confirm'
       ? `<p>Hi ${booking.name},</p><p>Your visit on <strong>${new Date(booking.date).toDateString()}</strong> at <strong>${booking.timeSlot}</strong> has been <strong>confirmed</strong> by the school. See you there!</p>`
       : `<p>Hi ${booking.name},</p><p>Unfortunately your visit on <strong>${new Date(booking.date).toDateString()}</strong> could not be accommodated. Please try another date or contact the school directly.</p>`;
@@ -259,8 +259,8 @@ router.patch('/:id/school-action', protect, async (req, res) => {
     sendWhatsApp({
       to: booking.phone,
       message: action === 'confirm'
-        ? `Hi ${booking.name},\n\nYour school visit on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*. See you there!\n\n— Naija & Overseas`
-        : `Hi ${booking.name},\n\nUnfortunately your school visit on *${new Date(booking.date).toDateString()}* could not be accommodated. Please try another date or contact the school directly.\n\n— Naija & Overseas`,
+        ? `Hi ${booking.name},\n\nYour school visit on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*. See you there!\n\n— Education Naija & Overseas`
+        : `Hi ${booking.name},\n\nUnfortunately your school visit on *${new Date(booking.date).toDateString()}* could not be accommodated. Please try another date or contact the school directly.\n\n— Education Naija & Overseas`,
     }).catch(() => {});
 
     // Notify admin
@@ -307,24 +307,24 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
     if (action === 'confirm') {
       await sendEmail({
         to: booking.email,
-        subject: 'Your Tutoring Session is Confirmed! — Naija & Overseas',
+        subject: 'Your Tutoring Session is Confirmed! — Education Naija & Overseas',
         html: `<p>Hi ${booking.name},</p>
 <p>Your tutoring session on <strong>${new Date(booking.date).toDateString()}</strong> at <strong>${booking.timeSlot}</strong> has been <strong>confirmed</strong>.</p>
 ${booking.callLink ? `<p>Join your class here: <a href="${booking.callLink}">${booking.callLink}</a></p>` : ''}`,
       }).catch(() => {});
       sendWhatsApp({
         to: booking.phone,
-        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*! ✅${booking.callLink ? `\n\n🔗 Join your class here: ${booking.callLink}` : ''}\n\n— Naija & Overseas`,
+        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* at *${booking.timeSlot}* has been *confirmed*! ✅${booking.callLink ? `\n\n🔗 Join your class here: ${booking.callLink}` : ''}\n\n— Education Naija & Overseas`,
       }).catch(() => {});
     } else {
       await sendEmail({
         to: booking.email,
-        subject: 'Tutoring Session Update — Naija & Overseas',
+        subject: 'Tutoring Session Update — Education Naija & Overseas',
         html: `<p>Hi ${booking.name},</p><p>Your tutoring session on <strong>${new Date(booking.date).toDateString()}</strong> could not be confirmed. Please book with another tutor.</p>`,
       }).catch(() => {});
       sendWhatsApp({
         to: booking.phone,
-        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* could not be confirmed. Please book with another tutor.\n\n— Naija & Overseas`,
+        message: `Hi ${booking.name},\n\nYour tutoring session on *${new Date(booking.date).toDateString()}* could not be confirmed. Please book with another tutor.\n\n— Education Naija & Overseas`,
       }).catch(() => {});
     }
 
@@ -385,7 +385,7 @@ router.patch('/:id/status', protect, isAdmin, async (req, res) => {
         <!-- Header -->
         <tr>
           <td style="background:#14532d;padding:28px 40px;text-align:center;">
-            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Naija &amp; Overseas</p>
+            <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
             <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">INTERNATIONAL EDUCATIONAL CONSULTANCY</p>
           </td>
         </tr>
@@ -464,7 +464,7 @@ router.patch('/:id/status', protect, isAdmin, async (req, res) => {
         <tr>
           <td style="background:#f9fafb;padding:16px 40px;text-align:center;border-top:1px solid #e5e7eb;">
             <p style="margin:0;font-size:11px;color:#9ca3af;">
-              &copy; ${new Date().getFullYear()} Naija and Overseas &bull; Lagos, Nigeria
+              &copy; ${new Date().getFullYear()} Education Education Naija & Overseas &bull; Lagos, Nigeria
             </p>
           </td>
         </tr>
@@ -477,12 +477,12 @@ router.patch('/:id/status', protect, isAdmin, async (req, res) => {
 
       sendEmail({
         to: booking.email,
-        subject: `Your Consultation Link — ${formattedDate} at ${booking.timeSlot} | Naija & Overseas`,
+        subject: `Your Consultation Link — ${formattedDate} at ${booking.timeSlot} | Education Naija & Overseas`,
         html: emailHtml,
       }).catch((err) => console.error('📧 Call-link email failed:', err.message));
       sendWhatsApp({
         to: booking.phone,
-        message: `Hi ${booking.name},\n\nYour study abroad consultation is confirmed for *${formattedDate}* at *${booking.timeSlot}*.\n\n🔗 Join your consultation here:\n${newLink}\n\nPlease join a few minutes early with a stable internet connection.\n\n— Naija & Overseas Team`,
+        message: `Hi ${booking.name},\n\nYour study abroad consultation is confirmed for *${formattedDate}* at *${booking.timeSlot}*.\n\n🔗 Join your consultation here:\n${newLink}\n\nPlease join a few minutes early with a stable internet connection.\n\n— Education Naija & Overseas Team`,
       }).catch(() => {});
     }
 
