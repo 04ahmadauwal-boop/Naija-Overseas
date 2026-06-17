@@ -4,7 +4,7 @@ import {
   Globe, BookOpen, Plane, FileText, CheckCircle, Star,
   Clock, X, ArrowRight, ChevronLeft, ChevronRight,
   Users, Award, Shield, Zap, Phone, Mail,
-  GraduationCap, MapPin, TrendingUp, Heart, ChevronDown, ChevronUp
+  GraduationCap, MapPin, TrendingUp, Heart, ChevronDown
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -154,13 +154,24 @@ const PROCESS_STEPS = [
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-200 last:border-0">
-      <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4">
-        <span className="font-semibold text-gray-900 text-sm">{q}</span>
-        {open ? <ChevronUp size={18} className="text-gray-400 shrink-0" /> : <ChevronDown size={18} className="text-gray-400 shrink-0" />}
+    <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${open ? 'border-green-700/50 bg-green-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 text-left gap-4"
+      >
+        <span className="font-semibold text-white text-[12px] sm:text-[15px] leading-snug pr-2"
+          style={{ fontFamily: "'Poppins', 'Georgia', sans-serif" }}>
+          {q}
+        </span>
+        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-green-600 text-white rotate-180' : 'bg-gray-800 text-gray-500'}`}>
+          <ChevronDown size={13} />
+        </div>
       </button>
-      {open && <div className="pb-5 text-gray-500 text-sm leading-relaxed">{a}</div>}
+      {open && (
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-gray-400 text-[11px] sm:text-sm leading-relaxed border-t border-white/5 pt-3">
+          {a}
+        </div>
+      )}
     </div>
   );
 }
@@ -709,38 +720,60 @@ export default function StudyAbroad() {
       {/* ══════════════════════════════════════════════════════════
           SECTION 8 — APPLICATION PROCESS
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 bg-green-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">Simple Process</div>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">From first contact to landing at your dream university in just 4 steps.</p>
+      <section className="bg-gray-950 py-14 sm:py-20 px-4 relative overflow-hidden">
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 opacity-[0.035] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle,white 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-green-500/40 to-transparent" />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-10 sm:mb-14">
+            <span className="inline-block text-green-400 text-[11px] font-extrabold uppercase tracking-[0.2em] mb-3">Simple Process</span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+              How It Works
+            </h2>
+            <p className="text-gray-500 mt-2 text-sm max-w-xs mx-auto">4 steps from first call to university offer.</p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6 relative">
-            <div className="hidden md:block absolute top-10 left-[12.5%] right-[12.5%] h-px bg-green-300 z-0" />
-            {PROCESS_STEPS.map(({ icon: Icon, title, desc, time, badge }) => (
-              <div key={title} className="relative z-10 text-center">
-                <div className="relative inline-flex w-20 h-20 items-center justify-center rounded-2xl bg-green-700 text-white mb-5 mx-auto shadow-lg">
-                  <Icon size={26} />
-                  <span className="absolute -top-2.5 -right-2.5 w-7 h-7 bg-yellow-400 text-gray-900 text-xs font-extrabold rounded-full flex items-center justify-center shadow">
+          {/* Steps */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 sm:gap-0 relative">
+            {/* Horizontal connector — desktop only */}
+            <div className="hidden sm:block absolute top-[30px] left-[calc(12.5%+8px)] right-[calc(12.5%+8px)] h-px bg-linear-to-r from-green-800 via-green-600 to-green-800 z-0" />
+
+            {[
+              { icon: FileText, badge: '01', time: 'Day 1',       title: 'Free Consultation',       desc: 'Profile review by a senior counsellor within 48 hrs.'       },
+              { icon: BookOpen, badge: '02', time: '24–48 hrs',   title: 'University Shortlist',    desc: '5–10 universities matched to your goals and budget.'        },
+              { icon: Globe,    badge: '03', time: '2–4 weeks',   title: 'Apply & Document',        desc: 'Personal statement, documents, and applications handled.'   },
+              { icon: Plane,    badge: '04', time: 'Offer stage', title: 'Visa & Departure',        desc: 'Visa support, pre-departure prep, first semester guidance.' },
+            ].map(({ icon: Icon, badge, time, title, desc }) => (
+              <div key={title} className="relative z-10 flex flex-col items-center text-center px-2 sm:px-4 group">
+                {/* Icon bubble */}
+                <div className="relative mb-4">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-green-800 border border-green-700 flex items-center justify-center shadow-lg shadow-green-950 ring-4 ring-green-900/60 group-hover:bg-green-700 transition-colors duration-200">
+                    <Icon size={20} className="text-green-300" />
+                  </div>
+                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-yellow-400 text-gray-900 text-[10px] font-extrabold rounded-full flex items-center justify-center shadow-md">
                     {badge}
                   </span>
                 </div>
-                <div className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2.5 py-1 rounded-full font-semibold mb-3">
-                  <Clock size={10} /> {time}
-                </div>
-                <h3 className="font-extrabold text-gray-900 mb-2">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                {/* Time chip */}
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-400 bg-green-900/50 border border-green-800 px-2 py-0.5 rounded-full mb-2.5">
+                  <Clock size={8} /> {time}
+                </span>
+                <h3 className="font-extrabold text-white text-xs sm:text-sm mb-1.5 leading-snug">{title}</h3>
+                <p className="text-gray-500 text-[11px] sm:text-xs leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          {/* CTA */}
+          <div className="text-center mt-10 sm:mt-14">
             <button onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-2 bg-green-700 text-white font-bold px-10 py-4 rounded-xl hover:bg-green-800 transition shadow-lg">
-              Start My Application <ArrowRight size={16} />
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-7 sm:px-8 py-3 sm:py-3.5 rounded-full transition shadow-lg shadow-green-900/40 text-sm">
+              Start My Application <ArrowRight size={15} />
             </button>
+            <p className="text-gray-600 text-xs mt-3">Free assessment · No upfront commitment</p>
           </div>
         </div>
       </section>
@@ -818,22 +851,42 @@ export default function StudyAbroad() {
       {/* ══════════════════════════════════════════════════════════
           SECTION 11 — FAQ
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-block bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">FAQ</div>
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-gray-500">Everything you need to know about studying abroad with us.</p>
+      <section className="bg-gray-950 py-10 md:py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-[1fr_1.5fr] gap-10 lg:gap-16 items-start">
+
+            {/* Left — sticky header */}
+            <div className="lg:sticky lg:top-24">
+              <span className="inline-block text-green-400 text-[11px] font-extrabold uppercase tracking-[0.2em] mb-4">FAQ</span>
+              <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight mb-3 sm:mb-4"
+                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                Got questions?<br />
+                <em className="text-green-400 not-italic">We have answers.</em>
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-base leading-relaxed mb-4 sm:mb-6 max-w-xs">
+                Everything you need to know about studying abroad with us.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-5 py-2.5 rounded-full transition shadow-lg shadow-green-900/30"
+              >
+                Talk to a counsellor <ArrowRight size={14} />
+              </button>
+              <div className="mt-10 gap-6 hidden lg:flex">
+                {[['6', 'Common topics'], ['< 1 min', 'Avg. read time']].map(([v, l]) => (
+                  <div key={l}>
+                    <div className="text-2xl font-extrabold text-white">{v}</div>
+                    <div className="text-gray-600 text-xs mt-0.5">{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — accordion */}
+            <div className="space-y-2">
+              {FAQS.map(({ q, a }) => <FAQItem key={q} q={q} a={a} />)}
+            </div>
           </div>
-          <div className="bg-gray-50 rounded-2xl border border-gray-100 px-7 py-2">
-            {FAQS.map(({ q, a }) => <FAQItem key={q} q={q} a={a} />)}
-          </div>
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Still have questions?{' '}
-            <button onClick={() => setShowForm(true)} className="text-green-700 font-bold hover:underline">
-              Talk to a counsellor →
-            </button>
-          </p>
         </div>
       </section>
 
