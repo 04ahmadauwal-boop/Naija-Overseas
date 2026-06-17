@@ -1,13 +1,10 @@
 const nodemailer = require('nodemailer');
 
-// Transporter created lazily inside the function so it always reads
-// the current process.env values even after a hot reload in development.
 const createTransporter = () =>
   nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    family: 4, // force IPv4 — IPv6 is unreachable on this network
+    port: 587,       // 587 + STARTTLS — works on cloud/VPS servers (465 is blocked by most hosts)
+    secure: false,   // false = STARTTLS (upgrades connection); true = SSL (port 465, blocked on servers)
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -21,12 +18,17 @@ const sendEmail = async ({ to, subject, html }) => {
     return;
   }
   const transporter = createTransporter();
-  await transporter.sendMail({
-    from: `"Education Naija & Overseas" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Education Naija & Overseas" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+  } catch (err) {
+    console.error(`📧 sendEmail failed — to:${to} | ${err.message}`);
+    throw err;
+  }
 };
 
 module.exports = sendEmail;
