@@ -310,7 +310,7 @@ router.post('/book', protect, async (req, res) => {
       .map(b => `${new Date(b.date).toDateString()} at ${b.timeSlot}`)
       .join(', ');
 
-    await sendEmail({
+    sendEmail({
       to: email,
       subject: 'Tutoring Session Booked — Education Naija & Overseas',
       html: `<p>Hi ${name},</p>
@@ -318,7 +318,7 @@ router.post('/book', protect, async (req, res) => {
 <p><strong>Session${created.length > 1 ? 's' : ''}:</strong> ${datesList}</p>
 <p>We'll notify you once the tutor confirms.</p>
 <p>— Education Naija &amp; Overseas Team</p>`,
-    }).catch(() => {});
+    }).catch((err) => console.error('📧 Student booking confirmation email failed:', err.message));
     sendWhatsApp({
       to: phone,
       message: `Hi ${name},\n\nYour tutoring session with *${tutorProfile.displayName || tutorProfile.user?.name || 'your tutor'}* has been booked and is pending confirmation.\n\n*Session${created.length > 1 ? 's' : ''}:* ${datesList}\n\nWe'll notify you once the tutor confirms.\n\n— Education Naija & Overseas Team`,
@@ -389,7 +389,7 @@ router.post('/book', protect, async (req, res) => {
       const tutorName = tutorProfile.displayName || tutorProfile.user?.name || 'Tutor';
       const sessionType = isTrial ? 'Discounted First Session' : `Session${created.length > 1 ? 's' : ''}`;
 
-      await sendEmail({
+      sendEmail({
         to: tutorProfile.user.email,
         subject: `New Booking — ${name}${isTrial ? ' (Discounted Session + Quiz)' : ''}`,
         html: `
@@ -453,7 +453,7 @@ router.post('/book', protect, async (req, res) => {
   </table>
 </body>
 </html>`,
-      }).catch(() => {});
+      }).catch((err) => console.error('📧 Tutor booking notification email failed:', err.message));
 
       // WhatsApp to tutor
       const tutorUser = await User.findById(tutorProfile.user._id).select('phone').lean().catch(() => null);

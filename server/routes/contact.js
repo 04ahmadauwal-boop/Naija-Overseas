@@ -26,6 +26,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST /api/contact/test-email — admin diagnostic: send a test email from the live server
+router.post('/test-email', protect, isAdmin, async (req, res) => {
+  const to = req.body.to || process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  try {
+    await sendEmail({
+      to,
+      subject: 'Test Email — Education Naija & Overseas Server',
+      html: `<p>This test email was sent from the live server at <strong>${new Date().toISOString()}</strong>.</p>
+             <p>EMAIL_USER present: <strong>${process.env.EMAIL_USER ? 'YES' : 'NO'}</strong><br/>
+             EMAIL_PASS present: <strong>${process.env.EMAIL_PASS ? 'YES' : 'NO'}</strong></p>`,
+    });
+    res.json({ ok: true, message: `Test email sent to ${to}` });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: err.message });
+  }
+});
+
 // GET /api/contact — admin
 router.get('/', protect, isAdmin, async (req, res) => {
   try {
