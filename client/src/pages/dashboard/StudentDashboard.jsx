@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import ChangePasswordSection from '../../components/ChangePasswordSection';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -1698,6 +1699,8 @@ function SettingsTab({ user: userProp }) {
           </div>
         </form>
       </div>
+
+      <ChangePasswordSection />
     </div>
   );
 }

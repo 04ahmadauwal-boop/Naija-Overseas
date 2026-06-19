@@ -1,13 +1,197 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Star, MapPin, CheckCircle, Clock, Users, ArrowLeft,
   BookOpen, GraduationCap, Award, Video, MessageSquare,
   Shield, User, Search, Zap, TrendingUp, Monitor, Globe,
+  CalendarDays, ChevronLeft, ChevronRight, Info,
 } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+
+const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function getWeekDates(offset = 0) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset * 7 + i);
+    return d;
+  });
+}
+
+function fmt(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function AvailabilitySection({ tutorId, trialDurationMins, bookUrl }) {
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [slots, setSlots] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(0);
+
+  const weekDates = getWeekDates(weekOffset);
+  const startLabel = `${String(weekDates[0].getDate()).padStart(2,'0')}/${String(weekDates[0].getMonth()+1).padStart(2,'0')}/${String(weekDates[0].getFullYear()).slice(-2)}`;
+  const endLabel   = `${String(weekDates[6].getDate()).padStart(2,'0')}/${String(weekDates[6].getMonth()+1).padStart(2,'0')}/${String(weekDates[6].getFullYear()).slice(-2)}`;
+
+  const fetchSlots = useCallback(async () => {
+    setLoading(true);
+    const results = await Promise.all(
+      weekDates.map(d =>
+        api.get(`/schedule/slots/${tutorId}?date=${fmt(d)}`)
+          .then(({ data }) => ({ date: fmt(d), slots: data.slots || [] }))
+          .catch(() => ({ date: fmt(d), slots: [] }))
+      )
+    );
+    const map = {};
+    results.forEach(({ date, slots: s }) => { map[date] = s; });
+    setSlots(map);
+    setLoading(false);
+  }, [tutorId, weekOffset]);
+
+  useEffect(() => { fetchSlots(); }, [fetchSlots]);
+
+  const formatTime = (utc) => {
+    const d = new Date(utc);
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  };
+
+  const daySlots = (date) => slots[fmt(date)] || [];
+  const hasAny = weekDates.some(d => daySlots(d).length > 0);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+      <h2 className="font-bold text-gray-900 text-base sm:text-lg mb-4 flex items-center gap-2">
+        <CalendarDays size={16} className="text-green-600 shrink-0" /> Availability
+      </h2>
+
+      {/* Info banner */}
+      {trialDurationMins && (
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4 text-xs text-blue-700 font-medium">
+          <Info size={14} className="shrink-0 text-blue-500" />
+          Choose a date and time for your {trialDurationMins}-minute trial session
+        </div>
+      )}
+
+      {/* Week navigation */}
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={() => { setWeekOffset(w => Math.max(0, w - 1)); setSelectedDay(0); }}
+          disabled={weekOffset === 0}
+          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span className="text-sm font-bold text-gray-700">{startLabel} – {endLabel}</span>
+        <button
+          onClick={() => { setWeekOffset(w => w + 1); setSelectedDay(0); }}
+          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition"
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      {/* Day header row */}
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {weekDates.map((d, i) => {
+          const hasSlots = daySlots(d).length > 0;
+          const isSelected = selectedDay === i;
+          return (
+            <button
+              key={i}
+              onClick={() => setSelectedDay(i)}
+              className={`flex flex-col items-center py-2 px-1 rounded-xl border-2 transition text-center ${
+                isSelected
+                  ? 'bg-blue-700 border-blue-700 text-white'
+                  : hasSlots
+                  ? 'border-green-300 bg-white hover:bg-green-50 text-gray-700'
+                  : 'border-gray-100 bg-gray-50 text-gray-400'
+              }`}
+            >
+              {hasSlots && !isSelected && (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mb-1" />
+              )}
+              <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
+                {DAY_ABBR[d.getDay()]}
+              </span>
+              <span className="text-base font-extrabold leading-tight mt-0.5">{d.getDate()}</span>
+              <span className="text-[9px] leading-none mt-0.5">{MONTH_ABBR[d.getMonth()]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Slots for selected day (mobile) / all days grid (desktop) */}
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-6 h-6 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
+        </div>
+      ) : !hasAny ? (
+        <div className="text-center py-6 text-gray-400 text-sm">
+          No availability this week. Try the next week →
+        </div>
+      ) : (
+        <>
+          {/* Mobile: selected day slots */}
+          <div className="sm:hidden">
+            {daySlots(weekDates[selectedDay]).length === 0 ? (
+              <div className="text-center py-4 text-sm text-gray-400">No slots available</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {daySlots(weekDates[selectedDay]).slice(0, 6).map((slot, i) => (
+                  <Link key={i} to={bookUrl}
+                    className="text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl py-2.5 hover:border-green-500 hover:bg-green-50 hover:text-green-800 transition">
+                    {formatTime(slot.utc)}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: all 7 days grid */}
+          <div className="hidden sm:grid grid-cols-7 gap-1">
+            {weekDates.map((d, i) => {
+              const ds = daySlots(d);
+              return (
+                <div key={i} className="flex flex-col gap-1">
+                  {ds.length === 0 ? (
+                    <div className="text-center text-[10px] text-gray-400 bg-gray-50 rounded-lg py-2.5 font-medium">
+                      Fully booked
+                    </div>
+                  ) : (
+                    ds.slice(0, 3).map((slot, j) => (
+                      <Link key={j} to={bookUrl}
+                        className="text-center text-[11px] font-semibold text-gray-700 border border-gray-200 rounded-lg py-2 hover:border-green-500 hover:bg-green-50 hover:text-green-800 transition">
+                        {formatTime(slot.utc)}
+                      </Link>
+                    ))
+                  )}
+                  {ds.length > 3 && (
+                    <Link to={bookUrl} className="text-center text-[10px] text-green-600 font-semibold py-1 hover:underline">
+                      +{ds.length - 3} more
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* View full schedule */}
+      <div className="mt-4 pt-4 border-t border-gray-50 text-center">
+        <Link to={bookUrl}
+          className="inline-block border border-gray-300 text-gray-700 font-semibold text-sm px-8 py-2.5 rounded-xl hover:border-green-600 hover:text-green-700 transition">
+          View full schedule
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 const HOW_IT_WORKS_VIDEO_ID = 'hT_nvWreIhg';
 
@@ -427,6 +611,13 @@ export default function TutorDetail() {
               )}
             </div>
           </div>
+
+          {/* ── AVAILABILITY CALENDAR ─────────────────────────────── */}
+          <AvailabilitySection
+            tutorId={id}
+            trialDurationMins={tutor.trialDurationMins}
+            bookUrl={`/book/${id}`}
+          />
 
           {/* ── REVIEWS ───────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">

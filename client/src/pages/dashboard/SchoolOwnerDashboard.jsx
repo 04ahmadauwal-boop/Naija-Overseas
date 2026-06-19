@@ -6,8 +6,9 @@ import {
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, DollarSign,
   Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload,
-  CalendarCheck, XCircle, Video, Play,
+  CalendarCheck, XCircle, Video, Play, Settings,
 } from 'lucide-react';
+import ChangePasswordSection from '../../components/ChangePasswordSection';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -53,6 +54,7 @@ const TABS = [
   { id: 'analytics',    label: 'Analytics',        icon: BarChart2       },
   { id: 'visits',       label: 'Visit Requests',   icon: CalendarCheck   },
   { id: 'reviews',      label: 'Reviews',          icon: Star            },
+  { id: 'settings',     label: 'Settings',         icon: Settings        },
 ];
 
 const JAMB_SUBJECTS = ['Use of English', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
@@ -2121,6 +2123,24 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
               {activeTab === 'visits' && <VisitRequestsTab />}
               {activeTab === 'reviews' && <OwnerReviewsTab school={school} />}
+              {activeTab === 'settings' && (
+                <div className="space-y-5 max-w-2xl">
+                  <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Settings</h2>
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-green-700 flex items-center justify-center text-white font-extrabold text-lg">
+                        {(user?.name || 'S').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{user?.name}</p>
+                        <p className="text-sm text-gray-400">{user?.email}</p>
+                        <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">School Owner Account</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ChangePasswordSection />
+                </div>
+              )}
             </>
           )}
         </div>

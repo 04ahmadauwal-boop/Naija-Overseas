@@ -4,8 +4,9 @@ import {
   LayoutDashboard, Search, Heart, BarChart3, CalendarCheck,
   Users, Menu, X, BookOpen, MapPin, Trash2, Plus, ChevronDown,
   GraduationCap, Bell, LogOut, CheckCircle, Clock, XCircle,
-  SlidersHorizontal, Pencil, Tag, AlertCircle, ArrowRight,
+  SlidersHorizontal, Pencil, Tag, AlertCircle, ArrowRight, Settings,
 } from 'lucide-react';
+import ChangePasswordSection from '../../components/ChangePasswordSection';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -34,6 +35,7 @@ const TABS = [
   { id: 'compare', label: 'Compare', icon: BarChart3 },
   { id: 'visits', label: 'School Visits', icon: CalendarCheck },
   { id: 'children', label: 'My Children', icon: Users },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 function formatFee(amount) {
@@ -523,6 +525,24 @@ export default function ParentDashboard() {
               handleEditChild={handleEditChild}
               handleDeleteChild={handleDeleteChild}
             />
+          )}
+          {activeTab === 'settings' && (
+            <div className="space-y-5 max-w-2xl">
+              <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Settings</h2>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-2xl bg-green-700 flex items-center justify-center text-white font-extrabold text-lg">
+                    {(user?.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{user?.name}</p>
+                    <p className="text-sm text-gray-400">{user?.email}</p>
+                    <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Parent Account</span>
+                  </div>
+                </div>
+              </div>
+              <ChangePasswordSection />
+            </div>
           )}
         </main>
       </div>

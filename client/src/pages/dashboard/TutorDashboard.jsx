@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ChangePasswordSection from '../../components/ChangePasswordSection';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
@@ -896,6 +897,8 @@ function SettingsTab({ user: userProp, profile }) {
           </div>
         </div>
       </div>
+
+      <ChangePasswordSection />
     </div>
   );
 }
