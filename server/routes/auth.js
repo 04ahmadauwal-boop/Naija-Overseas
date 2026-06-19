@@ -37,7 +37,7 @@ router.post('/register', async (req, res) => {
 
     const verifyUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email/${rawToken}`;
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: 'Verify Your Email — Education Naija & Overseas',
       html: `
