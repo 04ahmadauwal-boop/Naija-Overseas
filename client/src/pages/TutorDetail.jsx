@@ -25,15 +25,25 @@ function fmt(date) {
   return date.toISOString().split('T')[0];
 }
 
+const FULL_DAY   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const FULL_MONTH = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
 function AvailabilitySection({ tutorId, trialDurationMins, bookUrl }) {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [slots, setSlots] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [slots, setSlots]           = useState({});
+  const [loading, setLoading]       = useState(true);
+  const [selectedIdx, setSelectedIdx] = useState(0);
 
   const weekDates = getWeekDates(weekOffset);
-  const startLabel = `${String(weekDates[0].getDate()).padStart(2,'0')}/${String(weekDates[0].getMonth()+1).padStart(2,'0')}/${String(weekDates[0].getFullYear()).slice(-2)}`;
-  const endLabel   = `${String(weekDates[6].getDate()).padStart(2,'0')}/${String(weekDates[6].getMonth()+1).padStart(2,'0')}/${String(weekDates[6].getFullYear()).slice(-2)}`;
+  const today     = fmt(new Date());
+
+  const rangeLabel = (() => {
+    const s = weekDates[0], e = weekDates[6];
+    const sameMonth = s.getMonth() === e.getMonth();
+    return sameMonth
+      ? `${FULL_MONTH[s.getMonth()]} ${s.getDate()} – ${e.getDate()}, ${e.getFullYear()}`
+      : `${FULL_MONTH[s.getMonth()].slice(0,3)} ${s.getDate()} – ${FULL_MONTH[e.getMonth()].slice(0,3)} ${e.getDate()}, ${e.getFullYear()}`;
+  })();
 
   const fetchSlots = useCallback(async () => {
     setLoading(true);
@@ -60,135 +70,166 @@ function AvailabilitySection({ tutorId, trialDurationMins, bookUrl }) {
     return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
   };
 
-  const daySlots = (date) => slots[fmt(date)] || [];
-  const hasAny = weekDates.some(d => daySlots(d).length > 0);
+  const daySlots    = (date) => slots[fmt(date)] || [];
+  const hasAvail    = (date) => daySlots(date).some(s => !s.booked);
+  const hasAny      = weekDates.some(d => daySlots(d).length > 0);
+
+  const selDate     = weekDates[selectedIdx];
+  const selKey      = fmt(selDate);
+  const selSlots    = slots[selKey] || [];
+  const selLabel    = `${FULL_DAY[selDate.getDay()]}, ${FULL_MONTH[selDate.getMonth()]} ${selDate.getDate()}`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-      <h2 className="font-bold text-gray-900 text-base sm:text-lg mb-4 flex items-center gap-2">
-        <CalendarDays size={16} className="text-green-600 shrink-0" /> Availability
-      </h2>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
-      {/* Info banner */}
-      {trialDurationMins && (
-        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4 text-xs text-blue-700 font-medium">
-          <Info size={14} className="shrink-0 text-blue-500" />
-          Choose a date and time for your {trialDurationMins}-minute trial session
+      {/* Header */}
+      <div className="px-4 sm:px-6 pt-5 pb-4 border-b border-gray-50">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
+            <CalendarDays size={17} className="text-green-600 shrink-0" />
+            Availability
+          </h2>
+          <Link to={bookUrl}
+            className="text-xs font-semibold text-green-700 hover:underline shrink-0">
+            View full schedule →
+          </Link>
         </div>
-      )}
+
+        {trialDurationMins && (
+          <div className="mt-3 flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 text-xs text-green-800 font-medium">
+            <Info size={13} className="shrink-0 text-green-600" />
+            Choose a date &amp; time for your {trialDurationMins}-minute trial session
+          </div>
+        )}
+      </div>
 
       {/* Week navigation */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 border-b border-gray-50">
         <button
-          onClick={() => { setWeekOffset(w => Math.max(0, w - 1)); setSelectedDay(0); }}
+          onClick={() => { setWeekOffset(w => Math.max(0, w - 1)); setSelectedIdx(0); }}
           disabled={weekOffset === 0}
-          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-25 disabled:cursor-not-allowed transition"
         >
-          <ChevronLeft size={14} />
+          <ChevronLeft size={15} />
         </button>
-        <span className="text-sm font-bold text-gray-700">{startLabel} – {endLabel}</span>
+        <span className="text-sm font-bold text-gray-700 tracking-tight">{rangeLabel}</span>
         <button
-          onClick={() => { setWeekOffset(w => w + 1); setSelectedDay(0); }}
-          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition"
+          onClick={() => { setWeekOffset(w => w + 1); setSelectedIdx(0); }}
+          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition"
         >
-          <ChevronRight size={14} />
+          <ChevronRight size={15} />
         </button>
       </div>
 
-      {/* Day header row */}
-      <div className="grid grid-cols-7 gap-1 mb-3">
-        {weekDates.map((d, i) => {
-          const hasSlots = daySlots(d).length > 0;
-          const isSelected = selectedDay === i;
-          return (
-            <button
-              key={i}
-              onClick={() => setSelectedDay(i)}
-              className={`flex flex-col items-center py-2 px-1 rounded-xl border-2 transition text-center ${
-                isSelected
-                  ? 'bg-blue-700 border-blue-700 text-white'
-                  : hasSlots
-                  ? 'border-green-300 bg-white hover:bg-green-50 text-gray-700'
-                  : 'border-gray-100 bg-gray-50 text-gray-400'
-              }`}
-            >
-              {hasSlots && !isSelected && (
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mb-1" />
-              )}
-              <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
-                {DAY_ABBR[d.getDay()]}
-              </span>
-              <span className="text-base font-extrabold leading-tight mt-0.5">{d.getDate()}</span>
-              <span className="text-[9px] leading-none mt-0.5">{MONTH_ABBR[d.getMonth()]}</span>
-            </button>
-          );
-        })}
+      {/* Day strip — horizontally scrollable, large tap targets */}
+      <div className="px-3 sm:px-5 py-3 border-b border-gray-50">
+        <div className="grid grid-cols-7 gap-1.5">
+          {weekDates.map((d, i) => {
+            const key       = fmt(d);
+            const isToday   = key === today;
+            const hasFree   = hasAvail(d);
+            const hasSome   = daySlots(d).length > 0;
+            const isSelected = selectedIdx === i;
+            return (
+              <button
+                key={i}
+                onClick={() => setSelectedIdx(i)}
+                className={`relative flex flex-col items-center gap-0.5 pt-2.5 pb-2 rounded-2xl border-2 transition-all duration-150 select-none ${
+                  isSelected
+                    ? 'bg-green-700 border-green-700 text-white shadow-md'
+                    : hasFree
+                    ? 'border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 text-gray-800'
+                    : hasSome
+                    ? 'border-gray-100 bg-gray-50 text-gray-400'
+                    : 'border-gray-100 bg-gray-50 text-gray-300'
+                }`}
+              >
+                {/* Today ring */}
+                {isToday && !isSelected && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500" />
+                )}
+                {/* Available dot */}
+                {hasFree && !isSelected && !isToday && (
+                  <span className="w-1 h-1 rounded-full bg-green-400 mb-0.5" />
+                )}
+                <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${isSelected ? 'text-green-200' : 'text-gray-400'}`}>
+                  {DAY_ABBR[d.getDay()]}
+                </span>
+                <span className="text-lg font-black leading-none mt-0.5">{d.getDate()}</span>
+                <span className={`text-[9px] font-medium leading-none ${isSelected ? 'text-green-300' : 'text-gray-400'}`}>
+                  {MONTH_ABBR[d.getMonth()]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Slots for selected day (mobile) / all days grid (desktop) */}
-      {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="w-6 h-6 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
-        </div>
-      ) : !hasAny ? (
-        <div className="text-center py-6 text-gray-400 text-sm">
-          No availability this week. Try the next week →
-        </div>
-      ) : (
-        <>
-          {/* Mobile: selected day slots */}
-          <div className="sm:hidden">
-            {daySlots(weekDates[selectedDay]).length === 0 ? (
-              <div className="text-center py-4 text-sm text-gray-400">No slots available</div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {daySlots(weekDates[selectedDay]).slice(0, 6).map((slot, i) => (
-                  <Link key={i} to={bookUrl}
-                    className="text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl py-2.5 hover:border-green-500 hover:bg-green-50 hover:text-green-800 transition">
-                    {formatTime(slot.utc)}
-                  </Link>
-                ))}
-              </div>
-            )}
+      {/* Slots panel */}
+      <div className="px-4 sm:px-6 py-4 min-h-[160px]">
+        {loading ? (
+          <div className="grid grid-cols-3 gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 rounded-xl bg-gray-100 animate-pulse" />
+            ))}
           </div>
+        ) : !hasAny ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+            <CalendarDays size={28} className="text-gray-200" />
+            <p className="text-sm font-semibold text-gray-400">No availability this week</p>
+            <button
+              onClick={() => { setWeekOffset(w => w + 1); setSelectedIdx(0); }}
+              className="text-xs text-green-600 font-bold hover:underline mt-1"
+            >
+              Check next week →
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+              {selLabel}
+            </p>
 
-          {/* Desktop: all 7 days grid */}
-          <div className="hidden sm:grid grid-cols-7 gap-1">
-            {weekDates.map((d, i) => {
-              const ds = daySlots(d);
-              return (
-                <div key={i} className="flex flex-col gap-1">
-                  {ds.length === 0 ? (
-                    <div className="text-center text-[10px] text-gray-400 bg-gray-50 rounded-lg py-2.5 font-medium">
-                      Fully booked
+            {selSlots.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 gap-1.5 text-center">
+                <p className="text-sm text-gray-400 font-medium">No slots on this day</p>
+                <p className="text-xs text-gray-300">Try another day or check next week</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {selSlots.map((slot, i) =>
+                  slot.booked ? (
+                    <div key={i}
+                      className="flex flex-col items-center justify-center text-center border border-dashed border-gray-200 rounded-xl py-2.5 px-1 cursor-not-allowed select-none"
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300 leading-none">
+                        Booked
+                      </span>
+                      <span className="text-xs font-semibold text-gray-300 mt-1 leading-none">
+                        {formatTime(slot.utc)}
+                      </span>
                     </div>
                   ) : (
-                    ds.slice(0, 3).map((slot, j) => (
-                      <Link key={j} to={bookUrl}
-                        className="text-center text-[11px] font-semibold text-gray-700 border border-gray-200 rounded-lg py-2 hover:border-green-500 hover:bg-green-50 hover:text-green-800 transition">
-                        {formatTime(slot.utc)}
-                      </Link>
-                    ))
-                  )}
-                  {ds.length > 3 && (
-                    <Link to={bookUrl} className="text-center text-[10px] text-green-600 font-semibold py-1 hover:underline">
-                      +{ds.length - 3} more
+                    <Link key={i} to={bookUrl}
+                      className="flex items-center justify-center text-center text-sm font-bold text-gray-800 border-2 border-gray-200 rounded-xl py-2.5 px-1 hover:border-green-500 hover:bg-green-50 hover:text-green-800 active:scale-95 transition-all duration-100">
+                      {formatTime(slot.utc)}
                     </Link>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+                  )
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-      {/* View full schedule */}
-      <div className="mt-4 pt-4 border-t border-gray-50 text-center">
+      {/* Footer CTA */}
+      <div className="px-4 sm:px-6 pb-5">
         <Link to={bookUrl}
-          className="inline-block border border-gray-300 text-gray-700 font-semibold text-sm px-8 py-2.5 rounded-xl hover:border-green-600 hover:text-green-700 transition">
-          View full schedule
+          className="block w-full text-center bg-green-700 hover:bg-green-800 active:scale-[.99] text-white font-extrabold text-sm py-3.5 rounded-xl transition shadow-sm">
+          Book a Session →
         </Link>
       </div>
+
     </div>
   );
 }
@@ -363,20 +404,6 @@ export default function TutorDetail() {
                   )}
                 </div>
 
-                {/* Desktop rate — top-right of avatar row */}
-                {tutor.hourlyRateNaira > 0 && (
-                  <div className="hidden sm:block text-right pb-1">
-                    <p className="text-2xl font-extrabold text-gray-900 leading-none">
-                      ₦{tutor.hourlyRateNaira.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">per hour</p>
-                    {tutor.trialAvailable && (
-                      <p className="text-xs text-green-600 font-bold mt-1">
-                        {tutor.trialDiscountPercent ?? 50}% off first session
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Name + verified */}
@@ -419,6 +446,21 @@ export default function TutorDetail() {
                   <span className="text-xs text-gray-400">Joined {since}</span>
                 )}
               </div>
+
+              {/* Rate — shown on all screen sizes, safely below the banner */}
+              {tutor.hourlyRateNaira > 0 && (
+                <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 mb-3">
+                  <span className="text-2xl font-extrabold text-gray-900 leading-none">
+                    ₦{tutor.hourlyRateNaira.toLocaleString()}
+                  </span>
+                  <span className="text-sm text-gray-400">/ hr</span>
+                  {tutor.trialAvailable && (
+                    <span className="text-sm text-green-600 font-bold">
+                      · {tutor.trialDiscountPercent ?? 50}% off first session
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Mode + location badges */}
               <div className="flex flex-wrap gap-1.5 pb-5 sm:pb-6">

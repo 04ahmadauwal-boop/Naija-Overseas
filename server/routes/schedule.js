@@ -146,13 +146,12 @@ router.get('/slots/:tutorId', async (req, res) => {
           return slotUTC < bEnd && slotEndU > bStart;
         });
 
-        if (!conflict) {
-          slots.push({
-            utc:         slotUTC.toISOString(),
-            tutorTime:   timeStr,
-            studentTime: studentTz ? formatTimeInTZ(slotUTC, studentTz) : null,
-          });
-        }
+        slots.push({
+          utc:         slotUTC.toISOString(),
+          tutorTime:   timeStr,
+          studentTime: studentTz ? formatTimeInTZ(slotUTC, studentTz) : null,
+          booked:      conflict ? true : undefined,
+        });
 
         const nextMin = curH * 60 + curM + sessionDuration + bufferMinutes;
         curH = Math.floor(nextMin / 60); curM = nextMin % 60;
