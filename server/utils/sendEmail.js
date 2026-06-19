@@ -1,30 +1,26 @@
 const https = require('https');
 
 const sendEmail = ({ to, subject, html }) => {
-  const apiKey = process.env.BREVO_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.error('📧 sendEmail: BREVO_API_KEY not set — skipped');
+    console.error('📧 sendEmail: RESEND_API_KEY not set — skipped');
     return Promise.resolve();
   }
 
-  const body = JSON.stringify({
-    sender: {
-      name: 'Education Naija & Overseas',
-      email: process.env.EMAIL_FROM || 'noreply@visiteno.com',
-    },
-    to: [{ email: to }],
-    subject,
-    htmlContent: html,
-  });
+  const from = process.env.EMAIL_FROM
+    ? `Education Naija & Overseas <${process.env.EMAIL_FROM}>`
+    : 'Education Naija & Overseas <onboarding@resend.dev>';
+
+  const body = JSON.stringify({ from, to, subject, html });
 
   return new Promise((resolve, reject) => {
     const req = https.request(
       {
-        hostname: 'api.brevo.com',
-        path: '/v3/smtp/email',
+        hostname: 'api.resend.com',
+        path: '/emails',
         method: 'POST',
         headers: {
-          'api-key': apiKey,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
         },
@@ -36,7 +32,7 @@ const sendEmail = ({ to, subject, html }) => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve();
           } else {
-            const err = new Error(`Brevo API ${res.statusCode}: ${data}`);
+            const err = new Error(`Resend API ${res.statusCode}: ${data}`);
             console.error(`📧 sendEmail failed — to:${to} | ${err.message}`);
             reject(err);
           }

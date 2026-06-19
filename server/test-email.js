@@ -1,27 +1,25 @@
-// Run on the server: node test-email.js
+// Run: node test-email.js
 require('dotenv').config();
 const sendEmail = require('./utils/sendEmail');
 
 async function run() {
-  console.log('\n=== Email Diagnostic (Brevo API) ===');
-  console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? `✅ set (${process.env.BREVO_API_KEY.length} chars)` : '❌ NOT SET');
-  console.log('EMAIL_FROM   :', process.env.EMAIL_FROM || '❌ NOT SET');
-  console.log('ADMIN_EMAIL  :', process.env.ADMIN_EMAIL || '❌ NOT SET');
+  console.log('\n=== Email Diagnostic (Resend) ===');
+  console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? `✅ set (${process.env.RESEND_API_KEY.length} chars)` : '❌ NOT SET');
 
-  if (!process.env.BREVO_API_KEY) {
-    console.log('\n❌ STOP: Set BREVO_API_KEY in your .env and restart.');
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'YOUR_RESEND_API_KEY_HERE') {
+    console.log('\n❌ Paste your Resend API key into .env as RESEND_API_KEY=re_xxxx');
     process.exit(1);
   }
 
   const to = process.env.ADMIN_EMAIL || 'softsavvynaija@gmail.com';
-  console.log(`\n--- Sending test email to ${to} ---`);
+  console.log(`\nSending test to ${to} ...`);
   try {
     await sendEmail({
       to,
       subject: 'Server Email Test — Education Naija & Overseas',
-      html: `<p>This test email was sent from the server at <strong>${new Date().toISOString()}</strong>.</p><p>Email is working correctly!</p>`,
+      html: '<p>Email is working! Sent via Resend.</p>',
     });
-    console.log('✅ Email sent successfully! Check your inbox.');
+    console.log('✅ Email sent! Check your inbox.');
   } catch (err) {
     console.error('❌ Failed:', err.message);
   }
