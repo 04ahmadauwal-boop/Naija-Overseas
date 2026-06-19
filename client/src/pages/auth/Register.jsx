@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useEffect, useRef } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
   GraduationCap, Eye, EyeOff, User, Users, School,
-  CheckCircle, Globe, BookOpen, ChevronRight, Mail, RefreshCw,
+  CheckCircle, Globe, BookOpen, ChevronRight, RefreshCw, ShieldCheck,
 } from 'lucide-react';
 import Logo from '../../components/Logo';
 
@@ -85,7 +86,7 @@ function getRedirectPath(role, goal) {
 }
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, loginWithToken } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect');
@@ -95,8 +96,23 @@ export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', country: 'Nigeria' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
-  const [registered, setRegistered] = useState(false); // show "check email" screen
+  const [registered, setRegistered] = useState(false);
+
+  // OTP state
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpLoading, setOtpLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const otpRefs = useRef([]);
+
+  useEffect(() => {
+    if (!registered) return;
+    setCountdown(60);
+    const timer = setInterval(() => {
+      setCountdown(c => { if (c <= 1) { clearInterval(timer); return 0; } return c - 1; });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [registered]);
 
   const needsGoal = role === 'student';
   const canSubmit = !needsGoal || goal !== '';
@@ -117,11 +133,54 @@ export default function Register() {
     }
   };
 
+  const handleOtpChange = (index, value) => {
+    if (!/^\d?$/.test(value)) return;
+    const next = [...otp];
+    next[index] = value;
+    setOtp(next);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      setOtp(pasted.split(''));
+      otpRefs.current[5]?.focus();
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const code = otp.join('');
+    if (code.length < 6) { toast.error('Enter all 6 digits'); return; }
+    setOtpLoading(true);
+    try {
+      const { data } = await api.post('/auth/verify-otp', { email: form.email, otp: code });
+      loginWithToken(data.token, data.user);
+      toast.success('Email verified! Welcome 🎉');
+      navigate(redirectTo || getRedirectPath(data.user.role, data.user.goal));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid OTP');
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleResend = async () => {
     setResending(true);
     try {
       await api.post('/auth/resend-verification', { email: form.email });
-      toast.success('Verification email resent! Check your inbox.');
+      toast.success('New OTP sent! Check your inbox.');
+      setOtp(['', '', '', '', '', '']);
+      setCountdown(60);
+      otpRefs.current[0]?.focus();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to resend');
     } finally {
@@ -129,36 +188,62 @@ export default function Register() {
     }
   };
 
-  // ── "Check your email" screen ──────────────────────────────────────────────
+  // ── OTP verification screen ────────────────────────────────────────────────
   if (registered) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail size={36} className="text-green-700" />
+            <ShieldCheck size={36} className="text-green-700" />
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-gray-500 text-sm leading-relaxed mb-2">
-            We sent a verification link to
-          </p>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Enter verification code</h2>
+          <p className="text-gray-500 text-sm leading-relaxed mb-1">We sent a 6-digit code to</p>
           <p className="font-bold text-gray-800 text-sm mb-6 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 inline-block">
             {form.email}
           </p>
-          <p className="text-gray-400 text-xs leading-relaxed mb-8">
-            Click the link in the email to activate your account. The link expires in 24 hours.
-            Check your spam or junk folder if you don't see it.
-          </p>
+
+          {/* OTP boxes */}
+          <div className="flex justify-center gap-3 mb-6" onPaste={handleOtpPaste}>
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={el => otpRefs.current[i] = el}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={e => handleOtpChange(i, e.target.value)}
+                onKeyDown={e => handleOtpKeyDown(i, e)}
+                className="w-12 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition border-gray-200"
+                autoFocus={i === 0}
+              />
+            ))}
+          </div>
+
+          <p className="text-xs text-gray-400 mb-6">Code expires in 10 minutes. Check spam if not found.</p>
+
+          <button
+            onClick={handleVerifyOtp}
+            disabled={otpLoading || otp.join('').length < 6}
+            className="w-full bg-green-700 text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2 mb-4"
+          >
+            {otpLoading
+              ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying…</>
+              : 'Verify Email'}
+          </button>
+
           <button
             onClick={handleResend}
-            disabled={resending}
-            className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-60 text-sm"
+            disabled={resending || countdown > 0}
+            className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-50 text-sm"
           >
             <RefreshCw size={14} className={resending ? 'animate-spin' : ''} />
-            {resending ? 'Resending…' : 'Resend verification email'}
+            {countdown > 0 ? `Resend code in ${countdown}s` : resending ? 'Sending…' : 'Resend code'}
           </button>
+
           <p className="text-center text-sm text-gray-400 mt-5">
-            Already verified?{' '}
-            <Link to="/login" className="text-green-700 font-bold hover:underline">Sign in →</Link>
+            Wrong email?{' '}
+            <button onClick={() => setRegistered(false)} className="text-green-700 font-bold hover:underline">Go back</button>
           </p>
         </div>
       </div>
