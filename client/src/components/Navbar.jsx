@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFadeIn, useSlideIn } from '../hooks/useGsapAnimations';
 import {
   Menu, X, GraduationCap, ChevronRight, ChevronDown, LayoutDashboard,
-  BookOpen, Info, Mail, LogOut, User, Search, Users, BarChart3
+  BookOpen, Info, Mail, LogOut, User, Search, Users, BarChart3, Globe, Plane
 } from 'lucide-react';
 import SuggestSchoolModal from './SuggestSchoolModal';
 import Logo from './Logo';
@@ -64,6 +64,8 @@ export default function Navbar() {
   const [educationOpen, setEducationOpen] = useState(false);
   const [studyAbroadOpen, setStudyAbroadOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileEducationOpen, setMobileEducationOpen] = useState(false);
+  const [mobileStudyOpen, setMobileStudyOpen] = useState(false);
   const educationRef = useRef(null);
   const studyAbroadRef = useRef(null);
   const moreRef = useRef(null);
@@ -293,95 +295,156 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`lg:hidden fixed inset-0 z-40 transition-all duration-300 ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setMenuOpen(false)}>
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      </div>
+      {/* Mobile Drawer */}
+      <div className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
 
-      {/* Mobile Slide-down Panel */}
-      <div className={`lg:hidden fixed left-0 right-0 top-16 z-40 transition-all duration-300 ease-in-out ${
-        menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-      }`}>
-        <div className="mx-3 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        {/* Backdrop */}
+        <div
+          onClick={() => setMenuOpen(false)}
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0'}`}
+        />
 
-          {/* User strip (if logged in) */}
+        {/* Right-slide panel */}
+        <div className={`absolute top-0 right-0 bottom-0 w-[82vw] max-w-xs bg-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+          {/* Panel header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <Link to="/" onClick={() => setMenuOpen(false)}>
+              <Logo />
+            </Link>
+            <button onClick={() => setMenuOpen(false)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* User card */}
           {user && (
-            <div className="flex items-center gap-3 px-5 py-4 bg-linear-to-r from-green-700 to-green-600">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0">
-                {userInitial}
+            <div className="mx-4 mt-4 rounded-2xl p-4 text-white" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #166534 100%)' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-extrabold text-base shrink-0">
+                  {userInitial}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm leading-tight truncate">{user.name}</p>
+                  <p className="text-green-300 text-xs capitalize">{user.role?.replace('-', ' ')}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm leading-tight truncate">{user.name}</p>
-                <p className="text-green-200 text-xs capitalize">{user.role?.replace('-', ' ')}</p>
-              </div>
-              <Link to={getDashboardLink(user.role)}
-                className="flex items-center gap-1 bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/30 shrink-0">
-                <LayoutDashboard size={12} /> Dashboard
+              <Link to={getDashboardLink(user.role)} onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-center gap-2 bg-white/15 border border-white/25 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-white/25 transition">
+                <LayoutDashboard size={13} /> Go to Dashboard
               </Link>
             </div>
           )}
 
-          {/* Nav links */}
-          <nav className="p-3 space-y-0.5">
-            {[...EDUCATION_ITEMS, ...NAV_ITEMS, ...MORE_ITEMS].map(({ to, label, icon: Icon, end }) => (
-              <NavLink key={to} to={to} end={end}
+          {/* Scrollable nav */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5">
+
+            {/* Education Naija accordion */}
+            <div className="rounded-xl overflow-hidden">
+              <button
+                onClick={() => setMobileEducationOpen(v => !v)}
+                className="w-full flex items-center gap-3 px-3 py-3 hover:bg-gray-50 transition rounded-xl"
+              >
+                <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                  <GraduationCap size={15} className="text-green-700" />
+                </div>
+                <span className="flex-1 text-left text-sm font-semibold text-gray-800">Education Naija</span>
+                <ChevronDown size={15} className={`text-gray-400 transition-transform duration-200 ${mobileEducationOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileEducationOpen && (
+                <div className="ml-11 pb-1 space-y-0.5">
+                  <NavLink to="/" end onClick={() => setMenuOpen(false)}
+                    className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition ${isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>
+                    Home
+                  </NavLink>
+                  {EDUCATION_ITEMS.map(({ to, label, icon: Icon }) => (
+                    <NavLink key={to} to={to} onClick={() => setMenuOpen(false)}
+                      className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition ${isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>
+                      <Icon size={14} className="opacity-60 shrink-0" />
+                      {label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Study Abroad accordion */}
+            <div className="rounded-xl overflow-hidden">
+              <button
+                onClick={() => setMobileStudyOpen(v => !v)}
+                className="w-full flex items-center gap-3 px-3 py-3 hover:bg-gray-50 transition rounded-xl"
+              >
+                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                  <Globe size={15} className="text-blue-600" />
+                </div>
+                <span className="flex-1 text-left text-sm font-semibold text-gray-800">Study Abroad</span>
+                <ChevronDown size={15} className={`text-gray-400 transition-transform duration-200 ${mobileStudyOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileStudyOpen && (
+                <div className="ml-11 pb-1 space-y-0.5">
+                  <NavLink to="/study-abroad" end onClick={() => setMenuOpen(false)}
+                    className={({ isActive }) => `flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition ${isActive ? 'text-green-700 bg-green-50' : 'text-green-700 hover:bg-green-50'}`}>
+                    <Plane size={13} /> All Destinations
+                  </NavLink>
+                  {STUDY_ABROAD_COUNTRIES.map(({ slug, code, label }) => (
+                    <NavLink key={slug} to={`/study-abroad/${slug}`} onClick={() => setMenuOpen(false)}
+                      className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition ${isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>
+                      <img src={`https://flagcdn.com/w20/${code}.png`} alt={label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+                      {label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-gray-100 my-2" />
+
+            {/* Direct links */}
+            {[...NAV_ITEMS, ...MORE_ITEMS].map(({ to, label, icon: Icon, end }) => (
+              <NavLink key={to} to={to} end={end} onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${
-                    isActive
-                      ? 'text-green-700 bg-green-50'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition ${
+                    isActive ? 'text-green-700 bg-green-50' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`
                 }>
-                <Icon size={17} className="shrink-0 opacity-60" />
+                <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
+                  <Icon size={15} className="text-gray-500" />
+                </div>
                 <span className="flex-1">{label}</span>
                 <ChevronRight size={14} className="text-gray-300" />
               </NavLink>
             ))}
 
-            {/* Study Abroad countries */}
-            <div className="pt-1">
-              <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Study Abroad</p>
-              {STUDY_ABROAD_COUNTRIES.map(({ slug, code, label }) => (
-                <NavLink key={slug} to={`/study-abroad/${slug}`}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive ? 'text-green-700 bg-green-50' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`
-                  }>
-                  <img src={`https://flagcdn.com/w20/${code}.png`} alt={label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  <ChevronRight size={14} className="text-gray-300" />
-                </NavLink>
-              ))}
-            </div>
-
-            <button onClick={() => { setMenuOpen(false); setShowSuggest(true); }}
-              className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 transition">
-              <Search size={17} className="shrink-0" />
-              <span className="flex-1">Find a School</span>
+            {/* Suggest a School */}
+            <button
+              onClick={() => { setMenuOpen(false); setShowSuggest(true); }}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 transition"
+            >
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <Search size={15} className="text-green-700" />
+              </div>
+              <span className="flex-1">Suggest a School</span>
               <ChevronRight size={14} className="text-green-400" />
             </button>
-          </nav>
+          </div>
 
           {/* Auth footer */}
-          <div className="px-3 pb-3 border-t border-gray-100 pt-2">
+          <div className="px-4 pb-6 pt-3 border-t border-gray-100">
             {user ? (
               <button onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition">
-                <LogOut size={17} />
-                Log out
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition">
+                <LogOut size={15} /> Log out
               </button>
             ) : (
-              <div className="space-y-2 pt-1">
-                <Link to="/login"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-green-300 hover:text-green-700 transition">
-                  <User size={16} /> Log in
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/login" onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center gap-1.5 border-2 border-gray-200 rounded-xl text-sm font-semibold text-gray-700 py-3 hover:border-green-400 hover:text-green-700 transition">
+                  <User size={14} /> Log in
                 </Link>
-                <Link to="/register"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-green-700 text-white rounded-xl text-sm font-bold hover:bg-green-800 transition shadow-lg shadow-green-900/20">
-                  Create Free Account →
+                <Link to="/register" onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center bg-green-700 text-white rounded-xl text-sm font-bold py-3 hover:bg-green-800 transition shadow-md shadow-green-900/20">
+                  Get started →
                 </Link>
               </div>
             )}
