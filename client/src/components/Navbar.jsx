@@ -4,23 +4,36 @@ import { useAuth } from '../context/AuthContext';
 import { useFadeIn, useSlideIn } from '../hooks/useGsapAnimations';
 import {
   Menu, X, GraduationCap, ChevronRight, ChevronDown, LayoutDashboard,
-  BookOpen, Globe, School, Info, Mail, LogOut, User, Search, Users
+  BookOpen, Info, Mail, LogOut, User, Search, Users, BarChart3
 } from 'lucide-react';
 import SuggestSchoolModal from './SuggestSchoolModal';
 import Logo from './Logo';
 
+const EDUCATION_ITEMS = [
+  { to: '/find-tutoring',  label: 'Find Tutoring',  icon: Users        },
+  { to: '/become-a-tutor', label: 'Become a Tutor', icon: GraduationCap },
+];
+
+const STUDY_ABROAD_COUNTRIES = [
+  { slug: 'united-kingdom', code: 'gb', label: 'United Kingdom' },
+  { slug: 'canada',         code: 'ca', label: 'Canada'         },
+  { slug: 'united-states',  code: 'us', label: 'United States'  },
+  { slug: 'australia',      code: 'au', label: 'Australia'       },
+  { slug: 'germany',        code: 'de', label: 'Germany'         },
+  { slug: 'ireland',        code: 'ie', label: 'Ireland'         },
+  { slug: 'netherlands',    code: 'nl', label: 'Netherlands'     },
+  { slug: 'new-zealand',    code: 'nz', label: 'New Zealand'     },
+];
+
 const NAV_ITEMS = [
-  { to: '/', label: 'Home', icon: School, end: true },
-  { to: '/find-tutoring', label: 'Find Tutoring', icon: Users, end: false },
-  { to: '/study-abroad', label: 'Study Abroad', icon: Globe, end: false },
-  { to: '/list-your-school', label: 'Add your school', icon: BookOpen, end: false },
+  { to: '/compare',         label: 'Compare Schools', icon: BarChart3, end: false },
+  { to: '/list-your-school',label: 'Add your school', icon: BookOpen,  end: false },
 ];
 
 const MORE_ITEMS = [
-  { to: '/become-a-tutor', label: 'Become a Tutor', icon: GraduationCap },
-  { to: '/blog',           label: 'Blog',            icon: BookOpen      },
-  { to: '/about',          label: 'About',           icon: Info          },
-  { to: '/contact',        label: 'Contact',         icon: Mail          },
+  { to: '/blog',    label: 'Blog',    icon: BookOpen },
+  { to: '/about',   label: 'About',   icon: Info     },
+  { to: '/contact', label: 'Contact', icon: Mail     },
 ];
 
 function getDashboardLink(role) {
@@ -48,7 +61,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showSuggest, setShowSuggest] = useState(false);
+  const [educationOpen, setEducationOpen] = useState(false);
+  const [studyAbroadOpen, setStudyAbroadOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const educationRef = useRef(null);
+  const studyAbroadRef = useRef(null);
   const moreRef = useRef(null);
 
   // GSAP animations
@@ -81,6 +98,92 @@ export default function Navbar() {
 
             {/* Desktop Nav */}
             <nav ref={navRef} className="hidden lg:flex items-center gap-0.5">
+
+              {/* Education Naija dropdown */}
+              <div
+                ref={educationRef}
+                className="relative"
+                onMouseEnter={() => setEducationOpen(true)}
+                onMouseLeave={() => setEducationOpen(false)}
+              >
+                <NavLink to="/" end
+                  className={({ isActive }) =>
+                    `flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                      isActive || educationOpen ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  Education Naija
+                  <ChevronDown size={13} className={`transition-transform duration-200 ${educationOpen ? 'rotate-180' : ''}`} />
+                </NavLink>
+                <div className={`absolute left-0 top-full pt-1.5 z-50 transition-all duration-200 ${
+                  educationOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-1 pointer-events-none'
+                }`}>
+                  <div className="w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
+                    {EDUCATION_ITEMS.map(({ to, label, icon: Icon }) => (
+                      <NavLink key={to} to={to}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                            isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`
+                        }
+                      >
+                        <Icon size={14} className="opacity-60 shrink-0" />
+                        {label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Study Abroad dropdown */}
+              <div
+                ref={studyAbroadRef}
+                className="relative"
+                onMouseEnter={() => setStudyAbroadOpen(true)}
+                onMouseLeave={() => setStudyAbroadOpen(false)}
+              >
+                <NavLink to="/study-abroad"
+                  className={({ isActive }) =>
+                    `flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                      isActive || studyAbroadOpen ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  Study Abroad
+                  <ChevronDown size={13} className={`transition-transform duration-200 ${studyAbroadOpen ? 'rotate-180' : ''}`} />
+                </NavLink>
+                <div className={`absolute left-0 top-full pt-1.5 z-50 transition-all duration-200 ${
+                  studyAbroadOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-1 pointer-events-none'
+                }`}>
+                  <div className="w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
+                    {STUDY_ABROAD_COUNTRIES.map(({ slug, code, label }) => (
+                      <NavLink key={slug} to={`/study-abroad/${slug}`}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                            isActive ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`
+                        }
+                      >
+                        <img src={`https://flagcdn.com/w20/${code}.png`} alt={label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+                        {label}
+                      </NavLink>
+                    ))}
+                    <div className="border-t border-gray-100 mt-1 pt-1">
+                      <NavLink to="/study-abroad"
+                        className={({ isActive }) =>
+                          `flex items-center px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                            isActive ? 'text-green-700 bg-green-50' : 'text-green-700 hover:bg-green-50'
+                          }`
+                        }
+                      >
+                        All Destinations →
+                      </NavLink>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {NAV_ITEMS.map(({ to, label, end }) => (
                 <NavLink key={to} to={to} end={end}
                   className={({ isActive }) =>
@@ -222,7 +325,7 @@ export default function Navbar() {
 
           {/* Nav links */}
           <nav className="p-3 space-y-0.5">
-            {[...NAV_ITEMS, ...MORE_ITEMS].map(({ to, label, icon: Icon, end }) => (
+            {[...EDUCATION_ITEMS, ...NAV_ITEMS, ...MORE_ITEMS].map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}
                 className={({ isActive }) =>
                   `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${
@@ -236,6 +339,24 @@ export default function Navbar() {
                 <ChevronRight size={14} className="text-gray-300" />
               </NavLink>
             ))}
+
+            {/* Study Abroad countries */}
+            <div className="pt-1">
+              <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Study Abroad</p>
+              {STUDY_ABROAD_COUNTRIES.map(({ slug, code, label }) => (
+                <NavLink key={slug} to={`/study-abroad/${slug}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      isActive ? 'text-green-700 bg-green-50' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }>
+                  <img src={`https://flagcdn.com/w20/${code}.png`} alt={label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+                  <span className="flex-1">{label}</span>
+                  <ChevronRight size={14} className="text-gray-300" />
+                </NavLink>
+              ))}
+            </div>
+
             <button onClick={() => { setMenuOpen(false); setShowSuggest(true); }}
               className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 transition">
               <Search size={17} className="shrink-0" />

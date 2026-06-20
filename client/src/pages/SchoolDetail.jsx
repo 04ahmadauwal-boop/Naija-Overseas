@@ -674,6 +674,99 @@ export default function SchoolDetail() {
       {/* ── MAIN CONTENT ──────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-5">
 
+        {/* ── ABOUT ─────────────────────────────────────────────────── */}
+        <div id="sd-about" className="space-y-5">
+
+          {/* Key Stats */}
+          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #173d25 100%)' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10 divide-y sm:divide-y-0">
+              {[
+                { icon: Building2,     label: 'School Type', value: school.type,                 accent: 'bg-emerald-400/20 text-emerald-300' },
+                { icon: GraduationCap, label: 'Level',       value: school.level,                accent: 'bg-sky-400/20 text-sky-300'         },
+                { icon: MapPin,        label: 'Location',    value: school.state || 'Nigeria',   accent: 'bg-violet-400/20 text-violet-300'   },
+                { icon: CheckCircle,   label: 'Status',      value: 'Verified ✓',               accent: 'bg-emerald-400/20 text-emerald-300' },
+              ].map(({ icon: Icon, label, value, accent }) => (
+                <div key={label} className="flex items-center gap-3 px-4 py-3.5 sm:py-4">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent}`}>
+                    <Icon size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white/40 text-[9px] font-semibold uppercase tracking-widest truncate">{label}</p>
+                    <p className="text-white font-bold text-[13px] capitalize truncate mt-0.5">{value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          {school.description && (
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">About This School</h2>
+              <div className="rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white">
+                <p className="text-gray-600 leading-relaxed text-sm">{school.description}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Curriculum */}
+          {school.curriculum?.length > 0 && (
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Curriculum Offered</h2>
+              <div className="flex flex-wrap gap-2">
+                {school.curriculum.map((c) => (
+                  <div key={c} className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
+                    <CheckCircle size={13} className="text-green-600" /> {c}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Achievements */}
+          {school.achievements?.length > 0 && (
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Achievements &amp; Awards</h2>
+              <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3">
+                {school.achievements.map((ach, i) => {
+                  const catColors = {
+                    academic: 'bg-blue-100 text-blue-800',
+                    sports: 'bg-green-100 text-green-800',
+                    arts: 'bg-purple-100 text-purple-800',
+                    community: 'bg-orange-100 text-orange-800',
+                    award: 'bg-yellow-100 text-yellow-800',
+                  };
+                  const catColor = catColors[ach.category] || 'bg-gray-100 text-gray-700';
+                  return (
+                    <div key={i} className="flex gap-3 bg-amber-50 border border-amber-100 rounded-xl p-3.5 sm:p-4">
+                      <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                        <Award size={15} className="text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          <p className="font-bold text-gray-900 text-sm leading-snug">{ach.title}</p>
+                          {ach.year && (
+                            <span className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded-full">{ach.year}</span>
+                          )}
+                        </div>
+                        {ach.category && (
+                          <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 capitalize ${catColor}`}>
+                            {ach.category === 'arts' ? 'Arts & Culture' : ach.category}
+                          </span>
+                        )}
+                        {ach.description && (
+                          <p className="text-gray-500 text-xs leading-relaxed">{ach.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+        </div>
+
         {/* ── PHOTO GALLERY ─────────────────────────────────────────── */}
         {photos.length > 0 && (
           <div id="sd-gallery">
@@ -742,94 +835,6 @@ export default function SchoolDetail() {
           {/* ── Left: Main Details ── */}
           <div className="lg:col-span-2 space-y-5 sm:space-y-7">
 
-            {/* Key Stats */}
-            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm" style={{ background: 'linear-gradient(135deg, #0d2918 0%, #173d25 100%)' }}>
-              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10 divide-y sm:divide-y-0">
-                {[
-                  { icon: Building2,     label: 'School Type', value: school.type,                 accent: 'bg-emerald-400/20 text-emerald-300' },
-                  { icon: GraduationCap, label: 'Level',       value: school.level,                accent: 'bg-sky-400/20 text-sky-300'         },
-                  { icon: MapPin,        label: 'Location',    value: school.state || 'Nigeria',   accent: 'bg-violet-400/20 text-violet-300'   },
-                  { icon: CheckCircle,   label: 'Status',      value: 'Verified ✓',               accent: 'bg-emerald-400/20 text-emerald-300' },
-                ].map(({ icon: Icon, label, value, accent }) => (
-                  <div key={label} className="flex items-center gap-3 px-4 py-3.5 sm:py-4">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent}`}>
-                      <Icon size={15} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-white/40 text-[9px] font-semibold uppercase tracking-widest truncate">{label}</p>
-                      <p className="text-white font-bold text-[13px] capitalize truncate mt-0.5">{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            {school.description && (
-              <div id="sd-about">
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">About This School</h2>
-                <div className="rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white">
-                  <p className="text-gray-600 leading-relaxed text-sm">{school.description}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Curriculum */}
-            {school.curriculum?.length > 0 && (
-              <div>
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Curriculum Offered</h2>
-                <div className="flex flex-wrap gap-2">
-                  {school.curriculum.map((c) => (
-                    <div key={c} className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
-                      <CheckCircle size={13} className="text-green-600" /> {c}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Achievements */}
-            {school.achievements?.length > 0 && (
-              <div>
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 pl-3 border-l-[3px] border-emerald-500">Achievements &amp; Awards</h2>
-                <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {school.achievements.map((ach, i) => {
-                    const catColors = {
-                      academic: 'bg-blue-100 text-blue-800',
-                      sports: 'bg-green-100 text-green-800',
-                      arts: 'bg-purple-100 text-purple-800',
-                      community: 'bg-orange-100 text-orange-800',
-                      award: 'bg-yellow-100 text-yellow-800',
-                    };
-                    const catColor = catColors[ach.category] || 'bg-gray-100 text-gray-700';
-                    return (
-                      <div key={i} className="flex gap-3 bg-amber-50 border border-amber-100 rounded-xl p-3.5 sm:p-4">
-                        <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                          <Award size={15} className="text-amber-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                            <p className="font-bold text-gray-900 text-sm leading-snug">{ach.title}</p>
-                            {ach.year && (
-                              <span className="text-[10px] text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded-full">{ach.year}</span>
-                            )}
-                          </div>
-                          {ach.category && (
-                            <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 capitalize ${catColor}`}>
-                              {ach.category === 'arts' ? 'Arts & Culture' : ach.category}
-                            </span>
-                          )}
-                          {ach.description && (
-                            <p className="text-gray-500 text-xs leading-relaxed">{ach.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* JAMB Top Scorers */}
             {school.jambReports?.length > 0 && (
               <div id="sd-results">
@@ -851,7 +856,7 @@ export default function SchoolDetail() {
 
             {/* WAEC Outstanding Results */}
             {school.waecReports?.length > 0 && (
-              <div>
+              <div id={!school.jambReports?.length ? 'sd-results' : undefined}>
                 <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
                     <Award size={13} className="text-green-700" />

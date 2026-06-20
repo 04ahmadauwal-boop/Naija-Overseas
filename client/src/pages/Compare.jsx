@@ -99,15 +99,76 @@ export default function Compare() {
   const removeFromCompare = (id) => setSchools(schools.filter((s) => s._id !== id));
 
   if (!schools.length) return (
-    <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-      <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-        <GraduationCap size={28} className="text-gray-400" />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 bg-green-50 border-2 border-dashed border-green-200 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <GraduationCap size={28} className="text-green-500" />
+        </div>
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Compare Schools</h2>
+        <p className="text-gray-500 text-sm mb-8">Search for schools below to start comparing fees, facilities, results and more — side by side.</p>
+
+        {/* Inline search */}
+        <div ref={searchRef} className="relative max-w-md mx-auto">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <input
+            autoFocus
+            type="text"
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); handleSearch(e.target.value); }}
+            placeholder="Search for a school to compare..."
+            className="w-full pl-11 pr-10 py-3.5 rounded-2xl border-2 border-gray-200 focus:outline-none focus:border-green-500 text-sm bg-white shadow-sm"
+          />
+          {searchQuery && (
+            <button onClick={() => { setSearchQuery(''); setSearchResults([]); setShowSearch(false); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={14} />
+            </button>
+          )}
+          {showSearch && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden text-left">
+              {loading ? (
+                <div className="px-4 py-5 text-sm text-gray-400 text-center">Searching…</div>
+              ) : searchResults.length === 0 ? (
+                <div className="px-4 py-5 text-sm text-gray-400 text-center">No schools found</div>
+              ) : (
+                <ul className="divide-y divide-gray-50">
+                  {searchResults.map((school) => (
+                    <li key={school._id}>
+                      <button onClick={() => addToCompare(school)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left">
+                        <div className="w-9 h-9 rounded-lg overflow-hidden bg-green-100 shrink-0">
+                          {school.images?.[0] ? (
+                            <img src={school.images[0]} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <GraduationCap size={14} className="text-green-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 text-sm truncate">{school.name}</p>
+                          <p className="text-xs text-gray-400 truncate">
+                            {[school.city, school.state].filter(Boolean).join(', ')} · {school.type}
+                          </p>
+                        </div>
+                        <Plus size={14} className="text-green-500 shrink-0" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
+        <p className="text-xs text-gray-400 mt-6">You can compare up to 3 schools at once</p>
+
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-green-700 font-medium transition">
+            <ArrowLeft size={14} /> Browse school directory instead
+          </Link>
+        </div>
       </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-2">No schools selected</h2>
-      <p className="text-gray-500 text-sm mb-6">Go back to the schools directory and select schools to compare.</p>
-      <Link to="/" className="inline-flex items-center gap-2 bg-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-800 transition text-sm">
-        <ArrowLeft size={15} /> Browse Schools
-      </Link>
     </div>
   );
 
