@@ -66,6 +66,22 @@ const schoolSchema = new mongoose.Schema(
     rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
     listingPaymentRef: { type: String },
+
+    admission: {
+      isOpen:       { type: Boolean, default: false },
+      type:         { type: String, enum: ['general', 'class-based'], default: 'general' },
+      session:      { type: String, default: '' },
+      generalPrice: { type: Number, default: 0 },
+      classes: [
+        {
+          name:        { type: String },
+          price:       { type: Number, default: 0 },
+          isAvailable: { type: Boolean, default: true },
+        },
+      ],
+      description: { type: String, default: '' },
+      deadline:    { type: Date },
+    },
   },
   { timestamps: true }
 );

@@ -115,7 +115,7 @@ export default function Navbar() {
                     }`
                   }
                 >
-                  Education Naija
+                  Education
                   <ChevronDown size={13} className={`transition-transform duration-200 ${educationOpen ? 'rotate-180' : ''}`} />
                 </NavLink>
                 <div className={`absolute left-0 top-full pt-1.5 z-50 transition-all duration-200 ${

@@ -6,7 +6,8 @@ import {
   ExternalLink, CheckCircle, Clock, AlertCircle, ChevronRight,
   GraduationCap, MapPin, Phone, Mail, DollarSign,
   Camera, TrendingUp, Users, Activity, BookOpen, LogOut, Upload,
-  CalendarCheck, XCircle, Video, Play, Settings,
+  CalendarCheck, XCircle, Video, Play, Settings, ClipboardList,
+  Heart, FileText,
 } from 'lucide-react';
 import ChangePasswordSection from '../../components/ChangePasswordSection';
 import toast from 'react-hot-toast';
@@ -53,6 +54,7 @@ const TABS = [
   { id: 'videos',       label: 'Videos',           icon: Video           },
   { id: 'analytics',    label: 'Analytics',        icon: BarChart2       },
   { id: 'visits',       label: 'Visit Requests',   icon: CalendarCheck   },
+  { id: 'admission',    label: 'Admission',        icon: ClipboardList   },
   { id: 'reviews',      label: 'Reviews',          icon: Star            },
   { id: 'settings',     label: 'Settings',         icon: Settings        },
 ];
@@ -1786,6 +1788,434 @@ function VisitRequestsTab() {
   );
 }
 
+// ─── Admission Tab ────────────────────────────────────────────────────────────
+
+const CLASS_PRESETS = [
+  'Nursery 1','Nursery 2','Nursery 3',
+  'Primary 1','Primary 2','Primary 3','Primary 4','Primary 5','Primary 6',
+  'JSS 1','JSS 2','JSS 3','SSS 1','SSS 2','SSS 3',
+];
+
+const STATUS_STYLES = {
+  pending:      'bg-gray-100 text-gray-600',
+  under_review: 'bg-blue-100 text-blue-700',
+  admitted:     'bg-emerald-100 text-emerald-700',
+  rejected:     'bg-red-100 text-red-600',
+};
+
+function AdmissionTab({ school }) {
+  const defaultAdmission = school?.admission || {};
+  const [settings, setSettings] = useState({
+    isOpen:       defaultAdmission.isOpen ?? false,
+    type:         defaultAdmission.type || 'general',
+    session:      defaultAdmission.session || '',
+    generalPrice: defaultAdmission.generalPrice || 0,
+    classes:      defaultAdmission.classes?.length
+      ? defaultAdmission.classes
+      : CLASS_PRESETS.map((name) => ({ name, price: 0, isAvailable: false })),
+    description:  defaultAdmission.description || '',
+    deadline:     defaultAdmission.deadline ? new Date(defaultAdmission.deadline).toISOString().split('T')[0] : '',
+  });
+  const [saving, setSaving]           = useState(false);
+  const [applications, setApplications] = useState([]);
+  const [appsLoading, setAppsLoading] = useState(true);
+  const [activeView, setActiveView]   = useState('settings');
+  const [updatingId, setUpdatingId]   = useState(null);
+  const [selectedApp, setSelectedApp] = useState(null);
+
+  useEffect(() => {
+    if (!school?._id) return;
+    api.get(`/admission/school/${school._id}`)
+      .then(({ data }) => setApplications(data.applications || []))
+      .catch(() => {})
+      .finally(() => setAppsLoading(false));
+  }, [school?._id]);
+
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      await api.patch(`/admission/${school._id}/settings`, {
+        ...settings,
+        deadline: settings.deadline || null,
+      });
+      toast.success('Admission settings saved!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateClass = (idx, field, value) => {
+    setSettings((prev) => {
+      const classes = [...prev.classes];
+      classes[idx] = { ...classes[idx], [field]: value };
+      return { ...prev, classes };
+    });
+  };
+
+  const updateStatus = async (appId, status, note) => {
+    setUpdatingId(appId);
+    try {
+      const payload = { status };
+      if (note !== undefined) payload.schoolNote = note;
+      const { data } = await api.patch(`/admission/${appId}/status`, payload);
+      const updated = data.application;
+      setApplications((prev) => prev.map((a) => a._id === appId ? { ...a, ...updated } : a));
+      setSelectedApp((prev) => prev?._id === appId ? { ...prev, ...updated } : prev);
+      toast.success('Status updated');
+    } catch {
+      toast.error('Could not update status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Admission Management</h2>
+        <div className="flex gap-2">
+          <button onClick={() => setActiveView('settings')}
+            className={`text-sm font-semibold px-4 py-2 rounded-xl transition ${activeView === 'settings' ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            Settings
+          </button>
+          <button onClick={() => setActiveView('applications')}
+            className={`text-sm font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2 ${activeView === 'applications' ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            Applications
+            {applications.length > 0 && (
+              <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{applications.length}</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {activeView === 'settings' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-5">
+
+          {/* Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-bold text-gray-800">Admission Status</p>
+              <p className="text-xs text-gray-400 mt-0.5">Enable to allow parents to apply online</p>
+            </div>
+            <button onClick={() => setSettings((p) => ({ ...p, isOpen: !p.isOpen }))}
+              className={`relative w-12 h-6 rounded-full transition-colors ${settings.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${settings.isOpen ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Academic Session</label>
+              <input className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                placeholder="e.g. 2025/2026" value={settings.session} onChange={(e) => setSettings((p) => ({ ...p, session: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Application Deadline</label>
+              <input type="date" className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                value={settings.deadline} onChange={(e) => setSettings((p) => ({ ...p, deadline: e.target.value }))} />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Admission Description</label>
+            <textarea rows={3} className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+              placeholder="Requirements, process, or any notes for parents…"
+              value={settings.description} onChange={(e) => setSettings((p) => ({ ...p, description: e.target.value }))} />
+          </div>
+
+          {/* Admission type */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">Pricing Type</label>
+            <div className="flex gap-3">
+              {['general', 'class-based'].map((type) => (
+                <button key={type} onClick={() => setSettings((p) => ({ ...p, type }))}
+                  className={`flex-1 border-2 rounded-xl py-2.5 text-sm font-bold transition capitalize ${settings.type === type ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+                  {type === 'general' ? 'General (one price)' : 'Class-based (per class)'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {settings.type === 'general' ? (
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Application Fee (₦)</label>
+              <input type="number" min="0" className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                value={settings.generalPrice} onChange={(e) => setSettings((p) => ({ ...p, generalPrice: Number(e.target.value) }))} />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">Classes &amp; Fees</label>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {settings.classes.map((cls, i) => (
+                  <div key={cls.name} className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                    <input type="checkbox" checked={cls.isAvailable} onChange={(e) => updateClass(i, 'isAvailable', e.target.checked)}
+                      className="w-4 h-4 accent-emerald-600 shrink-0" />
+                    <span className="text-sm font-semibold text-gray-700 w-24 shrink-0">{cls.name}</span>
+                    <input type="number" min="0" placeholder="Fee (₦)"
+                      className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white"
+                      value={cls.price} onChange={(e) => updateClass(i, 'price', Number(e.target.value))} disabled={!cls.isAvailable} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button onClick={saveSettings} disabled={saving}
+            className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm">
+            <Save size={15} /> {saving ? 'Saving…' : 'Save Admission Settings'}
+          </button>
+        </div>
+      )}
+
+      {activeView === 'applications' && (
+        <div className="space-y-3">
+          {appsLoading ? (
+            <div className="text-center py-10 text-gray-400 text-sm">Loading applications…</div>
+          ) : applications.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+              <ClipboardList size={32} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-semibold">No applications yet</p>
+              <p className="text-xs text-gray-400 mt-1">Applications will appear here once parents apply</p>
+            </div>
+          ) : (
+            applications.map((app) => (
+              <div key={app._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="font-bold text-gray-900">{app.childFirstName} {app.childLastName}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{app.className} · {app.session}</p>
+                    <p className="text-xs text-gray-500 mt-1">Parent: {app.parentName} · {app.parentPhone}</p>
+                    <p className="text-xs text-gray-400">{app.parentEmail}</p>
+                  </div>
+                  <div className="text-right shrink-0 space-y-2">
+                    <p className="text-emerald-700 font-extrabold text-sm">₦{app.amount?.toLocaleString()}</p>
+                    <span className={`inline-block text-[10px] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[app.status] || STATUS_STYLES.pending}`}>
+                      {app.status?.replace('_', ' ').toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                  {['pending', 'under_review', 'admitted', 'rejected'].map((s) => (
+                    <button key={s} disabled={app.status === s || updatingId === app._id}
+                      onClick={() => updateStatus(app._id, s)}
+                      className={`text-[11px] font-semibold px-3 py-1.5 rounded-lg transition border ${
+                        app.status === s ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-default' : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 text-gray-600 hover:text-emerald-700'
+                      }`}>
+                      {s.replace('_', ' ')}
+                    </button>
+                  ))}
+                  <button onClick={() => setSelectedApp(app)}
+                    className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 border border-emerald-200 hover:border-emerald-400 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition">
+                    <FileText size={12} /> View Details
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2">
+                  Applied {new Date(app.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {app.childPreviousSchool && ` · Prev: ${app.childPreviousSchool}`}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {selectedApp && (
+        <ApplicationDetailModal
+          app={selectedApp}
+          updatingId={updatingId}
+          onUpdateStatus={updateStatus}
+          onClose={() => setSelectedApp(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Application Detail Modal ─────────────────────────────────────────────────
+
+const APP_STATUS_COLORS = {
+  pending:      { badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400' },
+  under_review: { badge: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-400'   },
+  admitted:     { badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  rejected:     { badge: 'bg-red-100 text-red-600',      dot: 'bg-red-400'    },
+};
+
+function ApplicationDetailModal({ app, updatingId, onUpdateStatus, onClose }) {
+  const [note, setNote] = useState(app.schoolNote || '');
+  const [savingNote, setSavingNote] = useState(false);
+  const isUpdating = updatingId === app._id;
+
+  const dob = app.childDOB
+    ? new Date(app.childDOB).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+
+  const appliedAt = new Date(app.createdAt).toLocaleDateString('en-NG', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  const saveNote = async () => {
+    if (!note.trim() && !app.schoolNote) return;
+    setSavingNote(true);
+    try {
+      await onUpdateStatus(app._id, app.status, note);
+      toast.success('Note saved');
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const colors = APP_STATUS_COLORS[app.status] || APP_STATUS_COLORS.pending;
+
+  const InfoRow = ({ label, value }) => value ? (
+    <div className="flex items-start py-2 border-b border-gray-100 last:border-0">
+      <span className="text-xs text-gray-400 w-40 shrink-0">{label}</span>
+      <span className="text-xs font-semibold text-gray-800 flex-1 break-words">{value}</span>
+    </div>
+  ) : null;
+
+  const Section = ({ icon: Icon, title, color = 'emerald', children }) => (
+    <div className="rounded-xl border border-gray-200 overflow-hidden">
+      <div className={`flex items-center gap-2 px-4 py-3 border-b border-gray-200 ${
+        color === 'emerald' ? 'bg-emerald-50' :
+        color === 'blue'    ? 'bg-blue-50'    :
+        color === 'red'     ? 'bg-red-50'     :
+        color === 'amber'   ? 'bg-amber-50'   : 'bg-gray-50'
+      }`}>
+        <Icon size={13} className={
+          color === 'emerald' ? 'text-emerald-600' :
+          color === 'blue'    ? 'text-blue-600'    :
+          color === 'red'     ? 'text-red-500'     :
+          color === 'amber'   ? 'text-amber-600'   : 'text-gray-500'
+        } />
+        <p className="text-xs font-black uppercase tracking-widest text-gray-600">{title}</p>
+      </div>
+      <div className="px-4 py-1">{children}</div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-200 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base font-extrabold text-gray-900">
+                {app.childFirstName} {app.childLastName}
+              </h2>
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${colors.badge}`}>
+                {app.status?.replace('_', ' ').toUpperCase()}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">{app.className} · Applied {appliedAt}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition p-1 ml-3 shrink-0 rounded-lg hover:bg-gray-100">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+
+          {/* Child Info */}
+          <Section icon={GraduationCap} title="Child's Information" color="emerald">
+            <InfoRow label="Full Name"      value={`${app.childFirstName} ${app.childLastName}`} />
+            <InfoRow label="Date of Birth"  value={dob} />
+            <InfoRow label="Gender"         value={app.childGender} />
+            <InfoRow label="Nationality"    value={app.childNationality} />
+            <InfoRow label="State of Origin" value={app.childStateOfOrigin} />
+            <InfoRow label="Blood Group"    value={app.childBloodGroup} />
+            <InfoRow label="Religion"       value={app.childReligion} />
+            <InfoRow label="Previous School" value={app.childPreviousSchool} />
+            {app.childMedicalConditions && (
+              <div className="py-2">
+                <p className="text-xs text-gray-400 mb-1">Medical Conditions / Allergies</p>
+                <p className="text-xs font-semibold text-red-700 bg-red-50 rounded-lg px-3 py-2 border border-red-100">
+                  {app.childMedicalConditions}
+                </p>
+              </div>
+            )}
+          </Section>
+
+          {/* Parent Info */}
+          <Section icon={Users} title="Parent / Guardian" color="blue">
+            <InfoRow label="Full Name"    value={app.parentName} />
+            <InfoRow label="Relationship" value={app.parentRelationship} />
+            <InfoRow label="Phone"        value={app.parentPhone} />
+            <InfoRow label="Alt Phone"    value={app.parentAltPhone} />
+            <InfoRow label="Email"        value={app.parentEmail} />
+            <InfoRow label="Address"      value={app.parentAddress} />
+            <InfoRow label="Occupation"   value={app.parentOccupation} />
+          </Section>
+
+          {/* Emergency Contact */}
+          {(app.emergencyContactName || app.emergencyContactPhone) && (
+            <Section icon={Heart} title="Emergency Contact" color="red">
+              <InfoRow label="Name"         value={app.emergencyContactName} />
+              <InfoRow label="Phone"        value={app.emergencyContactPhone} />
+              <InfoRow label="Relationship" value={app.emergencyContactRelationship} />
+            </Section>
+          )}
+
+          {/* Payment */}
+          <Section icon={DollarSign} title="Payment" color="amber">
+            <InfoRow label="Amount Paid"    value={`₦${app.amount?.toLocaleString()}`} />
+            <InfoRow label="Payment Ref"    value={app.paymentRef} />
+            <InfoRow label="Session"        value={app.session} />
+            <InfoRow label="Payment Status" value={app.paymentStatus?.toUpperCase()} />
+          </Section>
+
+          {/* Status Update */}
+          <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <Settings size={13} className="text-gray-500" />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-600">Update Status</p>
+            </div>
+            <div className="px-4 py-3 space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {['pending', 'under_review', 'admitted', 'rejected'].map((s) => (
+                  <button key={s} disabled={app.status === s || isUpdating}
+                    onClick={() => onUpdateStatus(app._id, s, note || undefined)}
+                    className={`text-xs font-bold py-2 rounded-lg transition border ${
+                      app.status === s
+                        ? `${APP_STATUS_COLORS[s].badge} border-transparent cursor-default`
+                        : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 text-gray-600 hover:text-emerald-700'
+                    }`}>
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">School Note (sent to parent)</label>
+                <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+                  placeholder="Optional note for the parent about this application…" />
+                <button onClick={saveNote} disabled={savingNote || isUpdating}
+                  className="mt-2 w-full bg-gray-800 hover:bg-gray-900 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-2">
+                  <Save size={12} /> {savingNote ? 'Saving…' : 'Save Note'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-gray-100 shrink-0">
+          <button onClick={onClose}
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm py-2.5 rounded-xl transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Owner Reviews Tab ────────────────────────────────────────────────────────
 
 function OwnerReviewsTab({ school }) {
@@ -2122,6 +2552,7 @@ export default function SchoolOwnerDashboard() {
               {activeTab === 'videos' && <VideoTab school={school} />}
               {activeTab === 'analytics' && <AnalyticsTab school={school} />}
               {activeTab === 'visits' && <VisitRequestsTab />}
+              {activeTab === 'admission' && <AdmissionTab school={school} />}
               {activeTab === 'reviews' && <OwnerReviewsTab school={school} />}
               {activeTab === 'settings' && (
                 <div className="space-y-5 max-w-2xl">

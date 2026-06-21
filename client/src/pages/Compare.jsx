@@ -25,21 +25,31 @@ function getNestedValue(obj, path) {
   return path.split('.').reduce((acc, key) => acc?.[key], obj);
 }
 
-function getSaved() {
-  try { return JSON.parse(localStorage.getItem('savedSchools') || '[]'); } catch { return []; }
+function getSavedList() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('savedSchools') || '[]');
+    return stored.filter((item) => item && typeof item === 'object' && item._id);
+  } catch { return []; }
+}
+
+function isSaved(id) { return getSavedList().some((s) => s._id === id); }
+
+function persistToggle(school) {
+  const list = getSavedList();
+  const exists = list.some((s) => s._id === school._id);
+  localStorage.setItem('savedSchools', JSON.stringify(
+    exists ? list.filter((s) => s._id !== school._id) : [...list, school]
+  ));
+  return !exists;
 }
 
 function SchoolCard({ school, index, onRemove }) {
-  const [saved, setSaved] = useState(() => getSaved().includes(school._id));
+  const [saved, setSaved] = useState(() => isSaved(school._id));
 
   const toggleSave = () => {
-    const list = getSaved();
-    const next = list.includes(school._id)
-      ? list.filter((id) => id !== school._id)
-      : [...list, school._id];
-    localStorage.setItem('savedSchools', JSON.stringify(next));
-    setSaved(!saved);
-    toast.success(saved ? 'Removed from saved schools' : 'School saved!');
+    const nowSaved = persistToggle(school);
+    setSaved(nowSaved);
+    toast.success(nowSaved ? 'School saved!' : 'Removed from saved schools');
   };
 
   const identifier = school.slug || school._id;
@@ -399,16 +409,12 @@ export default function Compare() {
 }
 
 function SaveButton({ school }) {
-  const [saved, setSaved] = useState(() => getSaved().includes(school._id));
+  const [saved, setSaved] = useState(() => isSaved(school._id));
 
   const toggle = () => {
-    const list = getSaved();
-    const next = list.includes(school._id)
-      ? list.filter((id) => id !== school._id)
-      : [...list, school._id];
-    localStorage.setItem('savedSchools', JSON.stringify(next));
-    setSaved(!saved);
-    toast.success(saved ? 'Removed from saved' : 'School saved!');
+    const nowSaved = persistToggle(school);
+    setSaved(nowSaved);
+    toast.success(nowSaved ? 'School saved!' : 'Removed from saved');
   };
 
   return (
