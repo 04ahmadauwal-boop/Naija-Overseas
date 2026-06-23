@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   GraduationCap, CheckCircle, ChevronRight, ChevronLeft,
@@ -448,6 +448,13 @@ export default function BecomeTutor() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [platformFeePercent, setPlatformFeePercent] = useState(null);
+
+  useEffect(() => {
+    api.get('/settings/platform')
+      .then(({ data }) => setPlatformFeePercent(data.platformFeePercent))
+      .catch(() => {});
+  }, []);
 
   const [form, setForm] = useState({
     headline: '',
@@ -1123,7 +1130,28 @@ export default function BecomeTutor() {
                   {/* 7 */}
                   <div>
                     <p className="font-extrabold text-gray-900 text-sm mb-2">7. Fees, Payments &amp; Platform Commission</p>
-                    <p>You set your own hourly rate. The Platform retains a <strong>service commission</strong> on each completed booking (exact rate displayed in your dashboard). Commission rates may be revised with 30 days notice.</p>
+                    <p>You set your own hourly rate. The Platform deducts a <strong>service commission</strong> from each completed booking before disbursing your earnings.</p>
+                    <div className="my-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
+                      <span className="text-amber-600 text-lg font-black leading-none mt-0.5">%</span>
+                      <div>
+                        <p className="text-sm font-extrabold text-amber-800">
+                          Current Platform Commission Rate:{' '}
+                          {platformFeePercent !== null
+                            ? <span className="text-amber-900">{platformFeePercent}%</span>
+                            : <span className="text-gray-400 font-normal">loading…</span>}
+                        </p>
+                        <p className="text-xs text-amber-700 mt-0.5">
+                          e.g. a session earning of ₦10,000 →{' '}
+                          <strong>
+                            ₦{platformFeePercent !== null
+                              ? (10000 - Math.round(10000 * platformFeePercent / 100)).toLocaleString()
+                              : '…'}
+                          </strong>{' '}
+                          paid to you after the {platformFeePercent ?? '…'}% deduction.
+                        </p>
+                        <p className="text-xs text-amber-600 mt-1">Commission rates may be revised with <strong>30 days' notice</strong> by email.</p>
+                      </div>
+                    </div>
                     <ul className="list-disc pl-5 mt-1 space-y-1">
                       <li>Payments are processed and disbursed to you according to the schedule outlined in your dashboard.</li>
                       <li>Refunds issued to students due to cancellation, non-attendance, or complaint resolution may be debited from your earnings.</li>

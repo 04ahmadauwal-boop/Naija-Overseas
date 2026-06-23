@@ -101,16 +101,19 @@ export default function SubscribePage() {
     })
       .then(({ data }) => {
         const handler = window.PaystackPop?.setup({
-          key:       import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-          email:     currentUser?.email,
-          amount:    monthlyRate * 100,
-          ref:       data.reference,
-          currency:  'NGN',
+          key:      import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+          email:    currentUser?.email,
+          amount:   monthlyRate * 100,
+          ref:      data.reference,
+          currency: 'NGN',
           onSuccess: (tx) => activateSubscription(tx.reference),
-          onCancel:  () => { setPaying(false); toast.error('Payment cancelled'); },
+          onCancel:  () => toast.error('Payment cancelled'),
         });
         if (handler) {
           handler.openIframe();
+          // Popup is now in control — release the button spinner so the user
+          // isn't stuck if they dismiss the popup without cancelling properly.
+          setPaying(false);
         } else {
           // Fallback: redirect to Paystack hosted page
           window.location.href = data.authorization_url;
@@ -123,6 +126,7 @@ export default function SubscribePage() {
   }
 
   async function activateSubscription(reference) {
+    setPaying(true); // re-engage spinner during server activation
     try {
       const { data } = await api.post('/subscriptions/activate', { reference });
       setBookings(data.bookings || []);
