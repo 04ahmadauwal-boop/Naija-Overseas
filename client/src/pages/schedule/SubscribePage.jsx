@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { GraduationCap, Star, Zap, CheckCircle, ChevronLeft, Globe } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const DAYS_LABEL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -28,6 +29,7 @@ function timesForDay(weeklySlots, dayIndex, sessionDuration) {
 export default function SubscribePage() {
   const { tutorId } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
 
   const [tutor,  setTutor]  = useState(null);
   const [avail,  setAvail]  = useState(null);
@@ -100,7 +102,7 @@ export default function SubscribePage() {
       .then(({ data }) => {
         const handler = window.PaystackPop?.setup({
           key:       import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-          email:     '', // filled server-side via metadata
+          email:     currentUser?.email,
           amount:    monthlyRate * 100,
           ref:       data.reference,
           currency:  'NGN',

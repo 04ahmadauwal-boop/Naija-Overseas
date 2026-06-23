@@ -7,6 +7,7 @@ const User = require('../models/User');
 const TutorProfile = require('../models/TutorProfile');
 const TutorPayroll = require('../models/TutorPayroll');
 const Subscription = require('../models/Subscription');
+const PlatformSettings = require('../models/PlatformSettings');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
@@ -315,7 +316,8 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
               grossAmount = tutorProfile.hourlyRateNaira;
             }
 
-            const platformFeePercent = 15;
+            const feeSettings = await PlatformSettings.findOne({ key: 'global' }).lean();
+            const platformFeePercent = feeSettings?.platformFeePercent ?? 15;
             const platformFee = Math.round(grossAmount * platformFeePercent / 100);
             const netAmount = grossAmount - platformFee;
 

@@ -676,10 +676,10 @@ router.get('/admin/payroll', protect, isAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/tutors/admin/payroll/:payrollId — admin approve / disburse / hold / add note
+// PATCH /api/tutors/admin/payroll/:payrollId — admin approve / disburse / hold / add note / override fee
 router.patch('/admin/payroll/:payrollId', protect, isAdmin, async (req, res) => {
   try {
-    const { status, adminNote, disbursementRef } = req.body;
+    const { status, adminNote, disbursementRef, platformFeePercent } = req.body;
     const valid = ['pending_review', 'review_submitted', 'approved', 'disbursed', 'on_hold'];
     if (status && !valid.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
@@ -691,6 +691,20 @@ router.patch('/admin/payroll/:payrollId', protect, isAdmin, async (req, res) => 
     if (disbursementRef !== undefined) update.disbursementRef = disbursementRef;
     if (status === 'approved')  update.approvedAt  = new Date();
     if (status === 'disbursed') update.disbursedAt = new Date();
+
+    // Recalculate net if admin overrides the fee percentage
+    if (platformFeePercent !== undefined) {
+      const pct = Number(platformFeePercent);
+      if (isNaN(pct) || pct < 0 || pct > 100) {
+        return res.status(400).json({ message: 'platformFeePercent must be 0–100' });
+      }
+      const existing = await TutorPayroll.findById(req.params.payrollId).select('grossAmount').lean();
+      if (existing) {
+        update.platformFeePercent = pct;
+        update.platformFee = Math.round(existing.grossAmount * pct / 100);
+        update.netAmount   = existing.grossAmount - update.platformFee;
+      }
+    }
 
     const record = await TutorPayroll.findByIdAndUpdate(req.params.payrollId, update, { new: true })
       .populate({ path: 'tutor', select: 'displayName', populate: { path: 'user', select: 'name email' } })

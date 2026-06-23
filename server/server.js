@@ -68,6 +68,7 @@ app.use('/api/banner', require('./routes/banner'));
 app.use('/api/coupons', require('./routes/coupons'));
 app.use('/api/tutor-quiz', require('./routes/tutorQuiz'));
 app.use('/api/admission', require('./routes/admission'));
+app.use('/api/settings', require('./routes/settings'));
 
 app.get('/', (req, res) => res.json({ message: 'Education Education Naija & Overseas API running' }));
 

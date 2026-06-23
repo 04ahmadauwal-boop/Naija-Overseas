@@ -6,7 +6,7 @@ import {
   DollarSign, CheckCircle, Clock, AlertCircle, Search,
   ChevronDown, ChevronUp, X, Save, ExternalLink,
   Building2, ShieldCheck, ShieldAlert, Star, BadgeCheck,
-  TrendingUp, Wallet, Users,
+  TrendingUp, Wallet, Users, Percent, Settings,
 } from 'lucide-react';
 
 const STATUS_OPTIONS = [
@@ -51,8 +51,13 @@ function PayrollDetailModal({ record, onClose, onUpdate }) {
   const [status, setStatus]   = useState(record.status);
   const [note, setNote]       = useState(record.adminNote || '');
   const [ref, setRef]         = useState(record.disbursementRef || '');
+  const [feePercent, setFeePercent] = useState(String(record.platformFeePercent ?? 15));
   const [saving, setSaving]   = useState(false);
   const [verifying, setVerifying] = useState(false);
+
+  const gross = record.grossAmount || 0;
+  const previewFee = Math.round(gross * (Number(feePercent) || 0) / 100);
+  const previewNet = gross - previewFee;
 
   const bank = record.tutor?.bankDetails;
   const tutor = record.tutor;
@@ -61,11 +66,12 @@ function PayrollDetailModal({ record, onClose, onUpdate }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data } = await api.patch(`/tutors/admin/payroll/${record._id}`, {
-        status,
-        adminNote: note,
-        disbursementRef: ref,
-      });
+      const payload = { status, adminNote: note, disbursementRef: ref };
+      const pct = Number(feePercent);
+      if (!isNaN(pct) && pct !== record.platformFeePercent) {
+        payload.platformFeePercent = pct;
+      }
+      const { data } = await api.patch(`/tutors/admin/payroll/${record._id}`, payload);
       toast.success('Payroll record updated');
       onUpdate(data.record);
       onClose();
@@ -204,10 +210,39 @@ function PayrollDetailModal({ record, onClose, onUpdate }) {
               <DollarSign size={13} className="text-purple-600" />
               <p className="text-xs font-black uppercase tracking-widest text-gray-600">Payment Breakdown</p>
             </div>
-            <div className="px-4 py-1">
-              <Row label="Gross Amount"    value={`${record.currency} ${record.grossAmount?.toLocaleString()}`} />
-              <Row label="Platform Fee"    value={`${record.platformFeePercent}% = ${record.currency} ${record.platformFee?.toLocaleString()}`} />
-              <Row label="Tutor Receives"  value={`${record.currency} ${record.netAmount?.toLocaleString()}`} />
+            <div className="px-4 py-3 space-y-2">
+              <Row label="Gross Amount"   value={`${record.currency} ${record.grossAmount?.toLocaleString()}`} />
+
+              {/* Fee override input */}
+              <div className="flex items-center py-2 border-b border-gray-100 gap-3">
+                <span className="text-xs text-gray-400 w-36 shrink-0">Platform Fee %</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="relative w-28">
+                    <input
+                      type="number" min="0" max="100" step="0.5"
+                      value={feePercent}
+                      onChange={e => setFeePercent(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 pr-7"
+                    />
+                    <Percent size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    = {record.currency} {previewFee.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-start py-2 border-b border-gray-100">
+                <span className="text-xs text-gray-400 w-36 shrink-0">Tutor Receives</span>
+                <span className="text-xs font-extrabold text-emerald-700 flex-1">
+                  {record.currency} {previewNet.toLocaleString()}
+                  {Number(feePercent) !== record.platformFeePercent && (
+                    <span className="ml-2 text-[10px] font-semibold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded-full">
+                      updated (was {record.currency} {record.netAmount?.toLocaleString()})
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -273,6 +308,38 @@ export default function ManagePayroll() {
   const [pages, setPages]         = useState(1);
   const [total, setTotal]         = useState(0);
 
+  // Global fee setting
+  const [globalFee, setGlobalFee]         = useState(15);
+  const [feeInput, setFeeInput]           = useState('15');
+  const [savingFee, setSavingFee]         = useState(false);
+  const [showFeePanel, setShowFeePanel]   = useState(false);
+
+  useEffect(() => {
+    api.get('/settings/platform')
+      .then(({ data }) => {
+        setGlobalFee(data.platformFeePercent);
+        setFeeInput(String(data.platformFeePercent));
+      })
+      .catch(() => {});
+  }, []);
+
+  const saveGlobalFee = async () => {
+    const pct = Number(feeInput);
+    if (isNaN(pct) || pct < 0 || pct > 100) { toast.error('Enter a value between 0 and 100'); return; }
+    setSavingFee(true);
+    try {
+      const { data } = await api.patch('/settings/platform', { platformFeePercent: pct });
+      setGlobalFee(data.platformFeePercent);
+      setFeeInput(String(data.platformFeePercent));
+      toast.success(`Platform fee updated to ${data.platformFeePercent}%`);
+      setShowFeePanel(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update fee');
+    } finally {
+      setSavingFee(false);
+    }
+  };
+
   const fetchRecords = async (status = 'all', pg = 1) => {
     setLoading(true);
     try {
@@ -324,11 +391,52 @@ export default function ManagePayroll() {
               <h1 className="text-2xl font-extrabold text-gray-900">Tutor Payroll</h1>
               <p className="text-sm text-gray-500 mt-0.5">Review sessions, verify bank details, and disburse payments</p>
             </div>
-            <button onClick={() => fetchRecords(tab, page)}
-              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
-              <TrendingUp size={14} /> Refresh
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowFeePanel(v => !v)}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                <Percent size={14} /> Platform Fee: {globalFee}%
+              </button>
+              <button onClick={() => fetchRecords(tab, page)}
+                className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+                <TrendingUp size={14} /> Refresh
+              </button>
+            </div>
           </div>
+
+          {/* Global fee panel */}
+          {showFeePanel && (
+            <div className="bg-white rounded-2xl border border-purple-200 shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Settings size={16} className="text-purple-600" />
+                <h2 className="font-bold text-gray-900 text-sm">Global Platform Fee</h2>
+                <span className="text-xs text-gray-400 ml-1">— applies to all new payroll entries</span>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 font-medium">Deduction from tutor earnings:</span>
+                  <div className="relative w-28">
+                    <input
+                      type="number" min="0" max="100" step="0.5"
+                      value={feeInput}
+                      onChange={e => setFeeInput(e.target.value)}
+                      className="w-full border border-purple-300 rounded-xl px-3 py-2 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 pr-7"
+                    />
+                    <Percent size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+                  e.g. session worth ₦10,000 → tutor gets <strong>₦{(10000 - Math.round(10000 * (Number(feeInput) || 0) / 100)).toLocaleString()}</strong> after {feeInput}% deduction
+                </div>
+                <button onClick={saveGlobalFee} disabled={savingFee}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                  <Save size={13} /> {savingFee ? 'Saving…' : 'Save Fee'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-3">
+                This only affects <strong>future</strong> payroll entries. To adjust an existing record's fee, open the record and edit the Platform Fee % there.
+              </p>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
