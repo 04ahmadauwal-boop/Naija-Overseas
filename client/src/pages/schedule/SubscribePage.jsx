@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { GraduationCap, Star, Zap, CheckCircle, ChevronLeft, Globe } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { initializePaystack } from '../../utils/paystack';
 
 const DAYS_LABEL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -100,32 +101,21 @@ export default function SubscribePage() {
       monthlyRate,
     })
       .then(({ data }) => {
-        const handler = window.PaystackPop?.setup({
-          key:      import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-          email:    currentUser?.email,
-          amount:   monthlyRate * 100,
-          ref:      data.reference,
-          currency: 'NGN',
-          onSuccess: (tx) => {
-            // Payment confirmed by Paystack — go to success immediately
+        setPaying(false);
+        initializePaystack({
+          email:     currentUser?.email,
+          amount:    monthlyRate,        // utility multiplies by 100 internally
+          ref:       data.reference,     // use the server-created reference
+          onSuccess: (reference) => {
+            // Paystack confirmed — show success immediately
             setStep(4);
-            setPaying(false);
-            // Record subscription and book sessions in the background
-            api.post('/subscriptions/activate', { reference: tx.reference })
+            // Activate subscription in the background
+            api.post('/subscriptions/activate', { reference })
               .then(({ data: res }) => setBookings(res.bookings || []))
               .catch(() => {});
           },
-          onCancel: () => {
-            setPaying(false);
-            toast.error('Payment cancelled');
-          },
+          onClose: () => toast.error('Payment was not completed.'),
         });
-        if (handler) {
-          handler.openIframe();
-          setPaying(false);
-        } else {
-          window.location.href = data.authorization_url;
-        }
       })
       .catch(err => {
         toast.error(err?.response?.data?.message || 'Could not initiate payment');
