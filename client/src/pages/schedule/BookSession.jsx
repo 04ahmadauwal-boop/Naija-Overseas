@@ -401,28 +401,37 @@ export default function BookSession() {
                     <div key={i} className="h-10 bg-gray-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
-              ) : slots.length === 0 ? (
+              ) : slots.filter(s => !s.booked).length === 0 ? (
                 <div className="text-center py-10 text-gray-400">
                   <Clock size={32} className="mx-auto mb-2 text-gray-200" />
-                  <p className="font-medium text-gray-600">No slots available</p>
+                  <p className="font-medium text-gray-600">All slots are booked for this day</p>
                   <button onClick={() => setStep(1)} className="mt-2 text-xs text-green-700 font-semibold hover:underline">
                     Choose another date
                   </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {slots.map(slot => (
-                    <button key={slot.utc}
-                      onClick={() => { setSelectedSlot(slot); setStep(3); }}
-                      className={`py-2.5 rounded-xl text-sm font-semibold border transition ${
-                        selectedSlot?.utc === slot.utc
-                          ? 'bg-green-700 text-white border-green-700'
-                          : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-green-400 hover:bg-green-50'
-                      }`}
-                    >
-                      {slot.studentTime || slot.tutorTime}
-                    </button>
-                  ))}
+                  {slots.map(slot =>
+                    slot.booked ? (
+                      <div key={slot.utc}
+                        className="py-2.5 rounded-xl text-xs font-semibold border border-gray-100 bg-gray-100 text-gray-400 cursor-not-allowed text-center leading-tight px-1"
+                      >
+                        <div>{slot.studentTime || slot.tutorTime}</div>
+                        <div className="text-[10px] font-bold text-gray-400 mt-0.5">Booked</div>
+                      </div>
+                    ) : (
+                      <button key={slot.utc}
+                        onClick={() => { setSelectedSlot(slot); setStep(3); }}
+                        className={`py-2.5 rounded-xl text-sm font-semibold border transition ${
+                          selectedSlot?.utc === slot.utc
+                            ? 'bg-green-700 text-white border-green-700'
+                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-green-400 hover:bg-green-50'
+                        }`}
+                      >
+                        {slot.studentTime || slot.tutorTime}
+                      </button>
+                    )
+                  )}
                 </div>
               )}
             </div>

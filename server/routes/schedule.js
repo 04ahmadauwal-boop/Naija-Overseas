@@ -64,18 +64,66 @@ router.get('/available-dates/:tutorId', async (req, res) => {
 
     const activeDays = new Set(avail.weeklySlots.map(s => s.day));
     const blockedSet = new Set(avail.blockedDates || []);
+
+    // Pre-fetch all confirmed/pending bookings for the entire month (±1 day buffer)
+    const monthStart = new Date(`${year}-${String(mon).padStart(2, '0')}-01T00:00:00Z`);
+    monthStart.setDate(monthStart.getDate() - 1);
+    const monthEnd = new Date(`${year}-${String(mon).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}T23:59:59Z`);
+    monthEnd.setDate(monthEnd.getDate() + 1);
+    const monthBookings = await Booking.find({
+      tutorId: req.params.tutorId,
+      date: { $gte: monthStart, $lte: monthEnd },
+      status: { $in: ['pending', 'confirmed'] },
+    }).lean();
+
+    const { sessionDuration, bufferMinutes } = avail;
+    const now = new Date();
     const availableDates = [];
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(mon).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const dateUTC = new Date(dateStr + 'T12:00:00Z');
 
-      if (dateStr <= today) continue;             // past
-      if (dateUTC > maxDate) continue;            // beyond booking window
-      if (blockedSet.has(dateStr)) continue;      // explicitly blocked
+      if (dateStr <= today) continue;
+      if (dateUTC > maxDate) continue;
+      if (blockedSet.has(dateStr)) continue;
 
       const dow = getDayInTZ(dateStr, avail.timezone);
-      if (activeDays.has(dow)) availableDates.push(dateStr);
+      if (!activeDays.has(dow)) continue;
+
+      // Check if at least one slot is still free on this date
+      const dayWeekSlots = avail.weeklySlots.filter(s => s.day === dow);
+      let hasOpenSlot = false;
+
+      outer: for (const slot of dayWeekSlots) {
+        let [curH, curM] = slot.startTime.split(':').map(Number);
+        const [endH, endM] = slot.endTime.split(':').map(Number);
+
+        while (true) {
+          const endTotalMin = curH * 60 + curM + sessionDuration;
+          const slotEndH = Math.floor(endTotalMin / 60);
+          const slotEndM = endTotalMin % 60;
+          if (slotEndH > endH || (slotEndH === endH && slotEndM > endM)) break;
+
+          const timeStr = `${String(curH).padStart(2, '0')}:${String(curM).padStart(2, '0')}`;
+          const slotUTC = localToUTC(dateStr, timeStr, avail.timezone);
+          const slotEndU = new Date(slotUTC.getTime() + sessionDuration * 60000);
+
+          if (slotUTC > new Date(now.getTime() + 30 * 60000)) {
+            const conflict = monthBookings.some(b => {
+              const bStart = new Date(b.date);
+              const bEnd   = new Date(bStart.getTime() + (sessionDuration + bufferMinutes) * 60000);
+              return slotUTC < bEnd && slotEndU > bStart;
+            });
+            if (!conflict) { hasOpenSlot = true; break outer; }
+          }
+
+          const nextMin = curH * 60 + curM + sessionDuration + bufferMinutes;
+          curH = Math.floor(nextMin / 60); curM = nextMin % 60;
+        }
+      }
+
+      if (hasOpenSlot) availableDates.push(dateStr);
     }
 
     res.json({ availableDates });
@@ -103,16 +151,19 @@ router.get('/slots/:tutorId', async (req, res) => {
     const daySlots = avail.weeklySlots.filter(s => s.day === dow);
     if (daySlots.length === 0) return res.json({ slots: [], sessionDuration: avail.sessionDuration });
 
-    // Existing confirmed/pending bookings for this tutor on this date
-    const dateStart = new Date(date + 'T00:00:00Z');
-    const dateEnd   = new Date(date + 'T23:59:59Z');
-    const existing  = await Booking.find({
+    const { sessionDuration, bufferMinutes } = avail;
+
+    // Fetch bookings in a ±1 day window (covers UTC-offset edge cases)
+    const windowStart = new Date(date + 'T00:00:00Z');
+    windowStart.setDate(windowStart.getDate() - 1);
+    const windowEnd = new Date(date + 'T23:59:59Z');
+    windowEnd.setDate(windowEnd.getDate() + 1);
+    const existing = await Booking.find({
       tutorId: req.params.tutorId,
-      date: { $gte: dateStart, $lte: dateEnd },
+      date: { $gte: windowStart, $lte: windowEnd },
       status: { $in: ['pending', 'confirmed'] },
     });
 
-    const { sessionDuration, bufferMinutes } = avail;
     const now = new Date();
     const slots = [];
 
@@ -125,14 +176,13 @@ router.get('/slots/:tutorId', async (req, res) => {
         const slotEndH = Math.floor(endTotalMin / 60);
         const slotEndM = endTotalMin % 60;
 
-        // Past availability window end → stop
         if (slotEndH > endH || (slotEndH === endH && slotEndM > endM)) break;
 
         const timeStr  = `${String(curH).padStart(2, '0')}:${String(curM).padStart(2, '0')}`;
         const slotUTC  = localToUTC(date, timeStr, avail.timezone);
         const slotEndU = new Date(slotUTC.getTime() + sessionDuration * 60000);
 
-        // Skip past slots (add 30-min lead time)
+        // Skip past or too-soon slots
         if (slotUTC <= new Date(now.getTime() + 30 * 60000)) {
           const nextMin = curH * 60 + curM + sessionDuration + bufferMinutes;
           curH = Math.floor(nextMin / 60); curM = nextMin % 60;
@@ -150,7 +200,7 @@ router.get('/slots/:tutorId', async (req, res) => {
           utc:         slotUTC.toISOString(),
           tutorTime:   timeStr,
           studentTime: studentTz ? formatTimeInTZ(slotUTC, studentTz) : null,
-          booked:      conflict ? true : undefined,
+          booked:      conflict || undefined,
         });
 
         const nextMin = curH * 60 + curM + sessionDuration + bufferMinutes;
@@ -212,7 +262,25 @@ router.post('/book', protect, async (req, res) => {
 
     const avail          = await TutorAvailability.findOne({ tutor: tutorId });
     const sessionDuration = avail?.sessionDuration || 60;
+    const bufferMins      = avail?.bufferMinutes   || 0;
     const tutorTz         = avail?.timezone || 'Africa/Lagos';
+
+    // Clash guard — reject if that slot is already taken
+    const slotStart = new Date(slotUTC);
+    const slotEnd   = new Date(slotStart.getTime() + sessionDuration * 60000);
+    const clash = await Booking.findOne({
+      tutorId,
+      status: { $in: ['pending', 'confirmed'] },
+      date: {
+        $gte: new Date(slotStart.getTime() - (sessionDuration + bufferMins) * 60000),
+        $lte: new Date(slotEnd.getTime()   + bufferMins * 60000),
+      },
+    });
+    if (clash) {
+      return res.status(409).json({
+        message: 'This time slot has just been booked by someone else. Please go back and choose a different time.',
+      });
+    }
 
     const isRecurring = recurrence && recurrence !== 'none';
     const count       = isRecurring ? (Number(recurrenceCount) || 4) : 1;
