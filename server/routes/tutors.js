@@ -4,6 +4,7 @@ const multer = require('multer');
 const cloudinary = require('../utils/cloudinary');
 const TutorProfile = require('../models/TutorProfile');
 const TutorReview = require('../models/TutorReview');
+const TutorPayroll = require('../models/TutorPayroll');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const { protect, optionalAuth } = require('../middleware/auth');
@@ -456,6 +457,289 @@ router.get('/my-profile', protect, async (req, res) => {
   try {
     const profile = await TutorProfile.findOne({ user: req.user._id });
     res.json({ profile });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─── Bank Details ─────────────────────────────────────────────────────────────
+
+// PATCH /api/tutors/me/bank-details — tutor saves payout account
+router.patch('/me/bank-details', protect, async (req, res) => {
+  try {
+    const { accountName, accountNumber, bankName, bankCode, accountType } = req.body;
+    if (!accountName || !accountNumber || !bankName) {
+      return res.status(400).json({ message: 'Account name, account number and bank name are required' });
+    }
+    const profile = await TutorProfile.findOneAndUpdate(
+      { user: req.user._id },
+      {
+        bankDetails: {
+          accountName:   accountName.trim(),
+          accountNumber: accountNumber.trim(),
+          bankName:      bankName.trim(),
+          bankCode:      (bankCode || '').trim(),
+          accountType:   accountType || 'savings',
+          isVerified:    false, // reset on re-submit; admin must re-verify
+          submittedAt:   new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!profile) return res.status(404).json({ message: 'Tutor profile not found' });
+
+    // Notify admin
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || 'softsavvynaija@gmail.com',
+      subject: `Bank Details Submitted — ${profile.displayName || req.user.name}`,
+      html: `<p><strong>${profile.displayName || req.user.name}</strong> has submitted bank details for payout.</p>
+<ul>
+  <li><strong>Bank:</strong> ${bankName}</li>
+  <li><strong>Account Name:</strong> ${accountName}</li>
+  <li><strong>Account Number:</strong> ${accountNumber}</li>
+  <li><strong>Type:</strong> ${accountType || 'savings'}</li>
+</ul>
+<p>Please verify on the <a href="${process.env.CLIENT_URL}/admin/payroll">Admin Payroll</a> page.</p>`,
+    }).catch(() => {});
+
+    res.json({ profile, message: 'Bank details saved. Admin will verify shortly.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─── Tutor Earnings (own) ─────────────────────────────────────────────────────
+
+// GET /api/tutors/me/earnings — tutor sees their payroll history
+router.get('/me/earnings', protect, async (req, res) => {
+  try {
+    const profile = await TutorProfile.findOne({ user: req.user._id }).select('_id').lean();
+    if (!profile) return res.status(404).json({ message: 'Tutor profile not found' });
+
+    const { page = 1, limit = 20, status } = req.query;
+    const filter = { tutor: profile._id };
+    if (status) filter.status = status;
+
+    const [records, total] = await Promise.all([
+      TutorPayroll.find(filter)
+        .populate('student', 'name email')
+        .populate('booking', 'date timeSlot notes')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(Number(limit))
+        .lean(),
+      TutorPayroll.countDocuments(filter),
+    ]);
+
+    // Aggregate totals
+    const totals = await TutorPayroll.aggregate([
+      { $match: { tutor: profile._id } },
+      { $group: {
+        _id: '$status',
+        total: { $sum: '$netAmount' },
+        count: { $sum: 1 },
+      }},
+    ]);
+
+    res.json({ records, total, page: Number(page), pages: Math.ceil(total / limit), totals });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─── Student Review (for a payroll entry) ────────────────────────────────────
+
+// GET /api/tutors/me/pending-reviews — student gets payroll records needing review
+router.get('/me/pending-reviews', protect, async (req, res) => {
+  try {
+    const records = await TutorPayroll.find({
+      student: req.user._id,
+      'studentReview.rating': { $exists: false },
+      status: { $in: ['pending_review', 'review_submitted'] },
+    })
+      .populate({ path: 'tutor', select: 'displayName profilePhoto' })
+      .populate('booking', 'date timeSlot notes')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ records });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/tutors/payroll/:payrollId/review — student submits session review
+router.post('/payroll/:payrollId/review', protect, async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    const record = await TutorPayroll.findById(req.params.payrollId)
+      .populate({ path: 'tutor', populate: { path: 'user', select: 'name email' } });
+    if (!record) return res.status(404).json({ message: 'Payroll record not found' });
+    if (record.student.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    if (record.studentReview?.rating) {
+      return res.status(400).json({ message: 'You have already reviewed this session' });
+    }
+
+    record.studentReview = { rating: Number(rating), comment: comment || '', submittedAt: new Date() };
+    record.status = 'review_submitted';
+    await record.save();
+
+    const tutorEmail = record.tutor?.user?.email;
+    const tutorName  = record.tutor?.displayName || record.tutor?.user?.name || 'Tutor';
+    const adminEmail = process.env.ADMIN_EMAIL || 'softsavvynaija@gmail.com';
+    const stars      = '★'.repeat(Number(rating)) + '☆'.repeat(5 - Number(rating));
+
+    const reviewHtml = (recipient) => `
+<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+  <div style="background:#15803d;padding:20px 24px">
+    <h2 style="color:#fff;margin:0;font-size:18px">New Session Review</h2>
+    <p style="color:#bbf7d0;margin:4px 0 0;font-size:13px">Education Naija &amp; Overseas</p>
+  </div>
+  <div style="padding:24px">
+    <p style="color:#374151;margin:0 0 16px">A student has submitted a review for a completed session with <strong>${tutorName}</strong>.</p>
+    <div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:16px">
+      <p style="margin:0 0 8px;font-size:22px;color:#f59e0b">${stars}</p>
+      <p style="margin:0;font-size:15px;font-weight:700;color:#111827">${Number(rating)}/5 stars</p>
+      ${comment ? `<p style="margin:8px 0 0;font-size:14px;color:#6b7280;line-height:1.6">"${comment}"</p>` : ''}
+    </div>
+    <p style="color:#6b7280;font-size:13px;margin:0">
+      <strong>Description:</strong> ${record.description}<br/>
+      <strong>Net Amount:</strong> ${record.currency} ${record.netAmount?.toLocaleString()}<br/>
+      <strong>Status:</strong> Review submitted — awaiting admin approval
+    </p>
+    ${recipient === 'admin' ? `<p style="margin:16px 0 0"><a href="${process.env.CLIENT_URL}/admin/payroll" style="background:#15803d;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Review &amp; Approve Payment →</a></p>` : ''}
+  </div>
+</div>`;
+
+    if (tutorEmail) sendEmail({ to: tutorEmail, subject: `Student review received for your session — Education Naija & Overseas`, html: reviewHtml('tutor') }).catch(() => {});
+    sendEmail({ to: adminEmail, subject: `Session Review Submitted — ${tutorName} (Action Required)`, html: reviewHtml('admin') }).catch(() => {});
+
+    // Also update the TutorReview aggregate rating
+    await TutorReview.create({
+      tutor: record.tutor._id,
+      student: req.user._id,
+      rating: Number(rating),
+      comment: comment || '',
+    }).catch(() => {}); // ignore duplicate
+    const allReviews = await TutorReview.find({ tutor: record.tutor._id });
+    if (allReviews.length) {
+      const avg = allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length;
+      await TutorProfile.findByIdAndUpdate(record.tutor._id, {
+        rating: Math.round(avg * 10) / 10,
+        reviewCount: allReviews.length,
+      });
+    }
+
+    res.json({ record, message: 'Review submitted! Thank you.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─── Admin Payroll Management ─────────────────────────────────────────────────
+
+// GET /api/tutors/admin/payroll — admin gets all payroll records
+router.get('/admin/payroll', protect, isAdmin, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 25, tutorId } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    if (tutorId) filter.tutor = tutorId;
+
+    const [records, total, aggregates] = await Promise.all([
+      TutorPayroll.find(filter)
+        .populate({ path: 'tutor', select: 'displayName profilePhoto bankDetails currency', populate: { path: 'user', select: 'name email' } })
+        .populate('student', 'name email')
+        .populate('booking', 'date timeSlot notes')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(Number(limit))
+        .lean(),
+      TutorPayroll.countDocuments(filter),
+      TutorPayroll.aggregate([
+        { $group: {
+          _id: '$status',
+          total: { $sum: '$netAmount' },
+          count: { $sum: 1 },
+        }},
+      ]),
+    ]);
+
+    res.json({ records, total, page: Number(page), pages: Math.ceil(total / limit), aggregates });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PATCH /api/tutors/admin/payroll/:payrollId — admin approve / disburse / hold / add note
+router.patch('/admin/payroll/:payrollId', protect, isAdmin, async (req, res) => {
+  try {
+    const { status, adminNote, disbursementRef } = req.body;
+    const valid = ['pending_review', 'review_submitted', 'approved', 'disbursed', 'on_hold'];
+    if (status && !valid.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const update = {};
+    if (status)         update.status = status;
+    if (adminNote !== undefined) update.adminNote = adminNote;
+    if (disbursementRef !== undefined) update.disbursementRef = disbursementRef;
+    if (status === 'approved')  update.approvedAt  = new Date();
+    if (status === 'disbursed') update.disbursedAt = new Date();
+
+    const record = await TutorPayroll.findByIdAndUpdate(req.params.payrollId, update, { new: true })
+      .populate({ path: 'tutor', select: 'displayName', populate: { path: 'user', select: 'name email' } })
+      .populate('student', 'name email');
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+
+    // Email tutor when approved or disbursed
+    const tutorEmail = record.tutor?.user?.email;
+    const tutorName  = record.tutor?.displayName || record.tutor?.user?.name || 'Tutor';
+    if (tutorEmail && status === 'approved') {
+      sendEmail({
+        to: tutorEmail,
+        subject: 'Payment Approved — Education Naija & Overseas',
+        html: `<p>Hi ${tutorName},</p><p>Your payment of <strong>${record.currency} ${record.netAmount?.toLocaleString()}</strong> for session "${record.description}" has been <strong>approved</strong> and will be disbursed to your registered bank account shortly.</p>${adminNote ? `<p><strong>Note from admin:</strong> ${adminNote}</p>` : ''}<p>— Education Naija &amp; Overseas Team</p>`,
+      }).catch(() => {});
+    }
+    if (tutorEmail && status === 'disbursed') {
+      sendEmail({
+        to: tutorEmail,
+        subject: 'Payment Disbursed — Education Naija & Overseas',
+        html: `<p>Hi ${tutorName},</p><p>Your payment of <strong>${record.currency} ${record.netAmount?.toLocaleString()}</strong> for session "${record.description}" has been <strong>disbursed</strong> to your registered bank account.${disbursementRef ? ` Reference: <strong>${disbursementRef}</strong>` : ''}</p><p>— Education Naija &amp; Overseas Team</p>`,
+      }).catch(() => {});
+    }
+
+    res.json({ record, message: 'Payroll record updated' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PATCH /api/tutors/admin/bank-details/:profileId/verify — admin verifies tutor bank details
+router.patch('/admin/bank-details/:profileId/verify', protect, isAdmin, async (req, res) => {
+  try {
+    const profile = await TutorProfile.findByIdAndUpdate(
+      req.params.profileId,
+      { 'bankDetails.isVerified': req.body.verified !== false },
+      { new: true }
+    ).populate('user', 'name email');
+    if (!profile) return res.status(404).json({ message: 'Profile not found' });
+
+    if (req.body.verified !== false && profile.user?.email) {
+      sendEmail({
+        to: profile.user.email,
+        subject: 'Bank Details Verified — Education Naija & Overseas',
+        html: `<p>Hi ${profile.displayName || profile.user.name},</p><p>Your bank account details have been <strong>verified</strong>. Approved payments will now be disbursed to your registered account.</p><p>— Education Naija &amp; Overseas Team</p>`,
+      }).catch(() => {});
+    }
+
+    res.json({ profile, message: 'Bank details verification updated' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

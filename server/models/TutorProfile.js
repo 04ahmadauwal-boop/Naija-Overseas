@@ -45,6 +45,17 @@ const tutorProfileSchema = new mongoose.Schema(
       fileUrl:   { type: String },
       publicId:  { type: String },
     }],
+
+    // Bank / payout details — submitted by tutor, verified by admin
+    bankDetails: {
+      accountName:  { type: String, trim: true, default: '' },
+      accountNumber:{ type: String, trim: true, default: '' },
+      bankName:     { type: String, trim: true, default: '' },
+      bankCode:     { type: String, trim: true, default: '' },
+      accountType:  { type: String, enum: ['savings', 'current', 'domiciliary'], default: 'savings' },
+      isVerified:   { type: Boolean, default: false },
+      submittedAt:  { type: Date },
+    },
   },
   { timestamps: true }
 );

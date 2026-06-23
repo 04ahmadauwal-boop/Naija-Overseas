@@ -79,7 +79,7 @@ const SPECIALIZATION_OPTIONS = [
   'Coding & Tech Skills', 'Science Lab Practicals', 'Exam Time Management',
 ];
 
-const STEPS = ['About You', 'What You Teach', 'Verification & Media', 'Rates & Setup'];
+const STEPS = ['About You', 'What You Teach', 'Verification & Media', 'Rates & Setup', 'Terms & Conditions'];
 
 function ToggleChip({ label, active, onClick }) {
   return (
@@ -479,6 +479,9 @@ export default function BecomeTutor() {
     verificationDocs:     [], // [{ name, fileUrl, publicId }] — additional optional docs
     introVideoUrl:        '',
     introVideoPublicId:   '',
+    // Terms & Conditions step
+    termsFullName:  '',
+    termsAccepted:  false,
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -500,9 +503,12 @@ export default function BecomeTutor() {
     if (step === 0) return form.headline.trim().length >= 10 && form.bio.trim().length >= 50;
     if (step === 1) return form.subjects.length >= 1 && form.levels.length >= 1 && form.teachingMode.length >= 1;
     if (step === 2) return !!form.idDoc && !!form.addressDoc;
-    if (step === 3) return form.hourlyRateNaira > 0 || form.hourlyRateNaira === '';
+    if (step === 3) return true;
     return true;
   };
+
+  const canSubmit = () =>
+    form.termsAccepted && form.termsFullName.trim().length >= 3;
 
   const handleSubmit = async () => {
     if (!user) { toast.error('Please log in first'); navigate('/login'); return; }
@@ -1016,12 +1022,264 @@ export default function BecomeTutor() {
                   </div>
                 </div>
 
-                {/* Agreement */}
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  By submitting, you confirm that all information provided is accurate. Your profile will be reviewed within <strong className="text-gray-600">24–48 hours</strong> and you'll receive an email confirmation once approved. Education Naija & Overseas reserves the right to reject profiles that don't meet our quality standards.
-                </p>
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 text-xs text-blue-700">
+                  <Shield size={15} className="text-blue-500 shrink-0 mt-0.5" />
+                  <span>Almost done! On the next step you'll review and sign our Tutor Terms &amp; Conditions before your application is submitted for review.</span>
+                </div>
               </div>
             )}
+          {/* ── STEP 4: Terms & Conditions ────────────────────────── */}
+          {step === 4 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Terms &amp; Conditions</h2>
+                <p className="text-gray-500 text-sm">Please read the full agreement carefully before submitting your application.</p>
+              </div>
+
+              {/* T&C Document */}
+              <div className="border-2 border-gray-200 rounded-2xl overflow-hidden">
+                <div className="bg-gray-900 px-5 py-3 flex items-center gap-2">
+                  <FileText size={15} className="text-gray-400" />
+                  <span className="text-sm font-bold text-white">Tutor Agreement — Education Naija &amp; Overseas</span>
+                  <span className="ml-auto text-xs text-gray-500">Last updated: June 2025</span>
+                </div>
+
+                <div className="h-[420px] overflow-y-auto px-5 py-5 space-y-5 text-[13px] text-gray-700 leading-relaxed scroll-smooth" id="tnc-scroll">
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-xs font-medium">
+                    This is a legally binding agreement between you ("Tutor") and Education Naija &amp; Overseas ("Platform", "we", "us"). By completing your registration you confirm that you have read, understood, and agreed to all terms below.
+                  </div>
+
+                  {/* 1 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">1. Introduction &amp; Acceptance</p>
+                    <p>Education Naija &amp; Overseas is an online educational marketplace that connects tutors with students and parents across Nigeria and internationally. These Terms govern your registration, conduct, and use of the Platform as a tutor.</p>
+                    <p className="mt-2">By submitting this application you confirm that you have read, understood, and agree to be bound by these Terms, our Privacy Policy, and any additional guidelines published on the Platform. If you do not agree, you must not register as a tutor.</p>
+                  </div>
+
+                  {/* 2 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">2. Eligibility</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>You must be at least <strong>18 years of age</strong>.</li>
+                      <li>You must have the legal right to work and provide educational services in your country of residence.</li>
+                      <li>You must not have been previously suspended or banned from the Platform or any similar educational service for misconduct.</li>
+                      <li>You must not have any criminal convictions related to fraud, violence, sexual offences, or misconduct with minors.</li>
+                      <li>You may only hold <strong>one active tutor account</strong>. Creating duplicate accounts may result in permanent suspension.</li>
+                    </ul>
+                  </div>
+
+                  {/* 3 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">3. Account Registration &amp; Accuracy</p>
+                    <p>You agree to provide <strong>complete, accurate, and truthful information</strong> throughout your application and on your public profile — including your name, qualifications, experience, teaching subjects, location, and rates. Misrepresentation of qualifications or identity is grounds for immediate removal.</p>
+                    <p className="mt-2">You are responsible for maintaining the security of your account credentials. You must notify us immediately at <strong>support@naijaandoverseas.com</strong> if you suspect unauthorised access to your account.</p>
+                  </div>
+
+                  {/* 4 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">4. Identity Verification &amp; Documentation</p>
+                    <p>As part of registration you are required to submit:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>A valid <strong>government-issued photo ID</strong> (National ID, International Passport, Driver's Licence, or Voter's Card).</li>
+                      <li>A <strong>proof of address</strong> document issued within the last three (3) months.</li>
+                    </ul>
+                    <p className="mt-2">All documents are reviewed privately by our team and are never shared with students or displayed publicly. Submitting forged, altered, or fraudulent documents is a criminal offence and will result in permanent ban and potential legal action.</p>
+                    <p className="mt-2">The <strong>Verified Badge</strong> is awarded at our sole discretion following successful identity review. We reserve the right to re-verify at any time.</p>
+                  </div>
+
+                  {/* 5 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">5. Professional Conduct &amp; Session Quality</p>
+                    <p>As a tutor on this Platform you agree to:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Conduct every session with professionalism, punctuality, and respect.</li>
+                      <li>Deliver sessions as described in your profile and as agreed with the student or parent.</li>
+                      <li>Maintain appropriate dress, background, and environment for all online sessions.</li>
+                      <li>Communicate respectfully and professionally in all Platform messages.</li>
+                      <li>Not use offensive, abusive, discriminatory, or sexually inappropriate language at any time.</li>
+                      <li>Provide adequate notice (minimum 24 hours) when cancelling or rescheduling a confirmed session.</li>
+                      <li>Not record sessions without the explicit written consent of the student or parent/guardian.</li>
+                    </ul>
+                  </div>
+
+                  {/* 6 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">6. Child Safety &amp; Safeguarding</p>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                      <p className="font-bold mb-1">Zero Tolerance Policy</p>
+                      <p>The safety and wellbeing of every student — especially minors — is our highest priority. Any violation of this section will result in <strong>immediate permanent ban, report to relevant authorities, and potential criminal prosecution.</strong></p>
+                    </div>
+                    <ul className="list-disc pl-5 mt-3 space-y-1">
+                      <li>You must never engage in any form of <strong>inappropriate relationship</strong>, romantic communication, or sexual conduct with any student.</li>
+                      <li>You must never request or share <strong>personal contact details</strong> (phone numbers, home addresses, social media) with minors directly outside of the Platform.</li>
+                      <li>Online sessions involving minors must be conducted in an <strong>open, observable, and appropriate setting</strong>. We recommend parents/guardians are present or nearby.</li>
+                      <li>You must <strong>immediately report</strong> to the Platform any safeguarding concern or disclosure made by a student during a session.</li>
+                      <li>You must not share, distribute, or make available any <strong>inappropriate, violent, or adult content</strong> during sessions.</li>
+                      <li>In-person sessions with minors require <strong>prior written consent from a parent or guardian</strong> confirming the location and arrangement.</li>
+                    </ul>
+                  </div>
+
+                  {/* 7 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">7. Fees, Payments &amp; Platform Commission</p>
+                    <p>You set your own hourly rate. The Platform retains a <strong>service commission</strong> on each completed booking (exact rate displayed in your dashboard). Commission rates may be revised with 30 days notice.</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Payments are processed and disbursed to you according to the schedule outlined in your dashboard.</li>
+                      <li>Refunds issued to students due to cancellation, non-attendance, or complaint resolution may be debited from your earnings.</li>
+                      <li>You are solely responsible for declaring and paying any taxes, levies, or duties applicable to your earnings in your country of residence.</li>
+                      <li>You may not negotiate off-platform payments to circumvent Platform fees. Doing so is grounds for account termination.</li>
+                    </ul>
+                  </div>
+
+                  {/* 8 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">8. Prohibited Conduct</p>
+                    <p>You must not:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Solicit students to continue sessions <strong>outside the Platform</strong> to avoid commission.</li>
+                      <li>Impersonate another person or use a false identity on your profile.</li>
+                      <li>Post false, misleading, or fabricated reviews or testimonials.</li>
+                      <li>Use the Platform to spam, advertise unrelated services, or distribute malware or phishing links.</li>
+                      <li>Engage in academic fraud — including completing assignments, exams, or coursework on a student's behalf.</li>
+                      <li>Discriminate against any student based on race, gender, religion, disability, or national origin.</li>
+                      <li>Share another tutor's or student's personal information without consent.</li>
+                    </ul>
+                  </div>
+
+                  {/* 9 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">9. Intellectual Property</p>
+                    <p>You retain ownership of original teaching materials you create. However, by uploading materials to the Platform you grant Education Naija &amp; Overseas a <strong>non-exclusive, royalty-free licence</strong> to display, distribute, and promote such materials solely in connection with the Platform's services.</p>
+                    <p className="mt-2">Your public profile — including name, photo, headline, bio, subject tags, and student reviews — may be displayed on the Platform, in search results, and in promotional materials. You consent to this use by registering.</p>
+                  </div>
+
+                  {/* 10 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">10. Privacy &amp; Data</p>
+                    <p>We collect and process your personal data as described in our <strong>Privacy Policy</strong>, available at naijaandoverseas.com/privacy. By registering you consent to this processing. Key points:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Your verification documents are stored securely and never shared publicly.</li>
+                      <li>Student contact details shared during booking are for session purposes only — you must not retain or use them beyond the agreed session.</li>
+                      <li>We may share data with law enforcement if required by law or to investigate safeguarding concerns.</li>
+                    </ul>
+                  </div>
+
+                  {/* 11 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">11. Suspension &amp; Termination</p>
+                    <p>We reserve the right to <strong>suspend or permanently remove</strong> your account for any of the following:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Breach of any provision of these Terms.</li>
+                      <li>Repeated poor reviews, complaints, or no-shows.</li>
+                      <li>Failure to pass re-verification when requested.</li>
+                      <li>Any child safeguarding concern or criminal investigation.</li>
+                      <li>Inactivity for more than 12 consecutive months.</li>
+                    </ul>
+                    <p className="mt-2">Where suspension is not due to safeguarding or criminal concerns, you may submit an appeal within 14 days to <strong>support@naijaandoverseas.com</strong>.</p>
+                  </div>
+
+                  {/* 12 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">12. Limitation of Liability</p>
+                    <p>Education Naija &amp; Overseas is a marketplace platform. We do not directly employ tutors or guarantee student bookings, earnings, or session outcomes. To the fullest extent permitted by law:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>We are not liable for disputes between tutors and students/parents beyond what is resolved through our complaints process.</li>
+                      <li>We are not liable for loss of earnings resulting from Platform downtime, account suspension, or changes to commission structure.</li>
+                      <li>We are not responsible for any harm arising from in-person sessions arranged via the Platform.</li>
+                    </ul>
+                  </div>
+
+                  {/* 13 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">13. Amendments</p>
+                    <p>We may update these Terms at any time. Significant changes will be communicated via email to your registered address at least <strong>14 days</strong> before taking effect. Continued use of the Platform after the effective date constitutes acceptance of the updated Terms.</p>
+                  </div>
+
+                  {/* 14 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">14. Governing Law</p>
+                    <p>These Terms are governed by and construed in accordance with the laws of the <strong>Federal Republic of Nigeria</strong>. Any dispute shall be subject to the exclusive jurisdiction of the courts of Lagos State, Nigeria, unless otherwise agreed in writing.</p>
+                  </div>
+
+                  {/* 15 */}
+                  <div>
+                    <p className="font-extrabold text-gray-900 text-sm mb-2">15. Contact</p>
+                    <p>For questions about these Terms, contact us at:</p>
+                    <p className="mt-1"><strong>Email:</strong> support@naijaandoverseas.com</p>
+                    <p><strong>Website:</strong> naijaandoverseas.com</p>
+                  </div>
+
+                  <div className="h-4" />
+                </div>
+              </div>
+
+              {/* Agreement section */}
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-5 space-y-5">
+                <div className="flex items-start gap-3">
+                  <button
+                    type="button"
+                    onClick={() => set('termsAccepted', !form.termsAccepted)}
+                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition ${
+                      form.termsAccepted
+                        ? 'bg-green-700 border-green-700'
+                        : 'border-gray-300 hover:border-green-500 bg-white'
+                    }`}
+                  >
+                    {form.termsAccepted && (
+                      <svg viewBox="0 0 12 9" fill="none" className="w-3 h-3">
+                        <path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                  <label
+                    className="text-sm text-gray-700 cursor-pointer select-none"
+                    onClick={() => set('termsAccepted', !form.termsAccepted)}
+                  >
+                    I have read and fully understand the <strong>Terms &amp; Conditions</strong> of Education Naija &amp; Overseas. I agree to be bound by this agreement and confirm that all information I have provided is <strong>accurate and truthful</strong>.
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Sign with your full legal name <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-gray-400 mb-3">
+                    Type your full name exactly as it appears on your ID. This serves as your digital signature confirming your agreement.
+                  </p>
+                  <input
+                    type="text"
+                    value={form.termsFullName}
+                    onChange={(e) => set('termsFullName', e.target.value)}
+                    placeholder="e.g. Adebayo Oluwaseun Fatima"
+                    className={`w-full border-2 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none transition ${
+                      form.termsFullName.trim().length >= 3
+                        ? 'border-green-400 bg-green-50/40 focus:border-green-500'
+                        : 'border-gray-200 focus:border-green-500'
+                    }`}
+                  />
+                  {form.termsFullName.trim().length >= 3 && (
+                    <p className="text-xs text-green-700 mt-1.5 flex items-center gap-1">
+                      <CheckCircle size={11} /> Signature accepted
+                    </p>
+                  )}
+                </div>
+
+                {form.termsAccepted && form.termsFullName.trim().length >= 3 && (
+                  <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
+                    <CheckCircle size={18} className="text-green-600 shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-green-800">Ready to submit</p>
+                      <p className="text-xs text-green-600 mt-0.5">
+                        Signed by <strong>{form.termsFullName}</strong> on {new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           </div>
 
           {/* Footer nav */}
@@ -1046,8 +1304,8 @@ export default function BecomeTutor() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="flex items-center gap-2 bg-green-700 text-white font-bold px-8 py-2.5 rounded-xl hover:bg-green-800 transition text-sm shadow-sm disabled:opacity-60">
+                disabled={submitting || !canSubmit()}
+                className="flex items-center gap-2 bg-green-700 text-white font-bold px-8 py-2.5 rounded-xl hover:bg-green-800 transition text-sm shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
                 {submitting ? 'Submitting…' : 'Submit Application'} <ArrowRight size={16} />
               </button>
             )}

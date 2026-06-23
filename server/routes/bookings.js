@@ -5,6 +5,8 @@ const Booking = require('../models/Booking');
 const School = require('../models/School');
 const User = require('../models/User');
 const TutorProfile = require('../models/TutorProfile');
+const TutorPayroll = require('../models/TutorPayroll');
+const Subscription = require('../models/Subscription');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
@@ -293,6 +295,73 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
     if (action === 'complete') {
       booking.status = 'completed';
       await booking.save();
+
+      // Auto-create payroll entry (fire-and-forget)
+      if (booking.service === 'tutoring-session' && booking.user) {
+        (async () => {
+          try {
+            const existing = await TutorPayroll.findOne({ booking: booking._id });
+            if (existing) return;
+
+            let grossAmount = 0;
+            let currency = tutorProfile.currency || 'NGN';
+            if (booking.subscriptionId) {
+              const sub = await Subscription.findById(booking.subscriptionId).lean();
+              if (sub) {
+                grossAmount = Math.round(sub.monthlyRate / (sub.timesPerWeek * 4));
+                currency = sub.currency || currency;
+              }
+            } else if (tutorProfile.hourlyRateNaira) {
+              grossAmount = tutorProfile.hourlyRateNaira;
+            }
+
+            const platformFeePercent = 15;
+            const platformFee = Math.round(grossAmount * platformFeePercent / 100);
+            const netAmount = grossAmount - platformFee;
+
+            const payroll = await TutorPayroll.create({
+              tutor: tutorProfile._id,
+              student: booking.user,
+              booking: booking._id,
+              subscription: booking.subscriptionId || undefined,
+              description: `Session on ${new Date(booking.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })} at ${booking.timeSlot || 'N/A'}`,
+              grossAmount,
+              platformFeePercent,
+              platformFee,
+              netAmount,
+              currency,
+            });
+
+            // Send review request to student
+            const student = await User.findById(booking.user).select('name email').lean();
+            if (student?.email) {
+              const reviewUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard/student?tab=sessions&review=${payroll._id}`;
+              sendEmail({
+                to: student.email,
+                subject: 'How was your tutoring session? Leave a review — Education Naija & Overseas',
+                html: `
+<div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+  <div style="background:#15803d;padding:20px 24px">
+    <h2 style="color:#fff;margin:0">Session Complete!</h2>
+    <p style="color:#bbf7d0;margin:4px 0 0;font-size:13px">Education Naija &amp; Overseas</p>
+  </div>
+  <div style="padding:24px">
+    <p style="color:#374151">Hi ${student.name},</p>
+    <p style="color:#374151">Your tutoring session has been marked as completed. Please take a moment to review your experience — your feedback helps us process your tutor's payment and ensures quality for all students.</p>
+    <div style="text-align:center;margin:24px 0">
+      <a href="${reviewUrl}" style="background:#15803d;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">⭐ Leave a Review</a>
+    </div>
+    <p style="color:#9ca3af;font-size:12px;text-align:center">Your honest review helps tutors improve and students choose well.</p>
+  </div>
+</div>`,
+              }).catch(() => {});
+            }
+          } catch (e) {
+            console.error('Payroll auto-create error:', e.message);
+          }
+        })();
+      }
+
       return res.json({ booking, message: 'Session marked as completed' });
     }
 

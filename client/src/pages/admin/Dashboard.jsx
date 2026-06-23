@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, School, CalendarCheck, Globe,
   FileText, MessageSquare, ExternalLink, GraduationCap,
-  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video, Star, Megaphone, Ticket
+  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video, Star, Megaphone, Ticket, DollarSign
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { to: '/admin/reviews', icon: Star, label: 'Reviews' },
   { to: '/admin/banner', icon: Megaphone, label: 'Home Banner' },
   { to: '/admin/coupons', icon: Ticket, label: 'Coupons' },
+  { to: '/admin/payroll', icon: DollarSign, label: 'Tutor Payroll' },
   { to: '/admin/messages', icon: MessageSquare, label: 'Messages' },
 ];
 

@@ -1708,22 +1708,102 @@ function SettingsTab({ user: userProp }) {
 // ---------------------------------------------------------------------------
 // TUTORING TAB
 // ---------------------------------------------------------------------------
+function SessionReviewModal({ record, onClose, onSubmit }) {
+  const [rating, setRating]   = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState('');
+  const [saving, setSaving]   = useState(false);
+
+  const handleSubmit = async () => {
+    if (!rating) { toast.error('Please select a star rating'); return; }
+    setSaving(true);
+    try {
+      await api.post(`/tutors/payroll/${record._id}/review`, { rating, comment });
+      toast.success('Review submitted! Thank you.');
+      onSubmit();
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tutorName = record.tutor?.displayName || 'your tutor';
+  const sessionDate = record.booking?.date
+    ? new Date(record.booking.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'your session';
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5" onClick={e => e.stopPropagation()}>
+        <div className="text-center">
+          <div className="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <Star size={26} className="text-yellow-500" />
+          </div>
+          <h2 className="text-lg font-extrabold text-gray-900">Rate Your Session</h2>
+          <p className="text-sm text-gray-500 mt-1">With <strong>{tutorName}</strong> on {sessionDate}</p>
+          <p className="text-xs text-gray-400 mt-1">Your feedback helps process payment to the tutor</p>
+        </div>
+
+        <div className="flex items-center justify-center gap-2">
+          {[1,2,3,4,5].map(n => (
+            <button key={n}
+              onMouseEnter={() => setHovered(n)}
+              onMouseLeave={() => setHovered(0)}
+              onClick={() => setRating(n)}
+              className="transition-transform hover:scale-110">
+              <Star size={36} className={n <= (hovered || rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'} />
+            </button>
+          ))}
+        </div>
+        {rating > 0 && (
+          <p className="text-center text-sm font-semibold text-gray-600">
+            {['','Poor','Below average','Good','Very good','Excellent!'][rating]}
+          </p>
+        )}
+
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Comment (optional)</label>
+          <textarea rows={3} value={comment} onChange={e => setComment(e.target.value)}
+            placeholder="Share more about your experience…"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none" />
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+            Skip for now
+          </button>
+          <button onClick={handleSubmit} disabled={saving || !rating}
+            className="flex-1 bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-sm transition">
+            {saving ? 'Submitting…' : 'Submit Review'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TutoringTab({ user: _user }) {
   const [sessions, setSessions] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [reviewRecord, setReviewRecord] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [bookRes, subRes] = await Promise.allSettled([
+        const [bookRes, subRes, reviewRes] = await Promise.allSettled([
           api.get('/bookings/my?service=tutoring-session'),
           api.get('/subscriptions/my'),
+          api.get('/tutors/me/pending-reviews'),
         ]);
         if (bookRes.status === 'fulfilled') setSessions(bookRes.value.data.bookings || []);
         if (subRes.status === 'fulfilled') setSubscriptions(subRes.value.data.subscriptions || []);
+        if (reviewRes.status === 'fulfilled') setPendingReviews(reviewRes.value.data.records || []);
       } finally {
         setLoading(false);
       }
@@ -1776,6 +1856,34 @@ function TutoringTab({ user: _user }) {
             <div key={label} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
               <div className={`text-2xl font-extrabold mb-1 ${color.split(' ')[1]}`}>{value}</div>
               <div className="text-xs text-gray-500 font-medium">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pending Session Reviews */}
+      {!loading && pendingReviews.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <Star size={14} className="text-yellow-500" /> Rate your completed sessions
+          </p>
+          {pendingReviews.map(r => (
+            <div key={r._id} className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-yellow-200 flex items-center justify-center shrink-0">
+                <Star size={18} className="text-yellow-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-yellow-900">
+                  How was your session with {r.tutor?.displayName || 'your tutor'}?
+                </p>
+                <p className="text-xs text-yellow-700 mt-0.5">
+                  {r.description} · Your review helps process their payment
+                </p>
+              </div>
+              <button onClick={() => setReviewRecord(r)}
+                className="inline-flex items-center gap-1.5 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition shrink-0">
+                <Star size={12} /> Leave Review
+              </button>
             </div>
           ))}
         </div>
@@ -1953,6 +2061,14 @@ function TutoringTab({ user: _user }) {
           <Users size={14} /> Browse All Tutors →
         </Link>
       </div>
+
+      {reviewRecord && (
+        <SessionReviewModal
+          record={reviewRecord}
+          onClose={() => setReviewRecord(null)}
+          onSubmit={() => setPendingReviews(prev => prev.filter(r => r._id !== reviewRecord._id))}
+        />
+      )}
     </div>
   );
 }

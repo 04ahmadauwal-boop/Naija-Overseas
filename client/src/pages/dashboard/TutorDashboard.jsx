@@ -9,6 +9,7 @@ import {
   LogOut, ExternalLink, CheckCircle, Clock, Video, MapPin,
   ChevronLeft, ChevronRight, Users, User, TrendingUp, GraduationCap,
   Edit2, Save, AlertCircle, CalendarCheck, Camera, HelpCircle, Plus, Trash2,
+  DollarSign, Wallet, Building2, ShieldCheck, BadgeCheck,
 } from 'lucide-react';
 
 const CURRENCY_SYMBOLS = {
@@ -71,6 +72,7 @@ const TABS = [
   { id: 'quiz',         label: 'Quiz Questions',  icon: HelpCircle },
   { id: 'profile',      label: 'My Profile',      icon: Edit2 },
   { id: 'reviews',      label: 'Reviews',         icon: Star },
+  { id: 'earnings',     label: 'Earnings',        icon: DollarSign },
   { id: 'settings',     label: 'Settings',        icon: Settings },
 ];
 
@@ -1680,6 +1682,240 @@ function QuizTab({ profile }) {
   );
 }
 
+// ─── EARNINGS TAB ─────────────────────────────────────────────────────────────
+
+const NIGERIAN_BANKS = [
+  'Access Bank', 'Citibank Nigeria', 'Ecobank Nigeria', 'Fidelity Bank', 'First Bank of Nigeria',
+  'First City Monument Bank (FCMB)', 'Globus Bank', 'Guaranty Trust Bank (GTBank)', 'Heritage Bank',
+  'Jaiz Bank', 'Keystone Bank', 'Kuda Bank', 'Moniepoint MFB', 'Opay', 'Palmpay',
+  'Parallex Bank', 'Polaris Bank', 'Premium Trust Bank', 'Providus Bank', 'Signature Bank',
+  'Stanbic IBTC Bank', 'Standard Chartered Bank', 'Sterling Bank', 'SunTrust Bank', 'Titan Trust Bank',
+  'Union Bank of Nigeria', 'United Bank for Africa (UBA)', 'Unity Bank', 'Wema Bank', 'Zenith Bank',
+  'Other',
+];
+
+const PAYROLL_STATUS_STYLES = {
+  pending_review:   { badge: 'bg-yellow-100 text-yellow-700',  label: 'Pending Review'   },
+  review_submitted: { badge: 'bg-blue-100 text-blue-700',      label: 'Under Review'     },
+  approved:         { badge: 'bg-purple-100 text-purple-700',  label: 'Approved'         },
+  disbursed:        { badge: 'bg-emerald-100 text-emerald-700',label: 'Paid Out'         },
+  on_hold:          { badge: 'bg-red-100 text-red-600',        label: 'On Hold'          },
+};
+
+function EarningsTab({ profile }) {
+  const [records, setRecords]         = useState([]);
+  const [totals, setTotals]           = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Bank details form
+  const [bankForm, setBankForm] = useState({
+    accountName:   profile?.bankDetails?.accountName  || '',
+    accountNumber: profile?.bankDetails?.accountNumber || '',
+    bankName:      profile?.bankDetails?.bankName     || '',
+    accountType:   profile?.bankDetails?.accountType  || 'savings',
+  });
+  const [savingBank, setSavingBank] = useState(false);
+  const bankDetails = profile?.bankDetails;
+
+  useEffect(() => {
+    api.get('/tutors/me/earnings')
+      .then(({ data }) => {
+        setRecords(data.records || []);
+        setTotals(data.totals || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSaveBank = async () => {
+    if (!bankForm.accountName || !bankForm.accountNumber || !bankForm.bankName) {
+      toast.error('Account name, number, and bank are required'); return;
+    }
+    setSavingBank(true);
+    try {
+      await api.patch('/tutors/me/bank-details', bankForm);
+      toast.success('Bank details saved! Admin will verify shortly.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save bank details');
+    } finally {
+      setSavingBank(false);
+    }
+  };
+
+  const sym = CURRENCY_SYMBOLS[profile?.currency || 'NGN'] || '₦';
+  const getTotal = (status) => totals.find(t => t._id === status)?.total || 0;
+  const disbursed = getTotal('disbursed');
+  const pending   = getTotal('pending_review') + getTotal('review_submitted') + getTotal('approved');
+
+  const filtered = statusFilter === 'all' ? records : records.filter(r => r.status === statusFilter);
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Earnings & Payouts</h2>
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Paid Out', value: `${sym}${disbursed.toLocaleString()}`, color: 'bg-emerald-50 text-emerald-700', icon: CheckCircle },
+          { label: 'Pending',        value: `${sym}${pending.toLocaleString()}`,   color: 'bg-yellow-50 text-yellow-700',   icon: Clock },
+          { label: 'Total Sessions', value: totals.reduce((a, t) => a + t.count, 0), color: 'bg-blue-50 text-blue-700',  icon: BookOpen },
+          { label: 'Bank Status',    value: bankDetails?.isVerified ? 'Verified' : bankDetails?.accountNumber ? 'Pending' : 'Not Set', color: bankDetails?.isVerified ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500', icon: Building2 },
+        ].map(({ label, value, color, icon: Icon }) => (
+          <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${color}`}>
+              <Icon size={16} />
+            </div>
+            <p className="text-xl font-extrabold text-gray-900">{value}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Bank Account Details */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100 bg-gray-50">
+          <Building2 size={15} className="text-gray-500" />
+          <p className="font-bold text-gray-800 text-sm">Payout Bank Account</p>
+          {bankDetails?.isVerified && (
+            <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+              <BadgeCheck size={11} /> Verified
+            </span>
+          )}
+          {bankDetails?.accountNumber && !bankDetails?.isVerified && (
+            <span className="ml-auto text-[11px] font-bold text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full">Pending Verification</span>
+          )}
+        </div>
+        <div className="p-5 space-y-4">
+          {bankDetails?.isVerified && (
+            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+              <ShieldCheck size={18} className="text-emerald-600 shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-emerald-800">{bankDetails.bankName}</p>
+                <p className="text-xs text-emerald-700">{bankDetails.accountName} · {bankDetails.accountNumber}</p>
+                <p className="text-xs text-emerald-600 capitalize">{bankDetails.accountType} account · Verified by admin</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Account Name <span className="text-red-500">*</span></label>
+              <input value={bankForm.accountName} onChange={e => setBankForm(f => ({ ...f, accountName: e.target.value }))}
+                placeholder="As it appears on your bank account"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Account Number <span className="text-red-500">*</span></label>
+              <input value={bankForm.accountNumber} onChange={e => setBankForm(f => ({ ...f, accountNumber: e.target.value }))}
+                placeholder="10-digit NUBAN" maxLength={10}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 font-mono tracking-widest" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Bank Name <span className="text-red-500">*</span></label>
+              <select value={bankForm.bankName} onChange={e => setBankForm(f => ({ ...f, bankName: e.target.value }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white">
+                <option value="">Select bank…</option>
+                {NIGERIAN_BANKS.map(b => <option key={b}>{b}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Account Type</label>
+              <select value={bankForm.accountType} onChange={e => setBankForm(f => ({ ...f, accountType: e.target.value }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white">
+                <option value="savings">Savings</option>
+                <option value="current">Current</option>
+                <option value="domiciliary">Domiciliary (foreign)</option>
+              </select>
+            </div>
+          </div>
+
+          <button onClick={handleSaveBank} disabled={savingBank}
+            className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-sm transition flex items-center justify-center gap-2">
+            <Save size={14} /> {savingBank ? 'Saving…' : 'Save Bank Details'}
+          </button>
+
+          <p className="text-xs text-gray-400 text-center">
+            Your bank details are stored securely and only used for payment disbursements. Admin must verify before funds are released.
+          </p>
+        </div>
+      </div>
+
+      {/* Earnings History */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Wallet size={15} className="text-gray-500" />
+            <p className="font-bold text-gray-800 text-sm">Earnings History</p>
+          </div>
+          <div className="ml-auto flex gap-1.5 flex-wrap">
+            {['all', 'pending_review', 'review_submitted', 'approved', 'disbursed'].map(s => (
+              <button key={s} onClick={() => setStatusFilter(s)}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition ${
+                  statusFilter === s ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}>
+                {s === 'all' ? 'All' : (PAYROLL_STATUS_STYLES[s]?.label || s)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-6 h-6 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-12">
+            <DollarSign size={32} className="text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No earnings yet</p>
+            <p className="text-xs text-gray-400 mt-1">Completed sessions will appear here</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {filtered.map(r => {
+              const st = PAYROLL_STATUS_STYLES[r.status] || { badge: 'bg-gray-100 text-gray-500', label: r.status };
+              return (
+                <div key={r._id} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{r.description || 'Session'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Student: {r.student?.name || 'N/A'}
+                        {r.booking?.date && ` · ${new Date(r.booking.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                      </p>
+                      {r.studentReview?.rating && (
+                        <div className="flex items-center gap-1 mt-1">
+                          {[1,2,3,4,5].map(n => (
+                            <Star key={n} size={11} className={n <= r.studentReview.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'} />
+                          ))}
+                          {r.studentReview.comment && <span className="text-[11px] text-gray-400 ml-1">"{r.studentReview.comment.slice(0, 40)}{r.studentReview.comment.length > 40 ? '…' : ''}"</span>}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-extrabold text-gray-900">{r.currency || sym}{r.netAmount?.toLocaleString()}</p>
+                      <p className="text-[10px] text-gray-400">{r.platformFeePercent}% fee deducted</p>
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${st.badge}`}>{st.label}</span>
+                    </div>
+                  </div>
+                  {r.adminNote && (
+                    <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+                      <strong>Admin note:</strong> {r.adminNote}
+                    </p>
+                  )}
+                  {r.disbursementRef && (
+                    <p className="text-xs text-emerald-700 mt-1">Payment ref: <strong>{r.disbursementRef}</strong></p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function TutorDashboard() {
   const { user, logout } = useAuth();
@@ -1763,6 +1999,7 @@ export default function TutorDashboard() {
       case 'quiz':         return <QuizTab profile={profile} />;
       case 'profile':      return <ProfileTab profile={profile} onRefresh={fetchProfile} />;
       case 'reviews':      return <ReviewsTab profile={profile} reviews={reviews} loadingReviews={loadingReviews} />;
+      case 'earnings':     return <EarningsTab profile={profile} />;
       case 'settings':     return <SettingsTab user={user} profile={profile} />;
       default:             return <OverviewTab profile={profile} bookings={bookings} reviews={reviews} setActiveTab={setActiveTab} />;
     }
