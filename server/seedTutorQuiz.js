@@ -1,6 +1,7 @@
 /**
- * Seed quiz questions for tutor@admin.com
- * Run: node server/seedTutorQuiz.js
+ * Seed quiz questions for a tutor by email.
+ * Run: node server/seedTutorQuiz.js [email]
+ * Defaults to tutor@admin.com if no email is provided.
  */
 
 require('dotenv').config({ path: __dirname + '/.env' });
@@ -14,11 +15,14 @@ async function seed() {
   const TutorProfile = require('./models/TutorProfile');
   const TutorQuestion = require('./models/TutorQuestion');
 
-  const user = await User.findOne({ email: 'tutor@admin.com' });
-  if (!user) { console.error('User tutor@admin.com not found'); process.exit(1); }
+  const targetEmail = process.argv[2] || 'tutor@admin.com';
+  console.log(`Seeding quiz for: ${targetEmail}`);
+
+  const user = await User.findOne({ email: targetEmail });
+  if (!user) { console.error(`User ${targetEmail} not found`); process.exit(1); }
 
   const profile = await TutorProfile.findOne({ user: user._id });
-  if (!profile) { console.error('TutorProfile not found for tutor@admin.com'); process.exit(1); }
+  if (!profile) { console.error(`TutorProfile not found for ${targetEmail}`); process.exit(1); }
 
   console.log(`Found profile: ${profile.displayName || user.email}`);
   console.log(`Subjects: ${profile.subjects?.join(', ') || 'none'}`);
@@ -458,7 +462,7 @@ async function seed() {
   ].map(q => ({ ...q, tutor: tutorId }));
 
   const inserted = await TutorQuestion.insertMany(allQuestions);
-  console.log(`\n✅ Inserted ${inserted.length} questions for ${profile.displayName || 'tutor@admin.com'}:`);
+  console.log(`\n✅ Inserted ${inserted.length} questions for ${profile.displayName || targetEmail}:`);
   const subjects = {};
   inserted.forEach(q => { subjects[q.subject] = (subjects[q.subject] || 0) + 1; });
   Object.entries(subjects).forEach(([s, n]) => console.log(`   • ${s}: ${n} questions`));
