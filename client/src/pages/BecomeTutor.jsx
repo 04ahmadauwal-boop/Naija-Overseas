@@ -1051,7 +1051,7 @@ export default function BecomeTutor() {
                   <span className="ml-auto text-xs text-gray-500">Last updated: June 2025</span>
                 </div>
 
-                <div className="h-[420px] overflow-y-auto px-5 py-5 space-y-5 text-[13px] text-gray-700 leading-relaxed scroll-smooth" id="tnc-scroll">
+                <div className="h-105 overflow-y-auto px-5 py-5 space-y-5 text-[13px] text-gray-700 leading-relaxed scroll-smooth" id="tnc-scroll">
 
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-xs font-medium">
                     This is a legally binding agreement between you ("Tutor") and Education Naija &amp; Overseas ("Platform", "we", "us"). By completing your registration you confirm that you have read, understood, and agreed to all terms below.

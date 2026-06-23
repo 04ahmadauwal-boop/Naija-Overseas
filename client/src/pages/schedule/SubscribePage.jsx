@@ -106,16 +106,24 @@ export default function SubscribePage() {
           amount:   monthlyRate * 100,
           ref:      data.reference,
           currency: 'NGN',
-          onSuccess: (tx) => activateSubscription(tx.reference),
-          onCancel:  () => toast.error('Payment cancelled'),
+          onSuccess: (tx) => {
+            // Payment confirmed by Paystack — go to success immediately
+            setStep(4);
+            setPaying(false);
+            // Record subscription and book sessions in the background
+            api.post('/subscriptions/activate', { reference: tx.reference })
+              .then(({ data: res }) => setBookings(res.bookings || []))
+              .catch(() => {});
+          },
+          onCancel: () => {
+            setPaying(false);
+            toast.error('Payment cancelled');
+          },
         });
         if (handler) {
           handler.openIframe();
-          // Popup is now in control — release the button spinner so the user
-          // isn't stuck if they dismiss the popup without cancelling properly.
           setPaying(false);
         } else {
-          // Fallback: redirect to Paystack hosted page
           window.location.href = data.authorization_url;
         }
       })
@@ -123,19 +131,6 @@ export default function SubscribePage() {
         toast.error(err?.response?.data?.message || 'Could not initiate payment');
         setPaying(false);
       });
-  }
-
-  async function activateSubscription(reference) {
-    setPaying(true); // re-engage spinner during server activation
-    try {
-      const { data } = await api.post('/subscriptions/activate', { reference });
-      setBookings(data.bookings || []);
-      setStep(4);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Activation failed');
-    } finally {
-      setPaying(false);
-    }
   }
 
   return (
