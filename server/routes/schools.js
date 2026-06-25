@@ -242,14 +242,26 @@ router.patch('/:id/approve', protect, isAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/schools/:id/feature — admin toggles featured
+// PATCH /api/schools/:id/feature — admin toggles popular listing (max 4)
 router.patch('/:id/feature', protect, isAdmin, async (req, res) => {
   try {
     const school = await School.findById(req.params.id);
     if (!school) return res.status(404).json({ message: 'School not found' });
+
+    if (!school.isFeatured) {
+      const count = await School.countDocuments({ isFeatured: true });
+      if (count >= 4) {
+        return res.status(400).json({
+          message: 'You already have 4 Popular Listings. Remove one before adding another.',
+        });
+      }
+    }
+
     school.isFeatured = !school.isFeatured;
     await school.save();
-    res.json({ school });
+
+    const featuredCount = await School.countDocuments({ isFeatured: true });
+    res.json({ school, featuredCount });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

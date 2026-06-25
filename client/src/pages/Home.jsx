@@ -909,48 +909,94 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SPOTLIGHT: TOP CHOICE NEAR YOU / FEATURED / MANY MORE ───── */}
-      <section className="px-4 pt-6 sm:pt-10 pb-8 sm:pb-12 bg-white">
+      {/* ── POPULAR LISTINGS ─────────────────────────────────────────── */}
+      <section className="px-4 pt-8 sm:pt-12 pb-8 sm:pb-12 bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-5 sm:mb-7">
-            <p className="text-green-600 font-semibold text-[11px] sm:text-xs uppercase tracking-widest mb-1.5">Personalized For You</p>
-            <h2 className="text-lg sm:text-2xl font-extrabold text-gray-900 tracking-tight">Top Picks Right Now</h2>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
-            <SpotlightCard
-              loading={spotlightLoading}
-              school={spotlightNear}
-              kicker={detectedState ? `Near You · ${detectedLga ? `${detectedLga}, ` : ''}${detectedState}` : 'Top Choice'}
-              icon={MapPin}
-              accent="from-green-600 to-emerald-500"
-            />
-            <SpotlightCard
-              loading={spotlightLoading}
-              school={spotlightFeatured}
-              kicker="Featured Pick"
-              icon={Star}
-              accent="from-amber-500 to-orange-500"
-            />
-
-            {/* Many more — CTA tile */}
-            <Link
-              to="/schools"
-              className="group relative overflow-hidden rounded-2xl p-6 flex flex-col justify-between bg-linear-to-br from-emerald-700 via-emerald-800 to-gray-900 text-white shadow-sm hover:shadow-xl transition-all duration-300 min-h-52"
-            >
-              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-              <div className="relative z-10">
-                <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full">
-                  <Globe size={11} /> And Many More
-                </span>
-                <div className="mt-5 text-4xl sm:text-5xl font-black leading-none">{total ? `${total}+` : '500+'}</div>
-                <p className="text-white/70 text-sm mt-1.5">Verified schools across Nigeria</p>
-              </div>
-              <span className="relative z-10 mt-5 inline-flex items-center gap-2 bg-white text-emerald-900 font-bold text-sm px-5 py-2.5 rounded-xl group-hover:bg-emerald-50 transition w-fit">
-                Browse All Schools <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-              </span>
+          <div className="flex items-end justify-between mb-5 sm:mb-7">
+            <div>
+              <p className="text-green-600 font-semibold text-[11px] sm:text-xs uppercase tracking-widest mb-1">Editor's Choice</p>
+              <h2 className="text-lg sm:text-2xl font-extrabold text-gray-900 tracking-tight">Popular Listings</h2>
+              <p className="text-gray-400 text-xs mt-1">Hand-picked schools by our editorial team</p>
+            </div>
+            <Link to="/schools?featured=true"
+              className="text-xs font-semibold text-green-700 hover:text-green-800 hover:underline transition whitespace-nowrap">
+              View all →
             </Link>
           </div>
+
+          {spotlightLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="rounded-2xl bg-gray-100 animate-pulse h-56 sm:h-64" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[spotlightNear, spotlightFeatured].filter(Boolean)
+                .concat(featuredSchools.filter(s =>
+                  s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id
+                ))
+                .slice(0, 4)
+                .map((school, idx) => school ? (
+                  <Link key={school._id} to={`/schools/${school.slug || school._id}`}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200">
+                    {/* Image / colour block */}
+                    <div className="relative h-32 sm:h-40 overflow-hidden bg-green-50 shrink-0">
+                      {school.coverImage || school.logo ? (
+                        <img src={school.coverImage || school.logo} alt={school.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center text-3xl sm:text-4xl font-black text-white
+                          ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
+                          {school.name?.[0] || '?'}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+                      <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Popular
+                      </span>
+                      {school.rating > 0 && (
+                        <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                          <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 p-3 sm:p-4 flex flex-col gap-1">
+                      <h3 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-green-700 transition-colors">
+                        {school.name}
+                      </h3>
+                      {(school.lga || school.state) && (
+                        <p className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1">
+                          <MapPin size={9} className="shrink-0" />
+                          {[school.lga, school.state].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                      {school.type && (
+                        <span className="self-start mt-1 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
+                          {school.type}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ) : (
+                  <div key={idx} className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 h-56 sm:h-64 flex items-center justify-center">
+                    <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
+                  </div>
+                ))
+              }
+              {/* Pad with empty slots if fewer than 4 */}
+              {Array.from({ length: Math.max(0, 4 - [spotlightNear, spotlightFeatured].filter(Boolean)
+                  .concat(featuredSchools.filter(s =>
+                    s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id
+                  )).slice(0, 4).length) }).map((_, i) => (
+                <div key={`empty-${i}`} className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 h-56 sm:h-64 flex items-center justify-center">
+                  <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

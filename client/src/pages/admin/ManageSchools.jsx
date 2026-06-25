@@ -248,16 +248,18 @@ function ClaimsView() {
 }
 
 export default function ManageSchools() {
-  const [schools, setSchools] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('pending');
-  const [viewMode, setViewMode] = useState('schools');
+  const [schools,       setSchools]       = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [filter,        setFilter]        = useState('pending');
+  const [viewMode,      setViewMode]      = useState('schools');
+  const [featuredCount, setFeaturedCount] = useState(0);
 
   const fetchSchools = async () => {
     setLoading(true);
     try {
       const { data } = await api.get('/schools/admin/all', { params: { status: filter || undefined } });
       setSchools(data.schools);
+      setFeaturedCount((data.schools || []).filter(s => s.isFeatured).length);
     } catch { toast.error('Failed to load schools'); }
     finally { setLoading(false); }
   };
@@ -276,10 +278,13 @@ export default function ManageSchools() {
 
   const toggleFeature = async (id) => {
     try {
-      await api.patch(`/schools/${id}/feature`);
-      toast.success('Featured status updated');
+      const { data } = await api.patch(`/schools/${id}/feature`);
+      setFeaturedCount(data.featuredCount ?? featuredCount);
+      toast.success(data.school.isFeatured ? 'Added to Popular Listings' : 'Removed from Popular Listings');
       fetchSchools();
-    } catch { toast.error('Action failed'); }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Action failed');
+    }
   };
 
   const deleteSchool = async (id) => {
@@ -320,8 +325,11 @@ export default function ManageSchools() {
       {school.status === 'approved' && (
         <button onClick={() => toggleFeature(school._id)}
           className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
-            school.isFeatured ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' : 'bg-gray-100 text-gray-400 hover:bg-yellow-100 hover:text-yellow-600'
-          }`} title={school.isFeatured ? 'Remove featured' : 'Mark as featured'}>
+            school.isFeatured
+              ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+              : 'bg-gray-100 text-gray-400 hover:bg-yellow-100 hover:text-yellow-600'
+          }`}
+          title={school.isFeatured ? 'Remove from Popular Listings' : featuredCount >= 4 ? 'Popular Listings full (4/4)' : 'Add to Popular Listings'}>
           <Star size={14} fill={school.isFeatured ? 'currentColor' : 'none'} />
         </button>
       )}
@@ -342,13 +350,24 @@ export default function ManageSchools() {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Manage Schools</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Review, approve, and feature school listings</p>
+              <p className="text-gray-400 text-sm mt-0.5">Review, approve, and select Popular Listings</p>
             </div>
-            {viewMode === 'schools' && filter === 'pending' && pendingCount > 0 && (
-              <span className="bg-yellow-100 text-yellow-800 text-sm font-bold px-4 py-2 rounded-full shrink-0">
-                {pendingCount} awaiting review
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-full shrink-0 ${
+                featuredCount >= 4
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-green-50 text-green-700 border border-green-200'
+              }`}>
+                <Star size={13} fill="currentColor" />
+                Popular Listings: {featuredCount}/4
+                {featuredCount >= 4 && <span className="text-[11px] font-medium ml-1">(full)</span>}
               </span>
-            )}
+              {viewMode === 'schools' && filter === 'pending' && pendingCount > 0 && (
+                <span className="bg-yellow-100 text-yellow-800 text-sm font-bold px-4 py-2 rounded-full shrink-0">
+                  {pendingCount} awaiting review
+                </span>
+              )}
+            </div>
           </div>
 
           {/* View mode switcher */}
