@@ -11,7 +11,7 @@ import {
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
 import toast from 'react-hot-toast';
-import heroQualityDriven from '../assets/hero/quality-driven.png';
+import heroQualityDriven from '../assets/hero/global-sourcing.png';
 import heroStudentsFocused from '../assets/hero/students-focused.png';
 import heroGlobalSourcing from '../assets/hero/global-sourcing.png';
 import { NIGERIAN_STATES, NIGERIAN_LGAS, BUDGET_OPTIONS, EMPTY_FILTERS } from '../utils/schoolFilters';
@@ -183,8 +183,8 @@ const HERO_SLIDES = [
     headline: 'Find the perfect school\nfor your child.',
     highlight: 'Compare & decide.',
     subtitle: "Nigeria's smartest school discovery platform — search, filter and compare hundreds of verified schools across Nigeria and West Africa.",
-    // Bright classroom — children raising hands, engaged learning
-    bg: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1920&q=80',
+    // African students studying together — warm, relatable, community feel
+    bg: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=1920&q=80',
     personImg: heroQualityDriven,
     // Deep forest-green gradient left → transparent right
     accent: 'from-emerald-950 via-green-900/75',
@@ -528,31 +528,8 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Hero slider
-  const [slide, setSlide] = useState(0);
-  const [heroPaused, setHeroPaused] = useState(false);
-  const [heroProgress, setHeroProgress] = useState(0);
-  const SLIDE_DURATION = 6000;
-  const TOTAL_TICKS = SLIDE_DURATION / 50;
-
-  const goToSlide = (i) => { setSlide(i); setHeroProgress(0); };
-  const heroPrev = () => goToSlide((slide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
-  const heroNext = () => goToSlide((slide + 1) % HERO_SLIDES.length);
-
-  useEffect(() => {
-    if (heroPaused) return;
-    const t = setTimeout(() => {
-      setSlide((s) => (s + 1) % HERO_SLIDES.length);
-      setHeroProgress(0);
-    }, SLIDE_DURATION);
-    return () => clearTimeout(t);
-  }, [heroPaused, slide]);
-
-  useEffect(() => {
-    if (heroPaused) return;
-    const t = setInterval(() => setHeroProgress((p) => Math.min(p + 100 / TOTAL_TICKS, 100)), 50);
-    return () => clearInterval(t);
-  }, [slide, heroPaused]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Hero — single static slide
+  const hero = HERO_SLIDES[0];
 
   // Hero live-search dropdown
   const [heroQuery, setHeroQuery] = useState('');
@@ -691,49 +668,35 @@ export default function Home() {
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section
-        className="relative flex flex-col overflow-hidden"
-        onMouseEnter={() => setHeroPaused(true)}
-        onMouseLeave={() => setHeroPaused(false)}
-      >
+      <section className="relative flex flex-col overflow-hidden">
         {/* Background — cinematic multi-layer */}
-        {HERO_SLIDES.map((s, i) => (
-          <div key={i} className={`absolute inset-0 transition-opacity duration-1400 ease-in-out ${i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            {/* Photo — portrait crop on mobile, landscape on desktop */}
-            <div
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden ${i === slide ? 'hero-bg-animate' : ''}`}
-              style={{ backgroundImage: `url('${s.bg.split('?')[0]}?auto=format&fit=crop&w=800&h=600&crop=focalpoint&q=80')` }}
-            />
-            <div
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block ${i === slide ? 'hero-bg-animate' : ''}`}
-              style={{ backgroundImage: `url('${s.bg}')` }}
-            />
-            {/* Base dark scrim — let photo breathe a bit */}
-            <div className="absolute inset-0 bg-black/40" />
-            {/* Rich colour gradient from left — full strength, no opacity reduction */}
-            <div className={`absolute inset-0 bg-linear-to-r ${s.accent} to-transparent`} />
-            {/* Strong bottom fade for text legibility */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
-            {/* Subtle radial vignette for editorial depth */}
-            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 90% at 15% 55%, transparent 35%, rgba(0,0,0,0.35) 100%)' }} />
-          </div>
-        ))}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden hero-bg-animate"
+            style={{ backgroundImage: `url('${hero.bg.split('?')[0]}?auto=format&fit=crop&w=800&h=600&crop=focalpoint&q=80')` }}
+          />
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block hero-bg-animate"
+            style={{ backgroundImage: `url('${hero.bg}')` }}
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className={`absolute inset-0 bg-linear-to-r ${hero.accent} to-transparent`} />
+          <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 90% at 15% 55%, transparent 35%, rgba(0,0,0,0.35) 100%)' }} />
+        </div>
 
         {/* Foreground person — desktop XL only */}
         <div className="absolute bottom-0 right-0 w-[44%] z-20 hidden xl:block pointer-events-none overflow-hidden h-[85%]">
-          {HERO_SLIDES.map((s, i) => (
-            <img
-              key={i}
-              src={s.personImg}
-              alt=""
-              className={`absolute bottom-0 right-0 h-full w-full object-contain object-bottom transition-all duration-1000 ${i === slide ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-            />
-          ))}
+          <img
+            src={hero.personImg}
+            alt=""
+            className="absolute bottom-0 right-0 h-full w-full object-contain object-bottom"
+          />
         </div>
 
         {/* Main content */}
         <div className="relative z-20">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-14 pb-6 sm:pt-16 sm:pb-8 md:pt-20 md:pb-10 flex flex-col items-center sm:items-start">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-6 pb-4 sm:pt-8 sm:pb-6 md:pt-10 md:pb-8 flex flex-col items-center sm:items-start">
 
             {/* Headline */}
             <h1
@@ -741,15 +704,14 @@ export default function Home() {
               className="font-inter text-[1.85rem] xs:text-[2.1rem] sm:text-[2.6rem] lg:text-[3.1rem] xl:text-[3.6rem] font-bold text-white leading-[1.12] mb-3 sm:mb-4 text-center sm:text-left tracking-tight"
               style={{ textShadow: '0 2px 30px rgba(0,0,0,0.35)' }}
             >
-              {HERO_SLIDES[slide].headline.split('\n').map((line, i) => (
+              {hero.headline.split('\n').map((line, i) => (
                 <span key={i} className="block">{line}</span>
               ))}
-              <span className="text-green-300">{HERO_SLIDES[slide].highlight}</span>
+              <span className="text-green-300">{hero.highlight}</span>
             </h1>
 
-            {/* Search bar — glass morphism (slide 0), centered on mobile */}
-            {slide === 0 && (
-              <div ref={heroRef} className="relative w-full max-w-xl mb-1 sm:mb-5">
+            {/* Search bar */}
+            <div ref={heroRef} className="relative w-full max-w-xl mb-1 sm:mb-5">
                 <div className="flex items-center bg-white rounded-full sm:rounded-xl overflow-hidden shadow-2xl">
                   <Search className="text-gray-400 shrink-0 ml-4" size={16} />
                   <input
@@ -813,11 +775,10 @@ export default function Home() {
                   </div>
                 )}
               </div>
-            )}
 
             {/* Stats row — simplified on mobile */}
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-5 mb-3 sm:mb-5">
-              {HERO_SLIDES[slide].stats.map((stat, i) => (
+              {hero.stats.map((stat, i) => (
                 <div key={stat} className="flex items-center gap-1.5">
                   {i > 0 && <span className="w-px h-3 bg-white/20 shrink-0 hidden sm:block" />}
                   <CheckCircle size={10} className="text-green-400 shrink-0" />
@@ -826,87 +787,94 @@ export default function Home() {
               ))}
             </div>
 
-            {/* CTA buttons — full-width pair on mobile, auto on sm+ */}
+            {/* CTA buttons */}
             <div ref={ctaRef} className="flex gap-2 sm:gap-3 w-full sm:w-auto">
-              {slide === 0 ? (
-                <>
-                  {/* <Link to="/#browse"
-                    onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
-                    Browse Schools <ArrowRight size={13} />
-                  </Link>
-                  <Link to="/compare"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
-                    Compare
-                  </Link> */}
-                </>
-              ) : (
-                <>
-                  <Link to={HERO_SLIDES[slide].cta.href}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
-                    {HERO_SLIDES[slide].cta.label} <ArrowRight size={13} />
-                  </Link>
-                  <Link to={HERO_SLIDES[slide].cta2.href}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
-                    {HERO_SLIDES[slide].cta2.label}
-                  </Link>
-                </>
-              )}
+              <button
+                onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-green-900/30 text-[12px] sm:text-[13px]">
+                Browse Schools <ArrowRight size={13} />
+              </button>
+              <Link to="/compare"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition text-[12px] sm:text-[13px]">
+                Compare Schools
+              </Link>
             </div>
 
           </div>
         </div>
 
-        {/* Slide navigation */}
-        <div className="relative z-20 px-4 sm:px-8 lg:px-14 pb-2 sm:pb-3 w-full flex items-center justify-between">
-          <div className="flex items-center gap-4 sm:gap-8">
-            {HERO_SLIDES.map((s, i) => (
-              <button key={i} onClick={() => goToSlide(i)} className="flex flex-col gap-1 sm:gap-1.5 group text-left">
-                {/* Label hidden on mobile, visible sm+ */}
-                <span className={`hidden sm:block text-[11px] font-semibold tracking-wider uppercase transition-colors leading-none ${i === slide ? 'text-white' : 'text-white/30 group-hover:text-white/55'}`}>
-                  {s.label}
-                </span>
-                <div className={`h-px rounded-full overflow-hidden transition-all duration-300 ${i === slide ? 'w-8 sm:w-14 bg-white/30' : 'w-4 sm:w-7 bg-white/15'}`}>
-                  {i === slide && (
-                    <div className="h-full bg-green-400" style={{ width: `${heroProgress}%`, transition: 'width 0.05s linear' }} />
-                  )}
+        {/* ── FEATURE STRIP ─────────────────────────────────────────── */}
+        <div className="relative z-20 px-3 sm:px-6 lg:px-10 pb-5 sm:pb-8">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+            {[
+              {
+                step: '01', label: 'Quality Driven',
+                desc: 'Connecting families to verified, high-quality schools across Nigeria and West Africa — with smart tools to compare and decide.',
+                icon: Shield, accent: 'from-green-400 to-emerald-300',
+                href: '#browse', active: true,
+              },
+              {
+                step: '02', label: 'Students Focused',
+                desc: 'We guide school owners and parents through listing, discovery, and enrolment — putting students at the centre of every decision.',
+                icon: GraduationCap, accent: 'from-blue-400 to-sky-300',
+                href: '/list-your-school', active: false,
+              },
+              {
+                step: '03', label: 'Global Sourcing',
+                desc: 'Pioneers in overseas education for West Africa — placing students in top universities across the UK, Canada, USA, Australia and more.',
+                icon: Globe, accent: 'from-violet-400 to-purple-300',
+                href: '/study-abroad', active: false,
+              },
+            ].map(({ step, label, desc, icon: Icon, accent, href, active }) => (
+              <Link
+                key={step}
+                to={href}
+                onClick={href === '#browse' ? (e) => { e.preventDefault(); document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
+                className={`group relative flex flex-col gap-1.5 sm:gap-3 px-3 sm:px-5 lg:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl border backdrop-blur-xl transition-all duration-300 overflow-hidden
+                  ${active
+                    ? 'bg-white/12 border-green-400/40 shadow-lg shadow-green-950/30'
+                    : 'bg-white/[0.04] border-white/[0.07] hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-black/20'}`}
+              >
+                {/* Top gradient line */}
+                <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${accent} transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} />
+
+                {/* Step + icon row */}
+                <div className="flex items-center justify-between">
+                  <span className={`text-[9px] sm:text-[10px] font-black tracking-[0.22em] uppercase tabular-nums ${active ? 'text-green-400' : 'text-white/25 group-hover:text-white/45 transition-colors'}`}>
+                    {step}
+                  </span>
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300
+                    ${active ? 'bg-green-400/15 text-green-400' : 'bg-white/5 text-white/20 group-hover:bg-white/10 group-hover:text-white/40'}`}>
+                    <Icon size={12} className="sm:hidden" />
+                    <Icon size={16} className="hidden sm:block" />
+                  </div>
                 </div>
-              </button>
+
+                {/* Title */}
+                <h3 className={`font-bold text-[11px] sm:text-sm leading-tight transition-colors duration-300
+                  ${active ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`}>
+                  {label}
+                </h3>
+
+                {/* Description — hidden on mobile */}
+                <p className={`hidden sm:block text-[11px] leading-relaxed line-clamp-2 lg:line-clamp-3 transition-colors duration-300
+                  ${active ? 'text-white/55' : 'text-white/20 group-hover:text-white/40'}`}>
+                  {desc}
+                </p>
+
+                {/* CTA arrow — desktop only */}
+                <div className={`hidden lg:flex items-center gap-1 mt-auto text-[10px] font-semibold transition-all duration-300
+                  ${active ? 'text-green-400' : 'text-white/20 group-hover:text-white/50'}`}>
+                  Learn more <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                </div>
+
+                {/* Active pulse dot */}
+                {active && <span className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+              </Link>
             ))}
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button onClick={heroPrev}
-              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/15 transition backdrop-blur-sm">
-              <ChevronLeft size={14} />
-            </button>
-            <button onClick={heroNext}
-              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-green-600 hover:bg-green-500 text-white transition shadow-lg">
-              <ChevronRight size={14} />
-            </button>
           </div>
         </div>
 
-        {/* Bottom feature strip */}
-        <div className="relative z-20 mx-2 sm:mx-6 lg:mx-10 mb-2 sm:mb-3 grid grid-cols-3 overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-2xl bg-black/30 shadow-2xl">
-          {HERO_SLIDES.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => goToSlide(i)}
-              className={`relative text-left px-2.5 sm:px-5 lg:px-7 py-2 sm:py-4 transition-all duration-300 border-r border-white/10 last:border-0 ${i === slide ? 'bg-white/10' : 'hover:bg-white/5'}`}
-            >
-              <span className={`block text-[8px] sm:text-[10px] font-extrabold tracking-[0.18em] uppercase mb-0.5 sm:mb-1 transition-colors ${i === slide ? 'text-green-400' : 'text-white/35'}`}>
-                {s.step}
-              </span>
-              {i === slide && <span className="absolute top-2 right-2 w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-400 animate-pulse" />}
-              <h3 className={`font-semibold text-[10px] sm:text-[13px] leading-tight transition-colors ${i === slide ? 'text-white' : 'text-white/45'}`}>
-                {s.label}
-              </h3>
-              <p className={`hidden lg:block text-[11px] leading-snug mt-1.5 line-clamp-2 transition-colors ${i === slide ? 'text-white/55' : 'text-white/25'}`}>
-                {s.cardDesc}
-              </p>
-            </button>
-          ))}
-        </div>
       </section>
 
       {/* ── POPULAR LISTINGS ─────────────────────────────────────────── */}
