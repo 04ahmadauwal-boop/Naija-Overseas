@@ -942,8 +942,8 @@ export default function Home() {
                     className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200">
                     {/* Image / colour block */}
                     <div className="relative h-32 sm:h-40 overflow-hidden bg-green-50 shrink-0">
-                      {school.coverImage || school.logo ? (
-                        <img src={school.coverImage || school.logo} alt={school.name}
+                      {school.images?.[0] ? (
+                        <img src={school.images[0]} alt={school.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className={`w-full h-full flex items-center justify-center text-3xl sm:text-4xl font-black text-white
@@ -1011,200 +1011,6 @@ export default function Home() {
           ))}
         </div>
       </section> */}
-
-      {/* ── EXPLORE TOP SCHOOLS ───────────────────────────────────── */}
-      {(() => {
-        const ALL_STATES = [
-          { state: 'Lagos',      emoji: '🏙️', title: 'Best in Lagos',       sub: "Nigeria's education capital",    color: 'from-orange-50 to-amber-50',    border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
-          { state: 'FCT',        emoji: '🏛️', title: 'Abuja Schools',       sub: 'Federal Capital Territory',      color: 'from-blue-50 to-sky-50',        border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
-          { state: 'Kano',       emoji: '🌾', title: 'Kano Schools',        sub: "Northern Nigeria's finest",      color: 'from-yellow-50 to-lime-50',     border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
-          { state: 'Rivers',     emoji: '🛢️', title: 'Port Harcourt',      sub: 'South-South excellence',         color: 'from-teal-50 to-emerald-50',    border: 'border-teal-100',    hover: 'hover:border-teal-300 hover:shadow-teal-100'       },
-          { state: 'Ogun',       emoji: '🌲', title: 'Ogun Schools',        sub: 'Gateway to quality edu',         color: 'from-green-50 to-emerald-50',   border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
-          { state: 'Enugu',      emoji: '⛏️', title: 'Enugu Schools',      sub: "Coal City's top picks",          color: 'from-stone-50 to-gray-50',      border: 'border-stone-100',   hover: 'hover:border-stone-300 hover:shadow-stone-100'     },
-          { state: 'Oyo',        emoji: '🏯', title: 'Ibadan & Oyo',        sub: 'South-West academic hub',        color: 'from-purple-50 to-violet-50',   border: 'border-purple-100',  hover: 'hover:border-purple-300 hover:shadow-purple-100'   },
-          { state: 'Delta',      emoji: '🌊', title: 'Delta State',         sub: 'Niger Delta excellence',         color: 'from-cyan-50 to-blue-50',       border: 'border-cyan-100',    hover: 'hover:border-cyan-300 hover:shadow-cyan-100'       },
-          { state: 'Anambra',    emoji: '🏙️', title: 'Anambra Schools',    sub: 'Southeastern academic hub',      color: 'from-red-50 to-rose-50',        border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
-          { state: 'Imo',        emoji: '🌿', title: 'Imo Schools',         sub: 'Eastern Nigeria excellence',     color: 'from-lime-50 to-green-50',      border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
-          { state: 'Kaduna',     emoji: '🏙️', title: 'Kaduna Schools',     sub: 'North-West education hub',       color: 'from-indigo-50 to-blue-50',     border: 'border-indigo-100',  hover: 'hover:border-indigo-300 hover:shadow-indigo-100'   },
-          { state: 'Edo',        emoji: '🏛️', title: 'Edo Schools',        sub: 'Ancient city, modern learning',  color: 'from-amber-50 to-yellow-50',    border: 'border-amber-100',   hover: 'hover:border-amber-300 hover:shadow-amber-100'     },
-          { state: 'Akwa Ibom',  emoji: '🛳️', title: 'Akwa Ibom',          sub: 'Oil-rich South-South state',     color: 'from-sky-50 to-blue-50',        border: 'border-sky-100',     hover: 'hover:border-sky-300 hover:shadow-sky-100'         },
-          { state: 'Kwara',      emoji: '🏞️', title: 'Kwara Schools',      sub: 'State of harmony',               color: 'from-emerald-50 to-teal-50',    border: 'border-emerald-100', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
-          { state: 'Cross River',emoji: '🌿', title: 'Cross River',         sub: 'Nature and education combined',  color: 'from-green-50 to-lime-50',      border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
-          { state: 'Abia',       emoji: '🏭', title: 'Abia Schools',        sub: 'Backbone of the East',           color: 'from-rose-50 to-pink-50',       border: 'border-rose-100',    hover: 'hover:border-rose-300 hover:shadow-rose-100'       },
-          { state: 'Katsina',    emoji: '🕌', title: 'Katsina Schools',     sub: 'Historic northern state',        color: 'from-yellow-50 to-amber-50',    border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
-          { state: 'Osun',       emoji: '🏛️', title: 'Osun Schools',       sub: 'State of the living spring',     color: 'from-violet-50 to-purple-50',   border: 'border-violet-100',  hover: 'hover:border-violet-300 hover:shadow-violet-100'   },
-          { state: 'Plateau',    emoji: '🏔️', title: 'Plateau Schools',    sub: 'Home of peace and tourism',      color: 'from-slate-50 to-gray-50',      border: 'border-slate-100',   hover: 'hover:border-slate-300 hover:shadow-slate-100'     },
-          { state: 'Benue',      emoji: '🌾', title: 'Benue Schools',       sub: 'Food basket of the nation',      color: 'from-lime-50 to-yellow-50',     border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
-          { state: 'Bauchi',     emoji: '🦁', title: 'Bauchi Schools',      sub: 'Pearl of the North',             color: 'from-orange-50 to-red-50',      border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
-          { state: 'Ondo',       emoji: '🌿', title: 'Ondo Schools',        sub: 'Sunshine state of learning',     color: 'from-yellow-50 to-green-50',    border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
-          { state: 'Kogi',       emoji: '⛰️', title: 'Kogi Schools',       sub: 'Confluence state',               color: 'from-red-50 to-orange-50',      border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
-          { state: 'Niger',      emoji: '🌊', title: 'Niger Schools',       sub: 'Power state of Nigeria',         color: 'from-blue-50 to-indigo-50',     border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
-          { state: 'Ekiti',      emoji: '🏔️', title: 'Ekiti Schools',      sub: 'Fountain of knowledge',          color: 'from-teal-50 to-cyan-50',       border: 'border-teal-100',    hover: 'hover:border-teal-300 hover:shadow-teal-100'       },
-          { state: 'Ebonyi',     emoji: '⛰️', title: 'Ebonyi Schools',     sub: 'Salt of the nation',             color: 'from-gray-50 to-slate-50',      border: 'border-gray-100',    hover: 'hover:border-gray-300 hover:shadow-gray-100'       },
-          { state: 'Nasarawa',   emoji: '🌲', title: 'Nasarawa Schools',    sub: 'Home of solid minerals',         color: 'from-green-50 to-teal-50',      border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
-          { state: 'Adamawa',    emoji: '🌄', title: 'Adamawa Schools',     sub: 'Land of beauty',                 color: 'from-amber-50 to-orange-50',    border: 'border-amber-100',   hover: 'hover:border-amber-300 hover:shadow-amber-100'     },
-          { state: 'Sokoto',     emoji: '🕌', title: 'Sokoto Schools',      sub: 'Seat of the Caliphate',          color: 'from-yellow-50 to-orange-50',   border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
-          { state: 'Bayelsa',    emoji: '🌊', title: 'Bayelsa Schools',     sub: 'Glory of all lands',             color: 'from-cyan-50 to-sky-50',        border: 'border-cyan-100',    hover: 'hover:border-cyan-300 hover:shadow-cyan-100'       },
-          { state: 'Taraba',     emoji: '🌿', title: 'Taraba Schools',      sub: "Nature's treasure of Nigeria",   color: 'from-emerald-50 to-green-50',   border: 'border-emerald-100', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
-          { state: 'Kebbi',      emoji: '🌊', title: 'Kebbi Schools',       sub: 'Land of equity',                 color: 'from-blue-50 to-cyan-50',       border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
-          { state: 'Gombe',      emoji: '🌾', title: 'Gombe Schools',       sub: 'Jewel in the Savannah',          color: 'from-lime-50 to-amber-50',      border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
-          { state: 'Jigawa',     emoji: '🌾', title: 'Jigawa Schools',      sub: 'The new world',                  color: 'from-orange-50 to-yellow-50',   border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
-          { state: 'Yobe',       emoji: '🏜️', title: 'Yobe Schools',       sub: 'Pride of the northeast',         color: 'from-stone-50 to-amber-50',     border: 'border-stone-100',   hover: 'hover:border-stone-300 hover:shadow-stone-100'     },
-          { state: 'Zamfara',    emoji: '🌾', title: 'Zamfara Schools',     sub: 'Farming and learning state',     color: 'from-yellow-50 to-lime-50',     border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
-          { state: 'Borno',      emoji: '🕌', title: 'Borno Schools',       sub: 'Home of peace and culture',      color: 'from-red-50 to-orange-50',      border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
-        ];
-        const PER_PAGE = 8;
-        const totalPages = Math.ceil(ALL_STATES.length / PER_PAGE);
-        const pageStates = ALL_STATES.slice((stateExplPage - 1) * PER_PAGE, stateExplPage * PER_PAGE);
-        return (
-          <section className="py-8 sm:py-10 md:py-16 px-4 bg-white border-b border-gray-100">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-6 sm:mb-10">
-                <p className="text-green-600 font-semibold text-[11px] sm:text-sm uppercase tracking-widest mb-2 sm:mb-3">Explore Schools</p>
-                <h2 className="text-lg sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2 sm:mb-4">
-                  Nigeria's Top 100 Schools
-                </h2>
-                <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-                  Browse by state, type, or curriculum — updated from verified listings across Nigeria and West Africa.
-                </p>
-              </div>
-
-              {/* State cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 sm:mb-8">
-                {pageStates.map(({ state, emoji, title, sub, color, border, hover }, idx) => (
-                  <Link
-                    key={state}
-                    to={`/schools/state/${state}`}
-                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-linear-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200${idx >= 6 ? ' hidden sm:flex' : ''}`}
-                  >
-                    <span className="text-2xl sm:text-3xl leading-none">{emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-[13px] sm:text-sm leading-snug group-hover:text-green-700 transition">{title}</p>
-                      <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">{sub}</p>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-[10px] sm:text-[11px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">{state}</span>
-                      <ArrowRight size={12} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              <Pagination page={stateExplPage} pages={totalPages} onPage={setStateExplPage} />
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* ── PARENT REVIEWS & INSIGHTS ─────────────────────────────── */}
-      {(() => {
-        const getThumb = (v) => {
-          if (v.thumbnail) return v.thumbnail;
-          try {
-            let id = null;
-            const url = v.videoUrl || '';
-            if (url.includes('youtu.be/')) id = url.split('youtu.be/')[1]?.split('?')[0];
-            else if (url.includes('youtube.com/embed/')) id = url.split('youtube.com/embed/')[1]?.split('?')[0];
-            else if (url.includes('youtube.com/watch')) id = new URL(url).searchParams.get('v');
-            if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-          } catch { /* invalid URL */ }
-          return null;
-        };
-        const cards = reviewVideos.length > 0 ? reviewVideos : [];
-        const fill = (arr) => arr.length >= 3 ? arr : [...arr, ...arr, ...arr].slice(0, Math.max(3, arr.length));
-        const row1 = fill(cards.slice(0, 4));
-        const row2 = fill(cards.slice(4, 8));
-        const row3 = fill(cards.slice(8, 12));
-        const badgeColor = (cat) => {
-          if (cat === 'Parent Review') return 'bg-green-500 text-white';
-          if (cat === 'Principal Interview') return 'bg-emerald-700 text-white';
-          if (cat === 'Study Abroad') return 'bg-blue-600 text-white';
-          if (cat === 'School Review') return 'bg-green-200 text-green-900';
-          return 'bg-gray-600 text-white';
-        };
-        const CardItem = ({ card }) => {
-          const thumb = getThumb(card);
-          return (
-            <Link to="/videos" className="relative rounded-xl overflow-hidden shrink-0 w-44 sm:w-56 group cursor-pointer shadow-xl border border-white/5 block">
-              {thumb
-                ? <img src={thumb} alt={card.title} className="w-full h-24 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-500" />
-                : <div className="w-full h-24 sm:h-32 bg-gray-800 flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-gray-600"><path d="M8 5v14l11-7z"/></svg>
-                  </div>
-              }
-              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-9 h-9 rounded-full bg-green-600/90 flex items-center justify-center shadow-lg">
-                  <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-              </div>
-              <div className="absolute top-2 left-2">
-                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeColor(card.category)}`}>{card.category}</span>
-              </div>
-              {card.duration && (
-                <div className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{card.duration}</div>
-              )}
-              <div className="absolute bottom-2 left-2 right-10">
-                <p className="text-white font-bold text-[11px] leading-tight truncate">{card.school || card.title}</p>
-              </div>
-            </Link>
-          );
-        };
-        return (
-          <section className="bg-gray-950 overflow-hidden">
-            {/* Section title with green accent line */}
-            <div className="flex flex-col items-center pt-5 pb-4 px-4 gap-1.5">
-              <span className="w-8 h-0.5 bg-green-500 rounded-full block" />
-              <p className="text-center text-white font-extrabold text-sm sm:text-base md:text-xl tracking-tight">
-                <span className="sm:hidden">Reviews &amp; Perspectives</span>
-                <span className="hidden sm:inline">Parent Reviews &amp; Educator Perspectives</span>
-              </p>
-            </div>
-            <div className="flex flex-col lg:flex-row">
-              {/* Left panel */}
-              <div className="relative lg:w-[38%] shrink-0 flex flex-col justify-center px-6 sm:px-10 py-5 lg:py-8 z-10"
-                style={{ background: 'linear-gradient(to right, #030712 60%, transparent 100%)' }}>
-                <div className="flex items-center gap-2 mb-2.5">
-                  <span className="w-5 h-px bg-green-500 block" />
-                  <span className="text-green-400 text-[11px] font-bold tracking-[0.2em] uppercase">Verified Reviews</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-tight mb-3 max-w-sm">
-                  Honest reviews on schools and insights from <span className="text-green-400">educators.</span>
-                </h2>
-                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-xs">
-                  Real parents. Real principals. Unfiltered stories about Nigerian schools — so you can choose with confidence.
-                </p>
-                <Link
-                  to="/videos"
-                  className="self-start flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full text-sm transition shadow-lg shadow-green-900/40"
-                >
-                  Watch Videos <ArrowRight size={13} />
-                </Link>
-              </div>
-
-              {/* Right — scrolling card rows */}
-              <div className="flex-1 min-w-0 flex flex-col gap-2.5 py-4 lg:py-6 overflow-hidden">
-                {row1.length > 0 && (
-                  <div className="flex gap-3 animate-[scroll-left_28s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
-                    {[...row1, ...row1].map((c, i) => <CardItem key={i} card={c} />)}
-                  </div>
-                )}
-                {row2.length > 0 && (
-                  <div className="hidden sm:flex gap-3 animate-[scroll-right_32s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
-                    {[...row2, ...row2].map((c, i) => <CardItem key={i} card={c} />)}
-                  </div>
-                )}
-                {row3.length > 0 && (
-                  <div className="hidden sm:flex gap-3 animate-[scroll-left_36s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
-                    {[...row3, ...row3].map((c, i) => <CardItem key={i} card={c} />)}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        );
-      })()}
 
       {/* ── SCHOOL SEARCH SECTION ─────────────────────────────────── */}
       <section id="browse" className="bg-gray-50 py-8 md:py-16 px-4">
@@ -1682,6 +1488,200 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── PARENT REVIEWS & INSIGHTS ─────────────────────────────── */}
+      {(() => {
+        const getThumb = (v) => {
+          if (v.thumbnail) return v.thumbnail;
+          try {
+            let id = null;
+            const url = v.videoUrl || '';
+            if (url.includes('youtu.be/')) id = url.split('youtu.be/')[1]?.split('?')[0];
+            else if (url.includes('youtube.com/embed/')) id = url.split('youtube.com/embed/')[1]?.split('?')[0];
+            else if (url.includes('youtube.com/watch')) id = new URL(url).searchParams.get('v');
+            if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+          } catch { /* invalid URL */ }
+          return null;
+        };
+        const cards = reviewVideos.length > 0 ? reviewVideos : [];
+        const fill = (arr) => arr.length >= 3 ? arr : [...arr, ...arr, ...arr].slice(0, Math.max(3, arr.length));
+        const row1 = fill(cards.slice(0, 4));
+        const row2 = fill(cards.slice(4, 8));
+        const row3 = fill(cards.slice(8, 12));
+        const badgeColor = (cat) => {
+          if (cat === 'Parent Review') return 'bg-green-500 text-white';
+          if (cat === 'Principal Interview') return 'bg-emerald-700 text-white';
+          if (cat === 'Study Abroad') return 'bg-blue-600 text-white';
+          if (cat === 'School Review') return 'bg-green-200 text-green-900';
+          return 'bg-gray-600 text-white';
+        };
+        const CardItem = ({ card }) => {
+          const thumb = getThumb(card);
+          return (
+            <Link to="/videos" className="relative rounded-xl overflow-hidden shrink-0 w-44 sm:w-56 group cursor-pointer shadow-xl border border-white/5 block">
+              {thumb
+                ? <img src={thumb} alt={card.title} className="w-full h-24 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-500" />
+                : <div className="w-full h-24 sm:h-32 bg-gray-800 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-gray-600"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+              }
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="w-9 h-9 rounded-full bg-green-600/90 flex items-center justify-center shadow-lg">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+              <div className="absolute top-2 left-2">
+                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${badgeColor(card.category)}`}>{card.category}</span>
+              </div>
+              {card.duration && (
+                <div className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{card.duration}</div>
+              )}
+              <div className="absolute bottom-2 left-2 right-10">
+                <p className="text-white font-bold text-[11px] leading-tight truncate">{card.school || card.title}</p>
+              </div>
+            </Link>
+          );
+        };
+        return (
+          <section className="bg-gray-950 overflow-hidden">
+            {/* Section title with green accent line */}
+            <div className="flex flex-col items-center pt-5 pb-4 px-4 gap-1.5">
+              <span className="w-8 h-0.5 bg-green-500 rounded-full block" />
+              <p className="text-center text-white font-extrabold text-sm sm:text-base md:text-xl tracking-tight">
+                <span className="sm:hidden">Reviews &amp; Perspectives</span>
+                <span className="hidden sm:inline">Parent Reviews &amp; Educator Perspectives</span>
+              </p>
+            </div>
+            <div className="flex flex-col lg:flex-row">
+              {/* Left panel */}
+              <div className="relative lg:w-[38%] shrink-0 flex flex-col justify-center px-6 sm:px-10 py-5 lg:py-8 z-10"
+                style={{ background: 'linear-gradient(to right, #030712 60%, transparent 100%)' }}>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="w-5 h-px bg-green-500 block" />
+                  <span className="text-green-400 text-[11px] font-bold tracking-[0.2em] uppercase">Verified Reviews</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-tight mb-3 max-w-sm">
+                  Honest reviews on schools and insights from <span className="text-green-400">educators.</span>
+                </h2>
+                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-xs">
+                  Real parents. Real principals. Unfiltered stories about Nigerian schools — so you can choose with confidence.
+                </p>
+                <Link
+                  to="/videos"
+                  className="self-start flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full text-sm transition shadow-lg shadow-green-900/40"
+                >
+                  Watch Videos <ArrowRight size={13} />
+                </Link>
+              </div>
+
+              {/* Right — scrolling card rows */}
+              <div className="flex-1 min-w-0 flex flex-col gap-2.5 py-4 lg:py-6 overflow-hidden">
+                {row1.length > 0 && (
+                  <div className="flex gap-3 animate-[scroll-left_28s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row1, ...row1].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+                {row2.length > 0 && (
+                  <div className="hidden sm:flex gap-3 animate-[scroll-right_32s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row2, ...row2].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+                {row3.length > 0 && (
+                  <div className="hidden sm:flex gap-3 animate-[scroll-left_36s_linear_infinite] hover:[animation-play-state:paused] w-max px-3">
+                    {[...row3, ...row3].map((c, i) => <CardItem key={i} card={c} />)}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── EXPLORE TOP SCHOOLS ───────────────────────────────────── */}
+      {(() => {
+        const ALL_STATES = [
+          { state: 'Lagos',      emoji: '🏙️', title: 'Best in Lagos',       sub: "Nigeria's education capital",    color: 'from-orange-50 to-amber-50',    border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
+          { state: 'FCT',        emoji: '🏛️', title: 'Abuja Schools',       sub: 'Federal Capital Territory',      color: 'from-blue-50 to-sky-50',        border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
+          { state: 'Kano',       emoji: '🌾', title: 'Kano Schools',        sub: "Northern Nigeria's finest",      color: 'from-yellow-50 to-lime-50',     border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
+          { state: 'Rivers',     emoji: '🛢️', title: 'Port Harcourt',      sub: 'South-South excellence',         color: 'from-teal-50 to-emerald-50',    border: 'border-teal-100',    hover: 'hover:border-teal-300 hover:shadow-teal-100'       },
+          { state: 'Ogun',       emoji: '🌲', title: 'Ogun Schools',        sub: 'Gateway to quality edu',         color: 'from-green-50 to-emerald-50',   border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
+          { state: 'Enugu',      emoji: '⛏️', title: 'Enugu Schools',      sub: "Coal City's top picks",          color: 'from-stone-50 to-gray-50',      border: 'border-stone-100',   hover: 'hover:border-stone-300 hover:shadow-stone-100'     },
+          { state: 'Oyo',        emoji: '🏯', title: 'Ibadan & Oyo',        sub: 'South-West academic hub',        color: 'from-purple-50 to-violet-50',   border: 'border-purple-100',  hover: 'hover:border-purple-300 hover:shadow-purple-100'   },
+          { state: 'Delta',      emoji: '🌊', title: 'Delta State',         sub: 'Niger Delta excellence',         color: 'from-cyan-50 to-blue-50',       border: 'border-cyan-100',    hover: 'hover:border-cyan-300 hover:shadow-cyan-100'       },
+          { state: 'Anambra',    emoji: '🏙️', title: 'Anambra Schools',    sub: 'Southeastern academic hub',      color: 'from-red-50 to-rose-50',        border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
+          { state: 'Imo',        emoji: '🌿', title: 'Imo Schools',         sub: 'Eastern Nigeria excellence',     color: 'from-lime-50 to-green-50',      border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
+          { state: 'Kaduna',     emoji: '🏙️', title: 'Kaduna Schools',     sub: 'North-West education hub',       color: 'from-indigo-50 to-blue-50',     border: 'border-indigo-100',  hover: 'hover:border-indigo-300 hover:shadow-indigo-100'   },
+          { state: 'Edo',        emoji: '🏛️', title: 'Edo Schools',        sub: 'Ancient city, modern learning',  color: 'from-amber-50 to-yellow-50',    border: 'border-amber-100',   hover: 'hover:border-amber-300 hover:shadow-amber-100'     },
+          { state: 'Akwa Ibom',  emoji: '🛳️', title: 'Akwa Ibom',          sub: 'Oil-rich South-South state',     color: 'from-sky-50 to-blue-50',        border: 'border-sky-100',     hover: 'hover:border-sky-300 hover:shadow-sky-100'         },
+          { state: 'Kwara',      emoji: '🏞️', title: 'Kwara Schools',      sub: 'State of harmony',               color: 'from-emerald-50 to-teal-50',    border: 'border-emerald-100', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
+          { state: 'Cross River',emoji: '🌿', title: 'Cross River',         sub: 'Nature and education combined',  color: 'from-green-50 to-lime-50',      border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
+          { state: 'Abia',       emoji: '🏭', title: 'Abia Schools',        sub: 'Backbone of the East',           color: 'from-rose-50 to-pink-50',       border: 'border-rose-100',    hover: 'hover:border-rose-300 hover:shadow-rose-100'       },
+          { state: 'Katsina',    emoji: '🕌', title: 'Katsina Schools',     sub: 'Historic northern state',        color: 'from-yellow-50 to-amber-50',    border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
+          { state: 'Osun',       emoji: '🏛️', title: 'Osun Schools',       sub: 'State of the living spring',     color: 'from-violet-50 to-purple-50',   border: 'border-violet-100',  hover: 'hover:border-violet-300 hover:shadow-violet-100'   },
+          { state: 'Plateau',    emoji: '🏔️', title: 'Plateau Schools',    sub: 'Home of peace and tourism',      color: 'from-slate-50 to-gray-50',      border: 'border-slate-100',   hover: 'hover:border-slate-300 hover:shadow-slate-100'     },
+          { state: 'Benue',      emoji: '🌾', title: 'Benue Schools',       sub: 'Food basket of the nation',      color: 'from-lime-50 to-yellow-50',     border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
+          { state: 'Bauchi',     emoji: '🦁', title: 'Bauchi Schools',      sub: 'Pearl of the North',             color: 'from-orange-50 to-red-50',      border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
+          { state: 'Ondo',       emoji: '🌿', title: 'Ondo Schools',        sub: 'Sunshine state of learning',     color: 'from-yellow-50 to-green-50',    border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
+          { state: 'Kogi',       emoji: '⛰️', title: 'Kogi Schools',       sub: 'Confluence state',               color: 'from-red-50 to-orange-50',      border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
+          { state: 'Niger',      emoji: '🌊', title: 'Niger Schools',       sub: 'Power state of Nigeria',         color: 'from-blue-50 to-indigo-50',     border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
+          { state: 'Ekiti',      emoji: '🏔️', title: 'Ekiti Schools',      sub: 'Fountain of knowledge',          color: 'from-teal-50 to-cyan-50',       border: 'border-teal-100',    hover: 'hover:border-teal-300 hover:shadow-teal-100'       },
+          { state: 'Ebonyi',     emoji: '⛰️', title: 'Ebonyi Schools',     sub: 'Salt of the nation',             color: 'from-gray-50 to-slate-50',      border: 'border-gray-100',    hover: 'hover:border-gray-300 hover:shadow-gray-100'       },
+          { state: 'Nasarawa',   emoji: '🌲', title: 'Nasarawa Schools',    sub: 'Home of solid minerals',         color: 'from-green-50 to-teal-50',      border: 'border-green-100',   hover: 'hover:border-green-300 hover:shadow-green-100'     },
+          { state: 'Adamawa',    emoji: '🌄', title: 'Adamawa Schools',     sub: 'Land of beauty',                 color: 'from-amber-50 to-orange-50',    border: 'border-amber-100',   hover: 'hover:border-amber-300 hover:shadow-amber-100'     },
+          { state: 'Sokoto',     emoji: '🕌', title: 'Sokoto Schools',      sub: 'Seat of the Caliphate',          color: 'from-yellow-50 to-orange-50',   border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
+          { state: 'Bayelsa',    emoji: '🌊', title: 'Bayelsa Schools',     sub: 'Glory of all lands',             color: 'from-cyan-50 to-sky-50',        border: 'border-cyan-100',    hover: 'hover:border-cyan-300 hover:shadow-cyan-100'       },
+          { state: 'Taraba',     emoji: '🌿', title: 'Taraba Schools',      sub: "Nature's treasure of Nigeria",   color: 'from-emerald-50 to-green-50',   border: 'border-emerald-100', hover: 'hover:border-emerald-300 hover:shadow-emerald-100' },
+          { state: 'Kebbi',      emoji: '🌊', title: 'Kebbi Schools',       sub: 'Land of equity',                 color: 'from-blue-50 to-cyan-50',       border: 'border-blue-100',    hover: 'hover:border-blue-300 hover:shadow-blue-100'       },
+          { state: 'Gombe',      emoji: '🌾', title: 'Gombe Schools',       sub: 'Jewel in the Savannah',          color: 'from-lime-50 to-amber-50',      border: 'border-lime-100',    hover: 'hover:border-lime-300 hover:shadow-lime-100'       },
+          { state: 'Jigawa',     emoji: '🌾', title: 'Jigawa Schools',      sub: 'The new world',                  color: 'from-orange-50 to-yellow-50',   border: 'border-orange-100',  hover: 'hover:border-orange-300 hover:shadow-orange-100'   },
+          { state: 'Yobe',       emoji: '🏜️', title: 'Yobe Schools',       sub: 'Pride of the northeast',         color: 'from-stone-50 to-amber-50',     border: 'border-stone-100',   hover: 'hover:border-stone-300 hover:shadow-stone-100'     },
+          { state: 'Zamfara',    emoji: '🌾', title: 'Zamfara Schools',     sub: 'Farming and learning state',     color: 'from-yellow-50 to-lime-50',     border: 'border-yellow-100',  hover: 'hover:border-yellow-300 hover:shadow-yellow-100'   },
+          { state: 'Borno',      emoji: '🕌', title: 'Borno Schools',       sub: 'Home of peace and culture',      color: 'from-red-50 to-orange-50',      border: 'border-red-100',     hover: 'hover:border-red-300 hover:shadow-red-100'         },
+        ];
+        const PER_PAGE = 8;
+        const totalPages = Math.ceil(ALL_STATES.length / PER_PAGE);
+        const pageStates = ALL_STATES.slice((stateExplPage - 1) * PER_PAGE, stateExplPage * PER_PAGE);
+        return (
+          <section className="py-8 sm:py-10 md:py-16 px-4 bg-white border-b border-gray-100">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-6 sm:mb-10">
+                <p className="text-green-600 font-semibold text-[11px] sm:text-sm uppercase tracking-widest mb-2 sm:mb-3">Explore Schools</p>
+                <h2 className="text-lg sm:text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2 sm:mb-4">
+                  Nigeria's Top 100 Schools
+                </h2>
+                <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+                  Browse by state, type, or curriculum — updated from verified listings across Nigeria and West Africa.
+                </p>
+              </div>
+
+              {/* State cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 sm:mb-8">
+                {pageStates.map(({ state, emoji, title, sub, color, border, hover }, idx) => (
+                  <Link
+                    key={state}
+                    to={`/schools/state/${state}`}
+                    className={`group relative flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl border bg-linear-to-br ${color} ${border} ${hover} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200${idx >= 6 ? ' hidden sm:flex' : ''}`}
+                  >
+                    <span className="text-2xl sm:text-3xl leading-none">{emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-[13px] sm:text-sm leading-snug group-hover:text-green-700 transition">{title}</p>
+                      <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">{sub}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">{state}</span>
+                      <ArrowRight size={12} className="text-gray-300 group-hover:text-green-500 transition shrink-0" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <Pagination page={stateExplPage} pages={totalPages} onPage={setStateExplPage} />
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── COMPARE STICKY BAR ────────────────────────────────────── */}
       {selected.length > 0 && (
