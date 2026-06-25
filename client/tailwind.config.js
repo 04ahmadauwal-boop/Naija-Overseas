@@ -3,20 +3,25 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
-        playfair: ['Playfair Display', 'serif'],
+        sans:    ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        inter:   ['Inter', 'sans-serif'],
+        // kept for legacy class usage — both resolve to Inter
+        poppins: ['Inter', 'sans-serif'],
       },
       fontSize: {
-        xs: 'clamp(11px, 1.5vw, 12px)',
-        sm: 'clamp(12px, 1.75vw, 14px)',
-        base: 'clamp(14px, 2vw, 16px)',
-        lg: 'clamp(16px, 2.25vw, 18px)',
-        xl: 'clamp(18px, 2.75vw, 22px)',
-        '2xl': 'clamp(22px, 4vw, 28px)',
-        '3xl': 'clamp(28px, 6vw, 36px)',
-        '4xl': 'clamp(36px, 8vw, 48px)',
-        '5xl': 'clamp(48px, 10vw, 64px)',
+        xs:   ['11px',  { lineHeight: '1.5'  }],
+        sm:   ['12.5px',{ lineHeight: '1.55' }],
+        base: ['14px',  { lineHeight: '1.6'  }],
+        lg:   ['15px',  { lineHeight: '1.5'  }],
+        xl:   ['17px',  { lineHeight: '1.4'  }],
+        '2xl':['19px',  { lineHeight: '1.35' }],
+        '3xl':['23px',  { lineHeight: '1.3'  }],
+        '4xl':['28px',  { lineHeight: '1.2'  }],
+        '5xl':['35px',  { lineHeight: '1.15' }],
+        '6xl':['44px',  { lineHeight: '1.1'  }],
+        '7xl':['54px',  { lineHeight: '1.05' }],
+        '8xl':['68px',  { lineHeight: '1'    }],
+        '9xl':['88px',  { lineHeight: '1'    }],
       },
       spacing: {
         'responsive-xs': 'clamp(0.25rem, 1vw, 0.5rem)',
