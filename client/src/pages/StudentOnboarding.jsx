@@ -1,116 +1,134 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  GraduationCap, CheckCircle, ArrowRight, ArrowLeft,
-  BookOpen, Clock, Calendar, Zap, Star, Globe2,
+  Globe, GraduationCap, BookOpen, MessageSquare,
+  FlaskConical, Calculator, Clock, Calendar, Zap,
+  CheckCircle,
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const SUBJECTS = [
-  'Mathematics', 'English Language', 'Physics', 'Chemistry', 'Biology',
-  'Economics', 'Government', 'Geography', 'Literature in English',
-  'Agricultural Science', 'Computer Science', 'Further Mathematics',
-  'French', 'Commerce', 'Accounting', 'Civic Education',
-  'Technical Drawing', 'Basic Science', 'Basic Technology', 'Social Studies',
-  'IELTS Preparation', 'TOEFL Preparation',
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const GOALS = [
+  { value: 'WAEC / NECO Preparation', label: 'WAEC / NECO Preparation', sub: 'West African & National Certificate exams', Icon: BookOpen },
+  { value: 'JAMB / UTME',             label: 'JAMB / UTME',             sub: 'Unified Tertiary Matriculation Exam',       Icon: Calculator },
+  { value: 'GCSE / A-Level',          label: 'GCSE / A-Level',          sub: 'British curriculum qualifications',         Icon: GraduationCap },
+  { value: 'University Courses',      label: 'University Courses',      sub: '100 Level to Final Year support',           Icon: Globe },
+  { value: 'IELTS / TOEFL / SAT',     label: 'IELTS / TOEFL / SAT',    sub: 'Language & college entrance tests',         Icon: FlaskConical },
+  { value: 'School Homework Help',    label: 'School Homework Help',    sub: 'Daily assignments & classwork',             Icon: MessageSquare },
 ];
 
-const LEARNING_GOALS = [
-  { value: 'WAEC Preparation',   label: 'WAEC Preparation',    icon: '📝', bg: 'bg-green-50',   border: 'border-green-500',  text: 'text-green-800',  sub: 'West African Senior School Certificate' },
-  { value: 'JAMB / UTME',        label: 'JAMB / UTME',         icon: '🎯', bg: 'bg-blue-50',    border: 'border-blue-500',   text: 'text-blue-800',   sub: 'Unified Tertiary Matriculation Exam' },
-  { value: 'NECO Preparation',   label: 'NECO Preparation',    icon: '📖', bg: 'bg-purple-50',  border: 'border-purple-500', text: 'text-purple-800', sub: 'National Examinations Council' },
-  { value: 'School Homework',    label: 'School Homework Help', icon: '📚', bg: 'bg-orange-50',  border: 'border-orange-500', text: 'text-orange-800', sub: 'Daily assignments & classwork' },
-  { value: 'GCSE / IGCSE',       label: 'GCSE / IGCSE',        icon: '🏫', bg: 'bg-red-50',     border: 'border-red-500',    text: 'text-red-800',    sub: 'British curriculum exams' },
-  { value: 'A-Level',            label: 'A-Level',             icon: '🎓', bg: 'bg-indigo-50',  border: 'border-indigo-500', text: 'text-indigo-800', sub: 'Advanced Level qualifications' },
-  { value: 'SAT / ACT Prep',     label: 'SAT / ACT Prep',      icon: '🌍', bg: 'bg-teal-50',    border: 'border-teal-500',   text: 'text-teal-800',   sub: 'US college entrance tests' },
-  { value: 'Common Entrance',    label: 'Common Entrance',     icon: '✏️', bg: 'bg-yellow-50',  border: 'border-yellow-500', text: 'text-yellow-800', sub: 'Junior secondary school entry' },
-  { value: 'University Courses', label: 'University Courses',  icon: '🏛️', bg: 'bg-pink-50',   border: 'border-pink-500',   text: 'text-pink-800',   sub: '100 Level to Final Year' },
-  { value: 'IELTS / TOEFL',      label: 'IELTS / TOEFL',       icon: '🗺️', bg: 'bg-cyan-50',   border: 'border-cyan-500',   text: 'text-cyan-800',   sub: 'English proficiency tests' },
+const SUBJECTS = [
+  'Mathematics', 'Further Mathematics', 'English Language', 'Physics',
+  'Chemistry', 'Biology', 'Economics', 'Government', 'Geography',
+  'Literature in English', 'Agricultural Science', 'Computer Science',
+  'French', 'Commerce', 'Accounting', 'Civic Education',
+  'Basic Science', 'Basic Technology', 'Social Studies',
+  'IELTS Preparation', 'TOEFL Preparation', 'SAT Prep',
 ];
 
 const CLASS_LEVELS = [
-  { value: 'Primary 1-3',    label: 'Primary 1 – 3',    sub: 'Ages 6 – 9' },
-  { value: 'Primary 4-6',    label: 'Primary 4 – 6',    sub: 'Ages 9 – 12' },
+  { value: 'Primary 1-3',    label: 'Primary 1–3',       sub: 'Ages 6–9' },
+  { value: 'Primary 4-6',    label: 'Primary 4–6',       sub: 'Ages 9–12' },
   { value: 'JSS 1',          label: 'JSS 1',             sub: 'Junior Secondary 1' },
   { value: 'JSS 2',          label: 'JSS 2',             sub: 'Junior Secondary 2' },
   { value: 'JSS 3',          label: 'JSS 3',             sub: 'Junior Secondary 3' },
   { value: 'SS 1',           label: 'SS 1',              sub: 'Senior Secondary 1' },
   { value: 'SS 2',           label: 'SS 2',              sub: 'Senior Secondary 2' },
   { value: 'SS 3',           label: 'SS 3 / Final Year', sub: 'Senior Secondary 3' },
-  { value: 'University',     label: 'University',        sub: '100 Level – Final Year' },
+  { value: 'University',     label: 'University',        sub: '100L – Final Year' },
   { value: 'Post-Graduate',  label: 'Post-Graduate',     sub: 'Masters / PhD' },
   { value: 'Adult Learning', label: 'Adult Learning',    sub: 'Professional / Casual' },
 ];
 
 const SCHEDULE_OPTIONS = [
-  { value: 'Weekday Mornings',   label: 'Weekday Mornings',    sub: '7am – 12pm',         icon: Clock },
-  { value: 'Weekday Afternoons', label: 'Weekday Afternoons',  sub: '12pm – 5pm',         icon: Clock },
-  { value: 'Weekday Evenings',   label: 'Weekday Evenings',    sub: '5pm – 9pm',          icon: Clock },
-  { value: 'Weekend Mornings',   label: 'Weekend Mornings',    sub: '7am – 12pm',         icon: Calendar },
-  { value: 'Weekend Afternoons', label: 'Weekend Afternoons',  sub: '12pm – 5pm',         icon: Calendar },
-  { value: 'Weekend Evenings',   label: 'Weekend Evenings',    sub: '5pm – 9pm',          icon: Calendar },
-  { value: 'Flexible',           label: 'Flexible / Any Time', sub: "I'm available anytime", icon: Zap },
+  { value: 'Weekday Mornings',   label: 'Weekday Mornings',    sub: '7 am – 12 pm',          Icon: Clock },
+  { value: 'Weekday Afternoons', label: 'Weekday Afternoons',  sub: '12 pm – 5 pm',          Icon: Clock },
+  { value: 'Weekday Evenings',   label: 'Weekday Evenings',    sub: '5 pm – 9 pm',           Icon: Clock },
+  { value: 'Weekend Mornings',   label: 'Weekend Mornings',    sub: '7 am – 12 pm',          Icon: Calendar },
+  { value: 'Weekend Afternoons', label: 'Weekend Afternoons',  sub: '12 pm – 5 pm',          Icon: Calendar },
+  { value: 'Weekend Evenings',   label: 'Weekend Evenings',    sub: '5 pm – 9 pm',           Icon: Calendar },
+  { value: 'Flexible',           label: 'Flexible / Any Time', sub: 'I\'m available anytime', Icon: Zap },
 ];
 
-const LANGUAGES = ['English', 'Yoruba', 'Hausa', 'Igbo', 'Pidgin', 'French', 'Arabic', 'Swahili'];
+const TOTAL_STEPS = 4;
 
-const TEACHING_STYLES = [
-  { value: 'patient',      label: 'Patient & Supportive', icon: '🤝', desc: 'Goes at my pace, explains things gently until I understand' },
-  { value: 'structured',   label: 'Structured Lessons',   icon: '📋', desc: 'Clear lesson plans, organised notes, defined learning path' },
-  { value: 'interactive',  label: 'Interactive & Fun',    icon: '🎯', desc: 'Engaging explanations, real examples, keeps me motivated' },
-  { value: 'exam-focused', label: 'Exam-Focused',         icon: '🏆', desc: 'Drills past questions, time management, exam technique' },
-];
+// ── Shared UI ─────────────────────────────────────────────────────────────────
 
-const STEPS = [
-  { label: 'Subjects',     desc: 'What do you need help with?' },
-  { label: 'Goal',         desc: 'What are you preparing for?' },
-  { label: 'Level',        desc: 'What class or level are you in?' },
-  { label: 'Schedule',     desc: 'When are you available?' },
-  { label: 'Preferences',  desc: 'Language & learning style' },
-];
+function ProgressDots({ step }) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-5">
+      {Array.from({ length: TOTAL_STEPS }).map((_, i) =>
+        i === step ? (
+          <div key={i} className="w-8 h-2 rounded-full bg-green-700" />
+        ) : i < step ? (
+          <div key={i} className="w-2 h-2 rounded-full bg-green-600" />
+        ) : (
+          <div key={i} className="w-2 h-2 rounded-full bg-gray-200" />
+        )
+      )}
+    </div>
+  );
+}
+
+function GoalCard({ label, sub, Icon, active, onClick }) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl border-2 transition text-left ${
+        active
+          ? 'border-green-600 bg-green-50'
+          : 'border-gray-100 bg-white hover:border-green-300 hover:bg-green-50/40'
+      }`}
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition ${
+        active ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-500'
+      }`}>
+        <Icon size={18} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-bold leading-tight ${active ? 'text-green-900' : 'text-gray-900'}`}>{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+      </div>
+      {active && <CheckCircle size={16} className="text-green-600 shrink-0" />}
+    </button>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function StudentOnboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [step, setStep] = useState(0);
+  const [step,     setStep]     = useState(0);
+  const [goal,     setGoal]     = useState('');
   const [subjects, setSubjects] = useState([]);
-  const [goal, setGoal] = useState('');
-  const [classLevel, setClassLevel] = useState('');
+  const [level,    setLevel]    = useState('');
   const [schedule, setSchedule] = useState([]);
-  const [preferredLanguage, setPreferredLanguage] = useState('');
-  const [learningStyle, setLearningStyle] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [saving,   setSaving]   = useState(false);
   const [matching, setMatching] = useState(false);
 
-  const toggleSubject = (s) =>
-    setSubjects(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  const toggleSubject = s => setSubjects(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
+  const toggleSchedule = s => setSchedule(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
-  const toggleSchedule = (s) =>
-    setSchedule(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
-
-  const canNext = () => {
-    if (step === 0) return subjects.length > 0;
-    if (step === 1) return goal !== '';
-    if (step === 2) return classLevel !== '';
-    if (step === 3) return schedule.length > 0;
-    if (step === 4) return true; // optional step
-    return false;
+  const canContinue = () => {
+    if (step === 0) return goal !== '';
+    if (step === 1) return subjects.length > 0 && level !== '';
+    if (step === 2) return schedule.length > 0;
+    return true;
   };
 
   const handleFinish = async () => {
     setSaving(true);
     try {
       await api.patch('/users/me/profile', {
+        tutoringGoal:       goal,
         subjects,
-        tutoringGoal: goal,
-        classLevel,
-        preferredSchedule: schedule,
-        preferredLanguage: preferredLanguage || undefined,
-        learningStyle: learningStyle || undefined,
+        classLevel:         level,
+        preferredSchedule:  schedule,
         onboardingComplete: true,
       });
       setMatching(true);
@@ -118,24 +136,23 @@ export default function StudentOnboarding() {
         const params = new URLSearchParams();
         if (subjects[0]) params.set('subject', subjects[0]);
         navigate(`/find-tutoring?${params.toString()}`);
-      }, 2200);
+      }, 2000);
     } catch {
-      toast.error('Could not save preferences. Continuing anyway...');
+      toast.error('Could not save preferences. Continuing anyway…');
       setTimeout(() => navigate('/find-tutoring'), 1000);
     } finally {
       setSaving(false);
     }
   };
 
-  const firstName = user?.name?.split(' ')[0] || 'there';
-
+  // ── Matching animation ──────────────────────────────────────────────────────
   if (matching) {
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col items-center justify-center px-4 text-center">
-        <div className="w-16 h-16 border-4 border-green-400 border-t-white rounded-full animate-spin mb-6" />
-        <h2 className="text-2xl font-extrabold text-white mb-2">Finding your perfect tutors…</h2>
-        <p className="text-green-300 text-sm max-w-xs">
-          Matching you with verified tutors who teach{' '}
+      <div className="min-h-screen bg-green-800 flex flex-col items-center justify-center px-4 text-center">
+        <div className="w-14 h-14 border-4 border-green-600 border-t-white rounded-full animate-spin mb-6" />
+        <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-2">Finding your perfect tutors…</h2>
+        <p className="text-green-200 text-sm max-w-xs">
+          Matching you with verified tutors for{' '}
           <strong className="text-white">{subjects.slice(0, 2).join(' & ')}</strong>
           {subjects.length > 2 ? ` and ${subjects.length - 2} more` : ''}.
         </p>
@@ -150,293 +167,182 @@ export default function StudentOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col items-center px-4">
 
-      {/* Top bar */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <Logo size="sm" />
-        <button onClick={() => navigate('/find-tutoring')}
-          className="text-xs text-gray-400 hover:text-gray-600 transition">
-          Skip for now →
-        </button>
-      </div>
+      {/* Logo */}
+      <div className="pt-5 sm:pt-7"><Logo size="sm" /></div>
 
-      {/* Progress bar */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-1 mb-3">
-            {STEPS.map((s, i) => (
-              <div key={i} className="flex items-center gap-1 flex-1">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition ${
-                  i < step ? 'bg-green-600 text-white' :
-                  i === step ? 'bg-green-700 text-white ring-2 ring-green-200' :
-                  'bg-gray-100 text-gray-400'
-                }`}>
-                  {i < step ? <CheckCircle size={14} /> : i + 1}
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-0.5 rounded-full transition ${i < step ? 'bg-green-500' : 'bg-gray-200'}`} />
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400">
-            Step {step + 1} of {STEPS.length} — <span className="font-semibold text-gray-600">{STEPS[step].label}</span>
-            {step === 4 && <span className="ml-2 text-green-600 font-semibold">(Optional)</span>}
-          </p>
-        </div>
-      </div>
+      {/* Progress */}
+      <ProgressDots step={step} />
 
       {/* Content */}
-      <div className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-8">
+      <div className="w-full max-w-sm sm:max-w-md flex-1 flex flex-col pb-10">
 
-        {/* Step headers */}
-        <div className="mb-6">
-          {step === 0 && (<>
-            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Hi {firstName}, what subjects do you need help with?</h1>
-            <p className="text-gray-500 text-sm">Pick as many as you like — you can always update later.</p>
-          </>)}
-          {step === 1 && (<>
-            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">What are you preparing for?</h1>
-            <p className="text-gray-500 text-sm">This helps us match you with the right specialist.</p>
-          </>)}
-          {step === 2 && (<>
-            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">What class or level are you in?</h1>
-            <p className="text-gray-500 text-sm">Your tutor will tailor lessons to your exact level.</p>
-          </>)}
-          {step === 3 && (<>
-            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">When are you available for lessons?</h1>
-            <p className="text-gray-500 text-sm">Select all the times that work for you.</p>
-          </>)}
-          {step === 4 && (<>
-            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Two last things — optional but helpful</h1>
-            <p className="text-gray-500 text-sm">These improve your match score. Skip anytime and update later.</p>
-          </>)}
-        </div>
-
-        {/* Step 1: Subjects */}
+        {/* ── Step 0: Goal ────────────────────────────────────────────── */}
         {step === 0 && (
-          <div>
-            <div className="flex flex-wrap gap-2">
-              {SUBJECTS.map(s => {
-                const active = subjects.includes(s);
-                return (
-                  <button key={s} type="button" onClick={() => toggleSubject(s)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition ${
-                      active
-                        ? 'bg-green-700 border-green-700 text-white shadow-sm'
-                        : 'bg-white border-gray-200 text-gray-700 hover:border-green-400 hover:text-green-700'
-                    }`}>
-                    {active && <span className="mr-1">✓</span>}{s}
-                  </button>
-                );
-              })}
+          <div className="space-y-5">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">What are you looking for?</h1>
+              <p className="text-sm text-gray-400 mt-1">Select the option that best describes your goal.</p>
             </div>
-            {subjects.length > 0 && (
-              <p className="mt-4 text-sm text-green-700 font-semibold">
-                {subjects.length} subject{subjects.length > 1 ? 's' : ''} selected
-              </p>
-            )}
+            <div className="space-y-3">
+              {GOALS.map(({ value, label, sub, Icon }) => (
+                <GoalCard key={value} label={label} sub={sub} Icon={Icon}
+                  active={goal === value} onClick={() => setGoal(value)} />
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Step 2: Learning Goal */}
+        {/* ── Step 1: Subjects + Level ─────────────────────────────────── */}
         {step === 1 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {LEARNING_GOALS.map(({ value, label, icon, bg, border, text, sub }) => {
-              const active = goal === value;
-              return (
-                <button key={value} type="button" onClick={() => setGoal(value)}
-                  className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition ${
-                    active ? `${bg} ${border}` : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}>
-                  <span className="text-2xl shrink-0 mt-0.5">{icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-bold leading-tight ${active ? text : 'text-gray-800'}`}>{label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-                  </div>
-                  {active && <CheckCircle size={16} className="text-green-600 shrink-0 mt-0.5" />}
-                </button>
-              );
-            })}
+          <div className="space-y-5">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">Tell us more</h1>
+              <p className="text-sm text-gray-400 mt-1">Pick your subjects and current level.</p>
+            </div>
+
+            {/* Summary badge */}
+            <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 flex justify-between text-sm">
+              <span className="text-green-700 font-medium">Goal</span>
+              <span className="font-bold text-green-900">{goal}</span>
+            </div>
+
+            {/* Subjects */}
+            <div>
+              <p className="text-xs font-bold text-gray-600 mb-2">
+                Subjects <span className="text-gray-400 font-normal">(select all that apply)</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {SUBJECTS.map(s => {
+                  const active = subjects.includes(s);
+                  return (
+                    <button key={s} type="button" onClick={() => toggleSubject(s)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition ${
+                        active
+                          ? 'bg-green-700 border-green-700 text-white'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'
+                      }`}>
+                      {active && '✓ '}{s}
+                    </button>
+                  );
+                })}
+              </div>
+              {subjects.length > 0 && (
+                <p className="mt-2 text-xs text-green-700 font-semibold">{subjects.length} selected</p>
+              )}
+            </div>
+
+            {/* Class level */}
+            <div>
+              <p className="text-xs font-bold text-gray-600 mb-2">Current Level</p>
+              <div className="grid grid-cols-2 gap-2">
+                {CLASS_LEVELS.map(({ value, label, sub }) => {
+                  const active = level === value;
+                  return (
+                    <button key={value} type="button" onClick={() => setLevel(value)}
+                      className={`flex flex-col items-start px-3 py-3 rounded-2xl border-2 transition text-left ${
+                        active
+                          ? 'border-green-600 bg-green-50'
+                          : 'border-gray-100 bg-white hover:border-green-300'
+                      }`}>
+                      <p className={`text-xs font-bold leading-tight ${active ? 'text-green-900' : 'text-gray-800'}`}>{label}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Step 3: Class Level */}
+        {/* ── Step 2: Schedule ─────────────────────────────────────────── */}
         {step === 2 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {CLASS_LEVELS.map(({ value, label, sub }) => {
-              const active = classLevel === value;
-              return (
-                <button key={value} type="button" onClick={() => setClassLevel(value)}
-                  className={`flex flex-col items-start gap-1 p-4 rounded-2xl border-2 text-left transition ${
-                    active ? 'bg-green-50 border-green-500' : 'bg-white border-gray-200 hover:border-green-300'
-                  }`}>
-                  {active && <CheckCircle size={14} className="text-green-600 self-end mb-1" />}
-                  <p className={`text-sm font-bold leading-tight ${active ? 'text-green-800' : 'text-gray-800'}`}>{label}</p>
-                  <p className="text-xs text-gray-400">{sub}</p>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Step 4: Schedule */}
-        {step === 3 && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {SCHEDULE_OPTIONS.map(({ value, label, sub, icon: Icon }) => {
+          <div className="space-y-5">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">When are you available?</h1>
+              <p className="text-sm text-gray-400 mt-1">Select all the times that work for you.</p>
+            </div>
+            <div className="space-y-2.5">
+              {SCHEDULE_OPTIONS.map(({ value, label, sub, Icon }) => {
                 const active = schedule.includes(value);
                 return (
                   <button key={value} type="button" onClick={() => toggleSchedule(value)}
-                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition ${
-                      active ? 'bg-green-50 border-green-500' : 'bg-white border-gray-200 hover:border-green-300'
+                    className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border-2 transition text-left ${
+                      active
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-100 bg-white hover:border-green-300 hover:bg-green-50/40'
                     }`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition ${
+                      active ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-500'
                     }`}>
-                      <Icon size={18} />
+                      <Icon size={15} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-bold ${active ? 'text-green-800' : 'text-gray-800'}`}>{label}</p>
+                      <p className={`text-sm font-bold ${active ? 'text-green-900' : 'text-gray-900'}`}>{label}</p>
                       <p className="text-xs text-gray-400">{sub}</p>
                     </div>
-                    {active && <CheckCircle size={16} className="text-green-600 shrink-0" />}
+                    {active && <CheckCircle size={15} className="text-green-600 shrink-0" />}
                   </button>
                 );
               })}
             </div>
-
-            {/* Profile summary card */}
-            {(subjects.length > 0 || goal || classLevel) && (
-              <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-4">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Your profile so far</p>
-                <div className="space-y-2">
-                  {subjects.length > 0 && (
-                    <div className="flex items-start gap-2">
-                      <BookOpen size={13} className="text-green-600 mt-0.5 shrink-0" />
-                      <p className="text-xs text-gray-600"><span className="font-semibold">Subjects:</span> {subjects.join(', ')}</p>
-                    </div>
-                  )}
-                  {goal && (
-                    <div className="flex items-start gap-2">
-                      <Star size={13} className="text-green-600 mt-0.5 shrink-0" />
-                      <p className="text-xs text-gray-600"><span className="font-semibold">Goal:</span> {goal}</p>
-                    </div>
-                  )}
-                  {classLevel && (
-                    <div className="flex items-start gap-2">
-                      <GraduationCap size={13} className="text-green-600 mt-0.5 shrink-0" />
-                      <p className="text-xs text-gray-600"><span className="font-semibold">Level:</span> {classLevel}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Step 5: Language + Learning Style (optional) */}
-        {step === 4 && (
-          <div className="space-y-8">
-
-            {/* Language preference */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Globe2 size={16} className="text-green-600" />
-                <p className="text-sm font-bold text-gray-800">Preferred language of instruction</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {LANGUAGES.map(lang => {
-                  const active = preferredLanguage === lang;
-                  return (
-                    <button key={lang} type="button"
-                      onClick={() => setPreferredLanguage(active ? '' : lang)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition ${
-                        active
-                          ? 'bg-green-700 border-green-700 text-white'
-                          : 'bg-white border-gray-200 text-gray-700 hover:border-green-400 hover:text-green-700'
-                      }`}>
-                      {active && '✓ '}{lang}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Learning style */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Star size={16} className="text-green-600" />
-                <p className="text-sm font-bold text-gray-800">What type of tutor suits you best?</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {TEACHING_STYLES.map(({ value, label, icon, desc }) => {
-                  const active = learningStyle === value;
-                  return (
-                    <button key={value} type="button"
-                      onClick={() => setLearningStyle(active ? '' : value)}
-                      className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition ${
-                        active ? 'bg-green-50 border-green-500' : 'bg-white border-gray-200 hover:border-green-300'
-                      }`}>
-                      <span className="text-2xl shrink-0">{icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-bold ${active ? 'text-green-800' : 'text-gray-800'}`}>{label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 leading-snug">{desc}</p>
-                      </div>
-                      {active && <CheckCircle size={15} className="text-green-600 shrink-0 mt-0.5" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Matching factors info */}
-            <div className="bg-green-50 rounded-2xl p-4 border border-green-100">
-              <p className="text-xs font-bold text-green-800 mb-2">How we match you</p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  ['Subject expertise', subjects.length > 0 ? '✓' : '—'],
-                  ['Your class level', classLevel ? '✓' : '—'],
-                  ['Schedule overlap', schedule.length > 0 ? '✓' : '—'],
-                  ['Language match', preferredLanguage ? '✓' : '—'],
-                  ['Teaching style', learningStyle ? '✓' : '—'],
-                  ['Location/Country', '✓'],
-                ].map(([factor, status]) => (
-                  <div key={factor} className="flex items-center gap-1.5">
-                    <span className={`text-xs font-bold ${status === '✓' ? 'text-green-600' : 'text-gray-400'}`}>{status}</span>
-                    <span className="text-xs text-gray-600">{factor}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
-      </div>
 
-      {/* Bottom navigation */}
-      <div className="bg-white border-t border-gray-100 px-4 sm:px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
-          {step > 0 ? (
-            <button onClick={() => setStep(s => s - 1)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition px-4 py-2.5 rounded-xl border border-gray-200 hover:border-gray-300">
-              <ArrowLeft size={15} /> Back
-            </button>
-          ) : <div />}
+        {/* ── Step 3: Summary ──────────────────────────────────────────── */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">You're all set!</h1>
+              <p className="text-sm text-gray-400 mt-1">Here's a summary before we find your tutors.</p>
+            </div>
 
-          {step < STEPS.length - 1 ? (
-            <button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
-              className="flex items-center gap-2 bg-green-700 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-800 transition text-sm disabled:opacity-40 disabled:cursor-not-allowed ml-auto">
-              Continue <ArrowRight size={15} />
+            <div className="bg-green-50 border border-green-100 rounded-2xl divide-y divide-green-100 overflow-hidden">
+              {[
+                { label: 'Goal',      value: goal },
+                { label: 'Subjects',  value: subjects.slice(0, 3).join(', ') + (subjects.length > 3 ? ` +${subjects.length - 3} more` : '') },
+                { label: 'Level',     value: level },
+                { label: 'Schedule',  value: schedule.length > 2 ? `${schedule.slice(0, 2).join(', ')} +${schedule.length - 2} more` : schedule.join(', ') },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-start justify-between gap-3 px-4 py-3">
+                  <span className="text-sm text-green-700 shrink-0">{label}</span>
+                  <span className="text-sm font-bold text-green-900 text-right">{value || '—'}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-gray-400 text-center">
+              We'll use these to match you with the best verified tutors.
+            </p>
+          </div>
+        )}
+
+        {/* ── Navigation ───────────────────────────────────────────────── */}
+        <div className="mt-6 space-y-3">
+          {step < TOTAL_STEPS - 1 ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={!canContinue()}
+              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-30 transition active:scale-[.98]">
+              Continue
             </button>
           ) : (
             <button onClick={handleFinish} disabled={saving}
-              className="flex items-center gap-2 bg-green-700 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-800 transition text-sm disabled:opacity-40 disabled:cursor-not-allowed ml-auto">
-              {saving ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
-              ) : (
-                <>Find My Tutors <ArrowRight size={15} /></>
-              )}
+              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-50 transition active:scale-[.98] flex items-center justify-center gap-2">
+              {saving
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Finding tutors…</>
+                : 'Find My Tutors →'}
+            </button>
+          )}
+
+          {step > 0 ? (
+            <button onClick={() => setStep(s => s - 1)}
+              className="w-full text-center text-sm text-gray-400 hover:text-green-700 transition py-1">
+              Go back
+            </button>
+          ) : (
+            <button onClick={() => navigate('/find-tutoring')}
+              className="w-full text-center text-sm text-gray-400 hover:text-green-700 transition py-1">
+              Skip for now
             </button>
           )}
         </div>

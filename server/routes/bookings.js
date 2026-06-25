@@ -371,7 +371,7 @@ router.patch('/:id/tutor-action', protect, async (req, res) => {
 
     if (action === 'confirm' && !booking.callLink) {
       const roomId = `${booking._id.toString().slice(-6)}-${Date.now().toString(36)}`;
-      booking.callLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/classroom/${roomId}`;
+      booking.callLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/learning?session=${roomId}`;
     }
     await booking.save();
 

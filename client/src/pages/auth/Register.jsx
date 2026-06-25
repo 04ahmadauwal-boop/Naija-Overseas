@@ -1,129 +1,129 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useEffect, useRef } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
-  GraduationCap, Eye, EyeOff, User, Users, School,
-  CheckCircle, Globe, BookOpen, ChevronRight, RefreshCw, ShieldCheck,
+  User, GraduationCap, Users, School,
+  BookOpen, Globe, CheckCircle,
+  Eye, EyeOff, RefreshCw, ShieldCheck,
 } from 'lucide-react';
 import Logo from '../../components/Logo';
+
+// ── Static data ───────────────────────────────────────────────────────────────
 
 const COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'United Kingdom',
   'United States', 'Canada', 'Australia', 'The Gambia', 'Cameroon', 'Other',
 ];
 
-// Top-level account types
-const ACCOUNT_TYPES = [
-  {
-    value: 'student',
-    label: 'Student',
-    sub: 'I want to learn — tutoring or study abroad',
-    icon: User,
-  },
-  {
-    value: 'tutor',
-    label: 'Tutor',
-    sub: 'I want to teach and earn from my knowledge',
-    icon: GraduationCap,
-  },
-  {
-    value: 'parent',
-    label: 'Parent / Guardian',
-    sub: 'Finding tutors or schools for my child',
-    icon: Users,
-  },
-  {
-    value: 'school-owner',
-    label: 'School Owner',
-    sub: 'List and manage my school',
-    icon: School,
-  },
+const ROLES = [
+  { value: 'student',      label: 'Student',          sub: 'I want to learn — tutoring or study abroad', Icon: User },
+  { value: 'tutor',        label: 'Tutor',             sub: 'I want to teach and earn from my knowledge', Icon: GraduationCap },
+  { value: 'parent',       label: 'Parent / Guardian', sub: 'Finding tutors or schools for my child',     Icon: Users },
+  { value: 'school-owner', label: 'School Owner',      sub: 'List and manage my school on the platform',  Icon: School },
 ];
 
-// Student sub-goals — shown only when 'student' is selected
 const STUDENT_GOALS = [
-  {
-    value: 'tutoring',
-    label: 'Find a Tutor',
-    desc: 'Get 1:1 help for WAEC, JAMB, GCSE, A-Level, SAT and more',
-    icon: BookOpen,
-    color: 'blue',
-  },
-  {
-    value: 'study-abroad',
-    label: 'Study Abroad',
-    desc: 'Apply to universities in the UK, US, Canada, Australia & more',
-    icon: Globe,
-    color: 'purple',
-  },
-  {
-    value: 'both',
-    label: 'Both',
-    desc: 'I want tutoring and study abroad guidance',
-    icon: CheckCircle,
-    color: 'green',
-  },
+  { value: 'tutoring',     label: 'Find a Tutor',     sub: '1:1 help for WAEC, JAMB, GCSE, A-Level & more', Icon: BookOpen },
+  { value: 'study-abroad', label: 'Study Abroad',     sub: 'Apply to universities in UK, US, Canada & more', Icon: Globe },
+  { value: 'both',         label: 'Both',             sub: 'I want tutoring AND study abroad guidance',       Icon: CheckCircle },
 ];
 
-const GOAL_COLOR = {
-  blue:   { border: 'border-blue-500 bg-blue-50',   icon: 'bg-blue-100 text-blue-600',   text: 'text-blue-900'   },
-  purple: { border: 'border-purple-500 bg-purple-50', icon: 'bg-purple-100 text-purple-600', text: 'text-purple-900' },
-  green:  { border: 'border-green-600 bg-green-50',  icon: 'bg-green-100 text-green-700',  text: 'text-green-900'  },
-};
+const TOTAL_STEPS = 3;
 
-function getRedirectPath(role, goal) {
-  if (role === 'tutor')       return '/become-a-tutor';
+function getRedirect(role, goal) {
+  if (role === 'tutor')        return '/become-a-tutor';
   if (role === 'school-owner') return '/list-your-school';
-  if (role === 'student') {
-    if (goal === 'tutoring')     return '/student-onboarding';
-    if (goal === 'both')         return '/student-onboarding';
-    if (goal === 'study-abroad') return '/study-abroad';
-  }
+  if (role === 'student' && goal === 'study-abroad') return '/study-abroad';
+  if (role === 'student')      return '/student-onboarding';
   return '/';
 }
 
+// ── Shared UI pieces ──────────────────────────────────────────────────────────
+
+function ProgressDots({ step }) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-5">
+      {Array.from({ length: TOTAL_STEPS }).map((_, i) =>
+        i === step ? (
+          <div key={i} className="w-8 h-2 rounded-full bg-green-700" />
+        ) : i < step ? (
+          <div key={i} className="w-2 h-2 rounded-full bg-green-600" />
+        ) : (
+          <div key={i} className="w-2 h-2 rounded-full bg-gray-200" />
+        )
+      )}
+    </div>
+  );
+}
+
+function OptionCard({ label, sub, Icon, active, onClick }) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl border-2 transition text-left ${
+        active
+          ? 'border-green-600 bg-green-50'
+          : 'border-gray-100 bg-white hover:border-green-300 hover:bg-green-50/40'
+      }`}
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition ${
+        active ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-500'
+      }`}>
+        <Icon size={18} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-bold leading-tight ${active ? 'text-green-900' : 'text-gray-900'}`}>{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5 leading-snug">{sub}</p>
+      </div>
+      {active && <CheckCircle size={16} className="text-green-600 shrink-0" />}
+    </button>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function Register() {
   const { register, loginWithToken } = useAuth();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect');
 
-  const [role, setRole] = useState('student');
-  const [goal, setGoal] = useState('');
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', country: 'Nigeria' });
+  const [step,    setStep]    = useState(0);
+  const [role,    setRole]    = useState('');
+  const [goal,    setGoal]    = useState('');
+  const [form,    setForm]    = useState({ name: '', email: '', password: '', phone: '', country: 'Nigeria' });
+  const [showPw,  setShowPw]  = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPw, setShowPw] = useState(false);
-  const [registered, setRegistered] = useState(false);
+  const [agreed,  setAgreed]  = useState(false);
 
-  // OTP state
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  // OTP
+  const [registered,  setRegistered]  = useState(false);
+  const [otp,         setOtp]         = useState(['', '', '', '', '', '']);
+  const [otpLoading,  setOtpLoading]  = useState(false);
+  const [resending,   setResending]   = useState(false);
+  const [countdown,   setCountdown]   = useState(60);
   const otpRefs = useRef([]);
 
   useEffect(() => {
     if (!registered) return;
     setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown(c => { if (c <= 1) { clearInterval(timer); return 0; } return c - 1; });
-    }, 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() =>
+      setCountdown(c => { if (c <= 1) { clearInterval(t); return 0; } return c - 1; }), 1000);
+    return () => clearInterval(t);
   }, [registered]);
 
-  const needsGoal = role === 'student';
-  const canSubmit = !needsGoal || goal !== '';
+  const canContinue = () => {
+    if (step === 0) return role !== '';
+    if (step === 1) return role !== 'student' && role !== 'parent' ? true : goal !== '';
+    if (step === 2) return form.name.trim() && form.email.trim() && form.password.length >= 6 && agreed;
+    return false;
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    if (needsGoal && !goal) { toast.error('Please choose what you\'re looking for'); return; }
+  const handleSubmit = async () => {
     setLoading(true);
     try {
-      const payload = { ...form, role, goal: needsGoal ? goal : 'both' };
+      const payload = { ...form, role, goal: (role === 'student' || role === 'parent') ? goal : 'both' };
       await register(payload);
       setRegistered(true);
     } catch (err) {
@@ -133,29 +133,19 @@ export default function Register() {
     }
   };
 
-  const handleOtpChange = (index, value) => {
-    if (!/^\d?$/.test(value)) return;
-    const next = [...otp];
-    next[index] = value;
-    setOtp(next);
-    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  const handleOtpChange = (i, val) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otp]; next[i] = val; setOtp(next);
+    if (val && i < 5) otpRefs.current[i + 1]?.focus();
   };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
+  const handleOtpKeyDown = (i, e) => {
+    if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
   };
-
   const handleOtpPaste = (e) => {
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pasted.length === 6) {
-      setOtp(pasted.split(''));
-      otpRefs.current[5]?.focus();
-    }
+    const p = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (p.length === 6) { setOtp(p.split('')); otpRefs.current[5]?.focus(); }
   };
-
-  const handleVerifyOtp = async () => {
+  const handleVerify = async () => {
     const code = otp.join('');
     if (code.length < 6) { toast.error('Enter all 6 digits'); return; }
     setOtpLoading(true);
@@ -163,288 +153,309 @@ export default function Register() {
       const { data } = await api.post('/auth/verify-otp', { email: form.email, otp: code });
       loginWithToken(data.token, data.user);
       toast.success('Email verified! Welcome 🎉');
-      navigate(redirectTo || getRedirectPath(data.user.role, data.user.goal));
+      navigate(redirectTo || getRedirect(data.user.role, data.user.goal));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid OTP');
       setOtp(['', '', '', '', '', '']);
       otpRefs.current[0]?.focus();
-    } finally {
-      setOtpLoading(false);
-    }
+    } finally { setOtpLoading(false); }
   };
-
   const handleResend = async () => {
     setResending(true);
     try {
       await api.post('/auth/resend-verification', { email: form.email });
-      toast.success('New OTP sent! Check your inbox.');
+      toast.success('New OTP sent!');
       setOtp(['', '', '', '', '', '']);
       setCountdown(60);
       otpRefs.current[0]?.focus();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to resend');
-    } finally {
-      setResending(false);
-    }
+    } finally { setResending(false); }
   };
 
-  // ── OTP verification screen ────────────────────────────────────────────────
+  // ── OTP screen ─────────────────────────────────────────────────────────────
   if (registered) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldCheck size={36} className="text-green-700" />
-          </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Enter verification code</h2>
-          <p className="text-gray-500 text-sm leading-relaxed mb-1">We sent a 6-digit code to</p>
-          <p className="font-bold text-gray-800 text-sm mb-6 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 inline-block">
-            {form.email}
-          </p>
+      <div className="min-h-screen bg-white flex flex-col items-center px-4">
+        <div className="pt-5 sm:pt-7"><Logo size="sm" /></div>
+        {/* dots — all filled = done */}
+        <div className="flex items-center justify-center gap-2 py-5">
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full bg-green-600" />
+          ))}
+          <div className="w-8 h-2 rounded-full bg-green-700" />
+        </div>
 
-          {/* OTP boxes */}
-          <div className="flex justify-center gap-3 mb-6" onPaste={handleOtpPaste}>
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={el => otpRefs.current[i] = el}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
+        <div className="w-full max-w-sm sm:max-w-md mt-2 text-center space-y-5">
+          <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto">
+            <ShieldCheck size={28} className="text-green-700" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">Check your email</h2>
+            <p className="text-sm text-gray-400 mt-1">We sent a 6-digit code to</p>
+            <p className="text-sm font-bold text-gray-900 mt-1 bg-green-50 border border-green-100 rounded-xl px-4 py-2 inline-block">{form.email}</p>
+          </div>
+
+          <div className="flex justify-center gap-2 sm:gap-3" onPaste={handleOtpPaste}>
+            {otp.map((d, i) => (
+              <input key={i} ref={el => otpRefs.current[i] = el}
+                type="text" inputMode="numeric" maxLength={1} value={d}
                 onChange={e => handleOtpChange(i, e.target.value)}
                 onKeyDown={e => handleOtpKeyDown(i, e)}
-                className="w-12 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition border-gray-200"
+                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition"
                 autoFocus={i === 0}
               />
             ))}
           </div>
 
-          <p className="text-xs text-gray-400 mb-6">Code expires in 10 minutes. Check spam if not found.</p>
+          <p className="text-xs text-gray-400">Code expires in 10 minutes · Check spam if not found.</p>
 
-          <button
-            onClick={handleVerifyOtp}
-            disabled={otpLoading || otp.join('').length < 6}
-            className="w-full bg-green-700 text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2 mb-4"
-          >
-            {otpLoading
-              ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying…</>
-              : 'Verify Email'}
-          </button>
+          <div className="space-y-3">
+            <button onClick={handleVerify} disabled={otpLoading || otp.join('').length < 6}
+              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-40 transition flex items-center justify-center gap-2">
+              {otpLoading
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying…</>
+                : 'Verify Email →'}
+            </button>
+            <button onClick={handleResend} disabled={resending || countdown > 0}
+              className="w-full text-center text-sm text-gray-400 hover:text-green-700 transition py-1 flex items-center justify-center gap-1.5 disabled:opacity-40">
+              <RefreshCw size={13} className={resending ? 'animate-spin' : ''} />
+              {countdown > 0 ? `Resend in ${countdown}s` : resending ? 'Sending…' : 'Resend code'}
+            </button>
+          </div>
 
-          <button
-            onClick={handleResend}
-            disabled={resending || countdown > 0}
-            className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-50 text-sm"
-          >
-            <RefreshCw size={14} className={resending ? 'animate-spin' : ''} />
-            {countdown > 0 ? `Resend code in ${countdown}s` : resending ? 'Sending…' : 'Resend code'}
-          </button>
-
-          <p className="text-center text-sm text-gray-400 mt-5">
+          <p className="text-sm text-gray-400">
             Wrong email?{' '}
-            <button onClick={() => setRegistered(false)} className="text-green-700 font-bold hover:underline">Go back</button>
+            <button onClick={() => setRegistered(false)} className="font-bold text-green-700 hover:underline">Go back</button>
           </p>
         </div>
       </div>
     );
   }
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white';
+  const inp = 'w-full border border-gray-200 rounded-2xl px-4 py-3 sm:py-3.5 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition bg-white';
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen bg-white flex flex-col items-center px-4">
 
-      {/* ── LEFT BRAND PANEL ──────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-5/12 bg-green-900 relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute top-0 right-0 w-56 h-56 bg-green-700 rounded-full opacity-30 -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-green-800 rounded-full opacity-40 translate-y-1/2 -translate-x-1/4" />
+      {/* Logo */}
+      <div className="pt-5 sm:pt-7"><Logo size="sm" /></div>
 
-        <div className="relative z-10">
-          <div className="mb-10">
-            <Logo variant="dark" />
-          </div>
+      {/* Progress */}
+      <ProgressDots step={step} />
 
-          <h2 className="text-3xl font-extrabold text-white leading-tight mb-3">
-            Your education<br />journey starts here.
-          </h2>
-          <p className="text-green-300 text-sm leading-relaxed mb-8">
-            Join thousands of students, tutors, parents and schools across Africa and beyond.
-          </p>
+      {/* Content */}
+      <div className="w-full max-w-sm sm:max-w-md flex-1 flex flex-col pb-10">
 
-          <div className="space-y-4">
-            {[
-              { icon: BookOpen, label: 'Find expert tutors for any subject', color: 'text-blue-400' },
-              { icon: Globe,    label: 'Apply to universities worldwide',    color: 'text-purple-400' },
-              { icon: GraduationCap, label: 'Earn as a verified tutor',       color: 'text-yellow-400' },
-              { icon: School,   label: 'List and grow your school',          color: 'text-green-400' },
-            ].map(({ icon: Icon, label, color }) => (
-              <div key={label} className="flex items-center gap-3">
-                <Icon size={15} className={`${color} shrink-0`} />
-                <p className="text-green-200 text-sm">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative z-10 flex gap-6 text-center">
-          {[['500+', 'Schools'], ['50+', 'Tutors'], ['30+', 'Countries']].map(([n, l]) => (
-            <div key={l}>
-              <div className="text-2xl font-extrabold text-white">{n}</div>
-              <div className="text-green-400 text-xs mt-0.5">{l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── RIGHT FORM PANEL ──────────────────────────────── */}
-      <div className="flex-1 flex items-start justify-center px-6 py-10 bg-white overflow-y-auto">
-        <div className="w-full max-w-lg">
-
-          {/* Mobile logo */}
-          <div className="mb-8 lg:hidden">
-            <Logo />
-          </div>
-
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Create account</h1>
-          <p className="text-gray-500 mb-7">Free forever · Takes less than a minute</p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-
-            {/* ── STEP 1: Account type ──────────────────────── */}
+        {/* ── Step 0: Who are you? ──────────────────────────────────── */}
+        {step === 0 && (
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">I am a…</label>
-              <div className="grid grid-cols-2 gap-2">
-                {ACCOUNT_TYPES.map(({ value, label, sub, icon: Icon }) => (
-                  <button key={value} type="button" onClick={() => { setRole(value); setGoal(''); }}
-                    className={`relative flex items-start gap-3 p-3.5 rounded-xl border-2 text-left transition ${
-                      role === value
-                        ? 'border-green-600 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}>
-                    {role === value && (
-                      <div className="absolute top-2 right-2 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center shrink-0">
-                        <CheckCircle size={10} className="text-white" />
-                      </div>
-                    )}
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${role === value ? 'bg-green-100' : 'bg-gray-100'}`}>
-                      <Icon size={15} className={role === value ? 'text-green-700' : 'text-gray-500'} />
-                    </div>
-                    <div className="min-w-0 pr-4">
-                      <p className={`text-xs font-bold leading-tight ${role === value ? 'text-green-900' : 'text-gray-800'}`}>{label}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{sub}</p>
-                    </div>
-                  </button>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">Who are you?</h1>
+              <p className="text-sm text-gray-400 mt-1">Select the option that best describes you.</p>
+            </div>
+            <div className="space-y-3">
+              {ROLES.map(({ value, label, sub, Icon }) => (
+                <OptionCard key={value} label={label} sub={sub} Icon={Icon}
+                  active={role === value}
+                  onClick={() => { setRole(value); setGoal(''); }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 1: Tell us more ──────────────────────────────────── */}
+        {step === 1 && (
+          <div className="space-y-5">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">Tell us more</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                {role === 'student' || role === 'parent'
+                  ? 'What are you looking for?'
+                  : role === 'tutor'
+                    ? 'Here\'s what happens next as a tutor.'
+                    : 'Here\'s what you get as a school owner.'}
+              </p>
+            </div>
+
+            {/* Summary badge */}
+            <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 flex justify-between text-sm">
+              <span className="text-green-700 font-medium">Account type</span>
+              <span className="font-bold text-green-900">{ROLES.find(r => r.value === role)?.label}</span>
+            </div>
+
+            {/* Student / Parent goal picker */}
+            {(role === 'student' || role === 'parent') && (
+              <div className="space-y-3">
+                {STUDENT_GOALS.map(({ value, label, sub, Icon }) => (
+                  <OptionCard key={value} label={label} sub={sub} Icon={Icon}
+                    active={goal === value} onClick={() => setGoal(value)} />
                 ))}
               </div>
+            )}
+
+            {/* Tutor info */}
+            {role === 'tutor' && (
+              <div className="border border-gray-100 rounded-2xl p-4 sm:p-5 space-y-3 bg-gray-50">
+                {[
+                  'Set your own subjects, hourly rate & availability.',
+                  'Your profile goes live after a quick review by our team.',
+                  'Keep the majority of every session — paid to your bank monthly.',
+                ].map((line, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-white text-[10px] font-bold">{i + 1}</span>
+                    </div>
+                    <p className="text-sm text-gray-600">{line}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* School-owner info */}
+            {role === 'school-owner' && (
+              <div className="border border-gray-100 rounded-2xl p-4 sm:p-5 space-y-3 bg-gray-50">
+                {[
+                  'List your school and get discovered by parents across Nigeria.',
+                  'Manage visit bookings and enquiries from one dashboard.',
+                  'Verified schools get a trust badge on their profile.',
+                ].map((line, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-white text-[10px] font-bold">{i + 1}</span>
+                    </div>
+                    <p className="text-sm text-gray-600">{line}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 2: Create account ─────────────────────────────────── */}
+        {step === 2 && (
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">Create your account</h1>
+              <p className="text-sm text-gray-400 mt-1">Free forever · takes less than a minute.</p>
             </div>
 
-            {/* ── STEP 2: Student goal (only shown for students) ── */}
-            {needsGoal && (
-              <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                <label className="block text-sm font-bold text-gray-700 mb-3">
-                  What are you looking for? <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-2">
-                  {STUDENT_GOALS.map(({ value, label, desc, icon: Icon, color }) => {
-                    const c = GOAL_COLOR[color];
-                    const active = goal === value;
-                    return (
-                      <button key={value} type="button" onClick={() => setGoal(value)}
-                        className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition ${
-                          active ? c.border : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}>
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${active ? c.icon : 'bg-gray-100 text-gray-400'}`}>
-                          <Icon size={16} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-bold ${active ? c.text : 'text-gray-800'}`}>{label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 leading-snug">{desc}</p>
-                        </div>
-                        {active && <CheckCircle size={16} className="text-green-600 shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Summary */}
+            <div className="bg-green-50 border border-green-100 rounded-2xl divide-y divide-green-100 overflow-hidden">
+              <div className="flex justify-between px-4 py-2.5 text-sm">
+                <span className="text-green-700">Account</span>
+                <span className="font-bold text-green-900">{ROLES.find(r => r.value === role)?.label}</span>
               </div>
-            )}
-
-            {/* Tutor info banner */}
-            {role === 'tutor' && (
-              <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-start gap-3">
-                <GraduationCap size={18} className="text-green-700 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-green-800">You're registering as a Tutor</p>
-                  <p className="text-xs text-green-600 mt-0.5">After creating your account, you'll set up your tutor profile — subjects, rates, and availability. Your profile goes live after a quick review by our team.</p>
+              {(role === 'student' || role === 'parent') && goal && (
+                <div className="flex justify-between px-4 py-2.5 text-sm">
+                  <span className="text-green-700">Looking for</span>
+                  <span className="font-bold text-green-900">
+                    {STUDENT_GOALS.find(g => g.value === goal)?.label || goal}
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* ── Personal details ──────────────────────────── */}
-            <div className="space-y-4">
+            {/* Fields */}
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
-                <input type="text" required value={form.name}
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Full Name <span className="text-red-500">*</span></label>
+                <input type="text" value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
-                  className={inp} placeholder="Your full name" />
+                  className={inp} placeholder="Your full name" autoComplete="name" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Email address <span className="text-red-500">*</span></label>
-                <input type="email" required value={form.email}
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Email Address <span className="text-red-500">*</span></label>
+                <input type="email" value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
-                  className={inp} placeholder="you@example.com" />
+                  className={inp} placeholder="name@example.com" autoComplete="email" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Phone</label>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Phone</label>
                   <input type="tel" value={form.phone}
                     onChange={e => setForm({ ...form, phone: e.target.value })}
-                    className={inp} placeholder="+234 800 000 000" />
+                    className={inp} placeholder="+234 800…" autoComplete="tel" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Country</label>
-                  <select value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} className={inp}>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Country</label>
+                  <select value={form.country}
+                    onChange={e => setForm({ ...form, country: e.target.value })}
+                    className={inp}>
                     {COUNTRIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Password <span className="text-red-500">*</span></label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <input type={showPw ? 'text' : 'password'} required value={form.password}
+                  <input type={showPw ? 'text' : 'password'} value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
-                    className={inp + ' pr-12'} placeholder="At least 6 characters" />
+                    className={inp + ' pr-11'} placeholder="At least 6 characters" autoComplete="new-password" />
                   <button type="button" onClick={() => setShowPw(!showPw)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-700 transition">
+                    {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
               </div>
             </div>
 
-            <button type="submit" disabled={loading || !canSubmit}
-              className="w-full bg-green-700 text-white py-4 rounded-xl font-bold hover:bg-green-800 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2">
-              {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account…</>
-              ) : (
-                <>
-                  {role === 'tutor' ? 'Create Account & Set Up Profile' : 'Create Free Account'}
-                  <ChevronRight size={16} />
-                </>
-              )}
+            {/* Privacy consent */}
+            <button type="button" onClick={() => setAgreed(!agreed)}
+              className={`w-full flex items-start gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition ${
+                agreed
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-100 bg-gray-50 hover:border-green-300'
+              }`}>
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition ${
+                agreed ? 'bg-green-700 border-green-700' : 'border-gray-300 bg-white'
+              }`}>
+                {agreed && <CheckCircle size={12} className="text-white" />}
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                I agree my personal information will be used for{' '}
+                <strong className="text-gray-700">educational consultancy services</strong>{' '}
+                by Education Naija &amp; Overseas. I accept the{' '}
+                <Link to="#" className="text-green-700 font-bold hover:underline" onClick={e => e.stopPropagation()}>
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link to="#" className="text-green-700 font-bold hover:underline" onClick={e => e.stopPropagation()}>
+                  Privacy Policy
+                </Link>.
+              </p>
             </button>
+          </div>
+        )}
 
-            <p className="text-center text-xs text-gray-400">
-              By signing up you agree to our{' '}
-              <a href="#" className="text-green-700 hover:underline">Terms of Service</a> and{' '}
-              <a href="#" className="text-green-700 hover:underline">Privacy Policy</a>.
+        {/* ── Navigation ──────────────────────────────────────────────── */}
+        <div className="mt-6 space-y-3">
+          {step < TOTAL_STEPS - 1 ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={!canContinue()}
+              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-30 transition active:scale-[.98]">
+              Continue
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={loading || !canContinue()}
+              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-30 transition active:scale-[.98] flex items-center justify-center gap-2">
+              {loading
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account…</>
+                : 'Create Free Account →'}
+            </button>
+          )}
+
+          {step > 0 ? (
+            <button onClick={() => setStep(s => s - 1)}
+              className="w-full text-center text-sm text-gray-400 hover:text-green-700 transition py-1">
+              Go back
+            </button>
+          ) : (
+            <p className="text-center text-sm text-gray-400 py-1">
+              Already have an account?{' '}
+              <Link to="/login" className="text-green-700 font-bold hover:underline">Sign in →</Link>
             </p>
-          </form>
-
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account?{' '}
-            <Link to="/login" className="text-green-700 font-bold hover:underline">Sign in →</Link>
-          </p>
+          )}
         </div>
       </div>
     </div>

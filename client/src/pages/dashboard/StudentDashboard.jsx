@@ -35,6 +35,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+import { TodayScheduleBanner, ClassJoinButton, ClassCountdown } from '../../components/ClassSchedule';
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -477,6 +478,16 @@ function OverviewTab({ user, applications, consultations, loading, setActiveTab 
   const docsActionRequired = applications.filter((a) => a.status === 'documents-requested').length;
   const progressSteps = deriveProgressSteps(applications);
 
+  // Fetch confirmed tutoring sessions for the today's schedule banner
+  const [todaySessions, setTodaySessions] = useState([]);
+  useEffect(() => {
+    api.get('/bookings/my?service=tutoring-session')
+      .then(({ data }) => setTodaySessions(
+        (data.bookings || []).filter(b => b.status === 'confirmed')
+      ))
+      .catch(() => {});
+  }, []);
+
   if (isTutoringOnly) {
     return (
       <div className="space-y-6">
@@ -496,6 +507,9 @@ function OverviewTab({ user, applications, consultations, loading, setActiveTab 
             </p>
           </div>
         </div>
+
+        {/* Today's scheduled sessions */}
+        <TodayScheduleBanner sessions={todaySessions} role="student" />
 
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -610,6 +624,9 @@ function OverviewTab({ user, applications, consultations, loading, setActiveTab 
           <div className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">Docs Action Required</div>
         </button>
       </div>
+
+      {/* Today's scheduled sessions */}
+      <TodayScheduleBanner sessions={todaySessions} role="student" />
 
       {/* Learning Hub CTA — only for students who also do tutoring */}
       {goal === 'both' && (
@@ -1921,26 +1938,68 @@ function TutoringTab({ user: _user }) {
         </div>
       )}
 
-      {/* Active subscriptions summary */}
+      {/* Active subscriptions — with next session join button */}
       {!loading && subscriptions.filter(s => s.status === 'active').length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-bold text-gray-800">Active Subscriptions</p>
-          {subscriptions.filter(s => s.status === 'active').map(sub => (
-            <div key={sub._id} className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm">
-              <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-                <GraduationCap size={14} className="text-green-700" />
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <GraduationCap size={14} className="text-green-700" /> Active Subscriptions
+          </p>
+          {subscriptions.filter(s => s.status === 'active').map(sub => {
+            // Find the next confirmed session belonging to this subscription
+            const subSessions = sessions
+              .filter(bk =>
+                bk.status === 'confirmed' &&
+                bk.subscriptionId &&
+                bk.subscriptionId.toString() === sub._id.toString()
+              )
+              .sort((a, b) => new Date(a.date) - new Date(b.date));
+            const nextSession = subSessions[0] || null;
+
+            return (
+              <div key={sub._id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
+                {/* Subscription header */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                    <GraduationCap size={16} className="text-green-700" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">
+                      {sub.tutor?.displayName || 'Tutor'}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {sub.timesPerWeek}× per week · renews {sub.renewalDate ? new Date(sub.renewalDate).toLocaleDateString() : '—'}
+                    </p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 shrink-0">Active</span>
+                </div>
+
+                {/* Next session info + join button */}
+                {nextSession ? (
+                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-700">
+                        Next session
+                      </p>
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                        <Clock size={10} />
+                        {new Date(nextSession.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · {nextSession.timeSlot}
+                      </p>
+                      <ClassCountdown date={nextSession.date} timeSlot={nextSession.timeSlot} />
+                    </div>
+                    <ClassJoinButton callLink={nextSession.callLink} date={nextSession.date} timeSlot={nextSession.timeSlot} />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2.5">
+                    <p className="text-xs text-gray-400">No sessions scheduled yet</p>
+                    <Link to="/learning"
+                      className="flex items-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                      <GraduationCap size={11} /> Open Hub
+                    </Link>
+                  </div>
+                )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {sub.tutor?.displayName || 'Tutor'}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {sub.timesPerWeek}× per week · renews {sub.renewalDate ? new Date(sub.renewalDate).toLocaleDateString() : '—'}
-                </p>
-              </div>
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700">Active</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -2036,13 +2095,13 @@ function TutoringTab({ user: _user }) {
                       </span>
                       {s.timeSlot && <span className="text-xs text-gray-400">· {s.timeSlot}</span>}
                     </div>
+                    {s.status === 'confirmed' && s.date && s.timeSlot && (
+                      <ClassCountdown date={s.date} timeSlot={s.timeSlot} />
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {s.callLink && s.status === 'confirmed' && (
-                      <a href={s.callLink} target="_blank" rel="noreferrer"
-                        className="flex items-center gap-1.5 bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 transition">
-                        <Video size={12} /> Join Class
-                      </a>
+                    {s.status === 'confirmed' && (
+                      <ClassJoinButton callLink={s.callLink} date={s.date} timeSlot={s.timeSlot} />
                     )}
                   </div>
                 </div>
@@ -2295,11 +2354,11 @@ function StudentCalendarTab({ user: _user }) {
                               </p>
                               <div className="mt-1.5 flex items-center gap-2 flex-wrap">
                                 <StatusBadge status={s.status} />
-                                {s.callLink && s.status === 'confirmed' && (
-                                  <a href={s.callLink} target="_blank" rel="noreferrer"
-                                    className="flex items-center gap-1 bg-green-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-green-800 transition">
-                                    <Video size={10} /> Join Class
-                                  </a>
+                                {s.status === 'confirmed' && s.date && s.timeSlot && (
+                                  <ClassCountdown date={s.date} timeSlot={s.timeSlot} />
+                                )}
+                                {s.status === 'confirmed' && (
+                                  <ClassJoinButton callLink={s.callLink} date={s.date} timeSlot={s.timeSlot} />
                                 )}
                                 {canSubscribe && (
                                   <Link to={`/subscribe/${tid}`}

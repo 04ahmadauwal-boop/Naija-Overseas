@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -7,8 +7,11 @@ import {
   BookOpen, ClipboardList, MessageSquare, TrendingUp, LogOut,
   Menu, Plus, Trash2, Send, CheckCircle, GraduationCap,
   FileText, Star, CalendarCheck, LayoutDashboard, ChevronLeft,
-  Users, ArrowRight,
+  Users, ArrowRight, Radio, Video, Upload, Clock, Download,
+  PenLine, FolderOpen, X,
 } from 'lucide-react';
+import LiveWhiteboard from '../../components/LiveWhiteboard';
+import { ClassCountdown, TodayScheduleBanner } from '../../components/ClassSchedule';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function pct(n) { return n == null ? '—' : `${n}%`; }
@@ -16,20 +19,22 @@ function fmt(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
 
 // ── tab definitions ──────────────────────────────────────────────────────────
 const STUDENT_TABS = [
-  { id: 'overview',  label: 'Overview',        icon: LayoutDashboard },
-  { id: 'notes',     label: 'Notes',           icon: BookOpen        },
-  { id: 'quizzes',   label: 'Practice Quizzes',icon: ClipboardList   },
-  { id: 'chat',      label: 'Chat with Tutor', icon: MessageSquare   },
-  { id: 'progress',  label: 'My Progress',     icon: TrendingUp      },
+  { id: 'overview',   label: 'Overview',        icon: LayoutDashboard },
+  { id: 'liveclass',  label: 'Live Class',      icon: Radio           },
+  { id: 'notes',      label: 'Notes',           icon: BookOpen        },
+  { id: 'quizzes',    label: 'Practice Quizzes',icon: ClipboardList   },
+  { id: 'chat',       label: 'Chat with Tutor', icon: MessageSquare   },
+  { id: 'progress',   label: 'My Progress',     icon: TrendingUp      },
 ];
 
 const TUTOR_TABS = [
-  { id: 'overview',  label: 'Overview',        icon: LayoutDashboard },
-  { id: 'notes',     label: 'Upload Notes',    icon: BookOpen        },
-  { id: 'quizzes',   label: 'Create Quizzes',  icon: ClipboardList   },
-  { id: 'chat',      label: 'Chat',            icon: MessageSquare   },
-  { id: 'progress',  label: 'Student Progress',icon: TrendingUp      },
-  { id: 'reports',   label: 'Write Reports',   icon: FileText        },
+  { id: 'overview',   label: 'Overview',        icon: LayoutDashboard },
+  { id: 'liveclass',  label: 'Live Class',      icon: Radio           },
+  { id: 'notes',      label: 'Upload Notes',    icon: BookOpen        },
+  { id: 'quizzes',    label: 'Create Quizzes',  icon: ClipboardList   },
+  { id: 'chat',       label: 'Chat',            icon: MessageSquare   },
+  { id: 'progress',   label: 'Student Progress',icon: TrendingUp      },
+  { id: 'reports',    label: 'Write Reports',   icon: FileText        },
 ];
 
 const PARENT_TABS = [
@@ -1018,6 +1023,504 @@ function OverviewTab({ role, userId, studentId, studentName, setTab }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// LIVE CLASS TAB
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Extract roomId from a callLink (supports /learning?session= and legacy /classroom/)
+function extractRoomId(callLink) {
+  if (!callLink) return null;
+  const s = callLink.match(/[?&]session=([^&]+)/);
+  if (s) return s[1];
+  const c = callLink.match(/\/classroom\/([^?#]+)/);
+  if (c) return c[1];
+  return null;
+}
+
+// ── Shared Files Panel ───────────────────────────────────────────────────────
+function LiveFilesPanel({ roomId, role }) {
+  const [files, setFiles]       = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    if (!roomId) return;
+    api.get(`/classroom/${roomId}`)
+      .then(({ data }) => setFiles(data.room?.sharedFiles || []))
+      .catch(() => {});
+  }, [roomId]);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const { data } = await api.post(`/classroom/${roomId}/files`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setFiles(data.room?.sharedFiles || []);
+      toast.success('File shared with the class');
+    } catch { toast.error('Upload failed'); }
+    finally { setUploading(false); }
+  };
+
+  const extIcon = (name = '') => {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['pdf'].includes(ext)) return '📄';
+    if (['doc','docx'].includes(ext)) return '📝';
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) return '🖼️';
+    if (['mp4','mov','avi'].includes(ext)) return '🎬';
+    return '📁';
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {role === 'tutor' && (
+        <div className="shrink-0 pb-3 border-b border-gray-100">
+          <input type="file" ref={fileRef} className="hidden" onChange={handleUpload} />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl transition text-sm">
+            <Upload size={14} /> {uploading ? 'Uploading…' : 'Share File with Class'}
+          </button>
+        </div>
+      )}
+      <div className="flex-1 overflow-y-auto space-y-2 pt-3">
+        {files.length === 0 ? (
+          <p className="text-center text-sm text-gray-400 py-8">No files shared yet</p>
+        ) : (
+          files.map((f, i) => (
+            <a key={i} href={f.fileUrl} target="_blank" rel="noreferrer"
+              className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-green-50 rounded-xl transition group">
+              <span className="text-xl shrink-0">{extIcon(f.name)}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">{f.name}</p>
+                <p className="text-xs text-gray-400">{f.uploadedBy}</p>
+              </div>
+              <Download size={14} className="text-gray-300 group-hover:text-green-600 shrink-0" />
+            </a>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Homework Panel ───────────────────────────────────────────────────────────
+function LiveHomeworkPanel({ roomId, role, userId }) {
+  const [homeworks, setHomeworks]   = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [creating, setCreating]     = useState(false);
+  const [form, setForm]             = useState({ title: '', description: '', dueDate: '' });
+
+  const load = useCallback(async () => {
+    if (!roomId) return;
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/homework?roomId=${roomId}`);
+      setHomeworks(data.homeworks || []);
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  }, [roomId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const createHw = async (e) => {
+    e.preventDefault();
+    if (!form.title) return toast.error('Title required');
+    setCreating(true);
+    try {
+      await api.post('/homework', { ...form, roomId });
+      setForm({ title: '', description: '', dueDate: '' });
+      toast.success('Homework assigned');
+      load();
+    } catch { toast.error('Failed to assign homework'); }
+    finally { setCreating(false); }
+  };
+
+  const submitHw = async (hwId, text) => {
+    try {
+      await api.patch(`/homework/${hwId}/submit`, { submission: { text } });
+      toast.success('Submitted!');
+      load();
+    } catch { toast.error('Submit failed'); }
+  };
+
+  const gradeHw = async (hwId, score, feedback) => {
+    try {
+      await api.patch(`/homework/${hwId}/grade`, { grade: { score, feedback } });
+      toast.success('Graded');
+      load();
+    } catch { toast.error('Grade failed'); }
+  };
+
+  if (loading) return <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-green-200 border-t-green-700 rounded-full animate-spin" /></div>;
+
+  return (
+    <div className="flex flex-col gap-4 h-full overflow-y-auto">
+      {role === 'tutor' && (
+        <form onSubmit={createHw} className="bg-green-50 border border-green-100 rounded-xl p-4 space-y-2 shrink-0">
+          <p className="text-xs font-bold text-green-800 mb-1">Assign Homework</p>
+          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400"
+            placeholder="Title *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+          <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400 resize-none"
+            placeholder="Instructions (optional)" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+          <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400"
+            value={form.dueDate} onChange={e => setForm(p => ({ ...p, dueDate: e.target.value }))} />
+          <button type="submit" disabled={creating}
+            className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm transition">
+            {creating ? 'Assigning…' : 'Assign'}
+          </button>
+        </form>
+      )}
+
+      <div className="space-y-3">
+        {homeworks.length === 0 && <p className="text-center text-sm text-gray-400 py-6">No homework yet</p>}
+        {homeworks.map(hw => (
+          <HwCard key={hw._id} hw={hw} role={role} userId={userId} onSubmit={submitHw} onGrade={gradeHw} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HwCard({ hw, role, onSubmit, onGrade }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [grading, setGrading]       = useState(false);
+  const [text, setText]             = useState('');
+  const [score, setScore]           = useState('');
+  const [feedback, setFeedback]     = useState('');
+
+  const statusColor = {
+    assigned:  'bg-blue-100 text-blue-700',
+    submitted: 'bg-amber-100 text-amber-700',
+    graded:    'bg-green-100 text-green-700',
+  }[hw.status] || 'bg-gray-100 text-gray-500';
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-bold text-gray-900">{hw.title}</p>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${statusColor}`}>{hw.status}</span>
+      </div>
+      {hw.description && <p className="text-xs text-gray-500">{hw.description}</p>}
+      {hw.dueDate && (
+        <p className="text-xs text-gray-400 flex items-center gap-1"><Clock size={10} /> Due {new Date(hw.dueDate).toLocaleDateString()}</p>
+      )}
+
+      {/* Student: submit */}
+      {role === 'student' && hw.status === 'assigned' && (
+        <div className="space-y-1 pt-1">
+          <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-green-400 resize-none"
+            placeholder="Your answer…" value={text} onChange={e => setText(e.target.value)} />
+          <button disabled={submitting || !text} onClick={async () => { setSubmitting(true); await onSubmit(hw._id, text); setSubmitting(false); }}
+            className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-semibold py-1.5 rounded-lg text-xs transition">
+            {submitting ? 'Submitting…' : 'Submit'}
+          </button>
+        </div>
+      )}
+
+      {/* Submission display */}
+      {hw.submission?.text && (
+        <div className="bg-gray-50 rounded-lg p-2.5 text-xs text-gray-600">
+          <p className="font-semibold text-gray-700 mb-0.5">Student answer:</p>
+          <p>{hw.submission.text}</p>
+        </div>
+      )}
+
+      {/* Tutor: grade */}
+      {role === 'tutor' && hw.status === 'submitted' && (
+        <div className="space-y-1 pt-1">
+          <input type="number" min={0} max={100} placeholder="Score /100"
+            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-green-400"
+            value={score} onChange={e => setScore(e.target.value)} />
+          <input placeholder="Feedback (optional)"
+            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-green-400"
+            value={feedback} onChange={e => setFeedback(e.target.value)} />
+          <button disabled={grading || !score} onClick={async () => { setGrading(true); await onGrade(hw._id, Number(score), feedback); setGrading(false); }}
+            className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-semibold py-1.5 rounded-lg text-xs transition">
+            {grading ? 'Grading…' : 'Submit Grade'}
+          </button>
+        </div>
+      )}
+
+      {/* Grade display */}
+      {hw.grade?.score != null && (
+        <div className="bg-green-50 border border-green-100 rounded-lg p-2.5 text-xs">
+          <p className="font-bold text-green-800">Grade: {hw.grade.score}/100</p>
+          {hw.grade.feedback && <p className="text-green-700 mt-0.5">{hw.grade.feedback}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Live Session View ────────────────────────────────────────────────────────
+function LiveSessionView({ session, role, roomId, onLeave }) {
+  const [panel, setPanel] = useState('board');
+
+  const subject    = session.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim()
+    || session.notes?.slice(0, 50) || 'Live Class';
+  const tutorName  = session.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim();
+  const studentName = session.user?.name || session.name || 'Student';
+  const counterpart = role === 'student' ? tutorName : studentName;
+
+  // Jitsi room — unique per booking, sanitized
+  const jitsiRoom = `NaijaOverseas-${roomId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  const jitsiUrl  = `https://meet.jit.si/${jitsiRoom}`;
+
+  const panels = [
+    { id: 'board',    label: 'Whiteboard', Icon: PenLine    },
+    { id: 'files',    label: 'Files',      Icon: FolderOpen },
+    { id: 'homework', label: 'Homework',   Icon: BookOpen   },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4 h-full">
+
+      {/* Session header */}
+      <div className="flex items-center gap-3 bg-gray-900 rounded-2xl px-5 py-3.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="w-3 h-3 rounded-full bg-green-400 animate-pulse shrink-0" />
+          <div className="min-w-0">
+            <p className="text-white font-bold text-sm truncate">{subject}</p>
+            {counterpart && (
+              <p className="text-gray-400 text-xs truncate">
+                {role === 'student' ? 'Tutor' : 'Student'}: {counterpart} · {session.timeSlot}
+              </p>
+            )}
+          </div>
+        </div>
+        <ClassCountdown date={session.date} timeSlot={session.timeSlot} />
+        <button onClick={onLeave}
+          className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition shrink-0">
+          <X size={12} /> Leave
+        </button>
+      </div>
+
+      {/* Main area: video + side panel */}
+      <div className="flex flex-col xl:flex-row gap-4 flex-1 min-h-0">
+
+        {/* Jitsi video embed */}
+        <div className="xl:flex-1 min-w-0">
+          <div className="relative bg-gray-950 rounded-2xl overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+            <iframe
+              src={jitsiUrl}
+              allow="camera; microphone; fullscreen; display-capture; autoplay"
+              className="absolute inset-0 w-full h-full border-0"
+              title="Live Class Video"
+            />
+          </div>
+          <p className="text-[10px] text-gray-400 text-center mt-1.5">
+            Powered by Jitsi Meet · Room: {jitsiRoom}
+          </p>
+        </div>
+
+        {/* Tools side panel */}
+        <div className="xl:w-80 flex flex-col min-h-0">
+          {/* Panel tabs */}
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1 shrink-0 mb-3">
+            {panels.map(({ id, label, Icon }) => (
+              <button key={id} onClick={() => setPanel(id)}
+                className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-bold transition ${
+                  panel === id ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}>
+                <Icon size={12} /> {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Panel content — fixed height */}
+          <div className="flex-1 min-h-0 rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm"
+               style={{ height: '420px' }}>
+            {panel === 'board' && (
+              <LiveWhiteboard roomId={roomId} isTutor={role === 'tutor'} />
+            )}
+            {panel === 'files' && (
+              <div className="p-4 h-full overflow-y-auto">
+                <LiveFilesPanel roomId={roomId} role={role} />
+              </div>
+            )}
+            {panel === 'homework' && (
+              <div className="p-4 h-full overflow-y-auto">
+                <LiveHomeworkPanel roomId={roomId} role={role} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Schedule View (no active session) ───────────────────────────────────────
+function SessionScheduleView({ sessions, role, onEnterSession }) {
+  const upcoming = sessions
+    .filter(s => s.status === 'confirmed')
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 5);
+
+  return (
+    <div className="space-y-6">
+      {/* Today banner */}
+      <TodayScheduleBanner sessions={sessions} role={role} />
+
+      {/* Upcoming list */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-50">
+          <h3 className="font-bold text-gray-900 text-sm">Upcoming Sessions</h3>
+        </div>
+        {upcoming.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <Radio size={32} className="text-gray-200 mx-auto mb-3" />
+            <p className="text-sm text-gray-500 font-medium">No upcoming sessions confirmed</p>
+            <p className="text-xs text-gray-400 mt-1">Sessions appear here once your tutor confirms them</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {upcoming.map(s => {
+              const subject = s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim()
+                || s.notes?.slice(0, 40) || 'Tutoring Session';
+              const tutorName = s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim();
+              const studentName = s.user?.name || s.name || 'Student';
+              const counterpart = role === 'student' ? tutorName : studentName;
+              const roomId = extractRoomId(s.callLink);
+
+              return (
+                <div key={s._id} className="px-5 py-4 flex items-center gap-4">
+                  {/* Date block */}
+                  <div className="shrink-0 text-center bg-gray-50 rounded-xl px-3 py-2 min-w-[64px]">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase">
+                      {new Date(s.date).toLocaleDateString('en-GB', { month: 'short' })}
+                    </p>
+                    <p className="text-xl font-extrabold text-gray-900 leading-tight">
+                      {new Date(s.date).getDate()}
+                    </p>
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">{subject}</p>
+                    {counterpart && (
+                      <p className="text-xs text-gray-500 truncate">
+                        {role === 'student' ? 'with' : 'Student:'} {counterpart}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <Clock size={10} /> {s.timeSlot}
+                      </span>
+                      <ClassCountdown date={s.date} timeSlot={s.timeSlot} />
+                    </div>
+                  </div>
+
+                  {/* Enter button */}
+                  {roomId && (
+                    <button onClick={() => onEnterSession(s, roomId)}
+                      className="shrink-0 flex items-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
+                      <Video size={12} /> Enter
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Info card */}
+      <div className="bg-linear-to-br from-green-700 to-emerald-700 rounded-2xl p-6 text-white">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+            <Radio size={22} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-base">How Live Classes Work</h3>
+            <ul className="text-green-100 text-sm mt-2 space-y-1">
+              <li>• Book a session with your tutor from the dashboard</li>
+              <li>• Once confirmed, your class appears here</li>
+              <li>• Enter up to 10 minutes before your scheduled time</li>
+              <li>• Video · Whiteboard · Files · Homework — all in one place</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main LiveClassTab ────────────────────────────────────────────────────────
+function LiveClassTab({ role, userId }) {
+  const [searchParams] = useSearchParams();
+  const sessionParam   = searchParams.get('session');
+
+  const [sessions,      setSessions]      = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [activeSession, setActiveSession] = useState(null);
+  const [activeRoomId,  setActiveRoomId]  = useState(null);
+
+  useEffect(() => {
+    const endpoint = role === 'tutor'
+      ? '/tutors/me/bookings'
+      : '/bookings/my?service=tutoring-session';
+
+    api.get(endpoint)
+      .then(({ data }) => {
+        const all = (data.bookings || []).filter(b => b.status === 'confirmed');
+        setSessions(all);
+        // Auto-enter session if ?session= param is present in URL
+        if (sessionParam) {
+          const match = all.find(b => extractRoomId(b.callLink) === sessionParam);
+          if (match) {
+            setActiveSession(match);
+            setActiveRoomId(sessionParam);
+          } else {
+            // Session param given but no matching booking — treat as ad-hoc room
+            setActiveRoomId(sessionParam);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [role, sessionParam]);
+
+  const enterSession = (session, roomId) => {
+    setActiveSession(session);
+    setActiveRoomId(roomId);
+  };
+
+  const leaveSession = () => {
+    setActiveSession(null);
+    setActiveRoomId(null);
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-24">
+      <div className="w-8 h-8 border-4 border-green-200 border-t-green-700 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (activeRoomId) {
+    return (
+      <LiveSessionView
+        session={activeSession || { date: new Date().toISOString(), timeSlot: '', notes: 'Ad-hoc Session', name: '' }}
+        role={role}
+        roomId={activeRoomId}
+        onLeave={leaveSession}
+      />
+    );
+  }
+
+  return (
+    <SessionScheduleView
+      sessions={sessions}
+      role={role}
+      onEnterSession={enterSession}
+    />
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Shared UI helpers
 // ─────────────────────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, color }) {
@@ -1064,6 +1567,8 @@ export default function LearningDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null); // tutor only
 
+  const [searchParams] = useSearchParams();
+
   const role = user?.role || 'student';
   const userId = user?._id || user?.id;
 
@@ -1071,19 +1576,25 @@ export default function LearningDashboard() {
 
   const isTutorWithStudent = role === 'tutor' && selectedStudent;
 
+  // Auto-switch to Live Class tab when ?session= param is in the URL
+  useEffect(() => {
+    if (searchParams.get('session')) setTab('liveclass');
+  }, [searchParams]);
+
   function handleLogout() { logout(); navigate('/'); }
 
   function renderTab() {
     const sid = selectedStudent?._id;
     const sname = selectedStudent?.name;
     switch (tab) {
-      case 'overview': return <OverviewTab role={role} userId={userId} studentId={sid} studentName={sname} setTab={setTab} />;
-      case 'notes':    return <NotesTab role={role} studentId={sid} />;
-      case 'quizzes':  return <QuizzesTab role={role} studentId={sid} />;
-      case 'chat':     return <ChatTab role={role} userId={userId} fixedContact={isTutorWithStudent ? selectedStudent : undefined} />;
-      case 'progress': return <ProgressTab role={role} userId={userId} studentId={sid} />;
-      case 'reports':  return isTutorWithStudent ? <ReportsTab studentId={sid} studentName={sname} /> : null;
-      default:         return null;
+      case 'overview':   return <OverviewTab role={role} userId={userId} studentId={sid} studentName={sname} setTab={setTab} />;
+      case 'liveclass':  return <LiveClassTab role={role} userId={userId} />;
+      case 'notes':      return <NotesTab role={role} studentId={sid} />;
+      case 'quizzes':    return <QuizzesTab role={role} studentId={sid} />;
+      case 'chat':       return <ChatTab role={role} userId={userId} fixedContact={isTutorWithStudent ? selectedStudent : undefined} />;
+      case 'progress':   return <ProgressTab role={role} userId={userId} studentId={sid} />;
+      case 'reports':    return isTutorWithStudent ? <ReportsTab studentId={sid} studentName={sname} /> : null;
+      default:           return null;
     }
   }
 
@@ -1136,13 +1647,23 @@ export default function LearningDashboard() {
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto mt-1">
           {/* Tutor: show student picker option when no student is selected */}
+          {/* Live Class is always accessible — no student selection needed */}
+          <button onClick={() => { setTab('liveclass'); setSidebarOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              tab === 'liveclass' ? 'bg-green-700 text-white shadow-lg shadow-green-900/20' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`}>
+            <Radio size={16} className="shrink-0" />
+            Live Class
+            {tab !== 'liveclass' && <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+          </button>
+
           {role === 'tutor' && !selectedStudent && (
             <div className="px-4 py-3 text-xs text-gray-400 italic">
-              Select a student below to unlock all tabs
+              Select a student below to unlock other tabs
             </div>
           )}
 
-          {(isTutorWithStudent || role !== 'tutor') && tabs.map(({ id, label, icon: Icon }) => (
+          {(isTutorWithStudent || role !== 'tutor') && tabs.filter(t => t.id !== 'liveclass').map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => { setTab(id); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 tab === id ? 'bg-green-700 text-white shadow-lg shadow-green-900/20' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'

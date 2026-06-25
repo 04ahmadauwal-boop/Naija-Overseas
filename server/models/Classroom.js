@@ -8,7 +8,6 @@ const classroomSchema = new mongoose.Schema(
     startedAt:   { type: Date },
     endedAt:     { type: Date },
     status:      { type: String, enum: ['waiting', 'active', 'ended'], default: 'waiting' },
-    dailyRoomUrl: { type: String },
     sharedFiles: [
       {
         name:       { type: String },

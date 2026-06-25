@@ -11,6 +11,7 @@ import {
   Edit2, Save, AlertCircle, CalendarCheck, Camera, HelpCircle, Plus, Trash2,
   DollarSign, Wallet, Building2, ShieldCheck, BadgeCheck,
 } from 'lucide-react';
+import { TodayScheduleBanner, ClassStartButton } from '../../components/ClassSchedule';
 
 const CURRENCY_SYMBOLS = {
   NGN: '₦', USD: '$', GBP: '£', EUR: '€', GHS: 'GH₵',
@@ -158,24 +159,25 @@ function OverviewTab({ profile, bookings, setActiveTab }) {
         ))}
       </div>
 
-      {/* Class quick launch */}
-      <div className="bg-linear-to-r from-green-700 to-emerald-700 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
-          <Video size={22} className="text-white" />
+      {/* Today's scheduled sessions — smart countdown + start button */}
+      <TodayScheduleBanner sessions={upcomingBookings} role="tutor" />
+
+      {/* Ad-hoc class launch — no booking needed */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+          <Video size={18} className="text-green-700" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white font-extrabold text-base leading-tight">Start a Class Session</p>
-          <p className="text-green-200 text-xs mt-0.5">
-            Whiteboard · Video · Screen share · Homework · File sharing — all in one room
-          </p>
+          <p className="font-bold text-gray-900 text-sm">Start an Ad-hoc Class</p>
+          <p className="text-gray-400 text-xs mt-0.5">Whiteboard · Files · Homework — no booking needed</p>
         </div>
         <button
           onClick={() => {
             const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-            window.open(`/classroom/${roomId}`, '_blank');
+            window.open(`/learning?session=${roomId}`, '_blank');
           }}
-          className="shrink-0 bg-white text-green-800 font-bold px-5 py-2.5 rounded-xl hover:bg-green-50 transition text-sm flex items-center gap-2">
-          <Video size={15} /> Start Class
+          className="shrink-0 bg-green-700 text-white font-bold px-4 py-2 rounded-xl hover:bg-green-800 transition text-xs flex items-center gap-1.5">
+          <Video size={13} /> Start
         </button>
       </div>
 
@@ -389,12 +391,9 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                     </div>
                   )}
 
-                  {/* GoClass launch for confirmed */}
+                  {/* Smart class start — disabled until 15 min before, live-aware */}
                   {b.status === 'confirmed' && b.callLink && (
-                    <a href={b.callLink} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-green-700 text-white text-xs font-bold rounded-xl hover:bg-green-800 transition">
-                      <Video size={12} /> Start Class
-                    </a>
+                    <ClassStartButton callLink={b.callLink} date={b.date} timeSlot={b.timeSlot} />
                   )}
 
                   {/* Mark as Done — confirmed sessions only */}
@@ -1344,10 +1343,9 @@ function CalendarTab({ bookings: initialBookings, loading }) {
                               </div>
                             )}
                             {b.status === 'confirmed' && b.callLink && (
-                              <a href={b.callLink} target="_blank" rel="noreferrer"
-                                className="mt-2 flex items-center gap-1.5 px-3 py-1 bg-green-700 text-white text-[11px] font-bold rounded-lg hover:bg-green-800 transition w-fit">
-                                <Video size={10} /> Start Class
-                              </a>
+                              <div className="mt-2">
+                                <ClassStartButton callLink={b.callLink} date={b.date} timeSlot={b.timeSlot} />
+                              </div>
                             )}
                             {b.status === 'confirmed' && (
                               <button onClick={() => handleAction(b._id, 'complete')} disabled={acting === b._id}
@@ -2035,7 +2033,7 @@ export default function TutorDashboard() {
           <button
             onClick={() => {
               const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-              window.open(`/classroom/${roomId}`, '_blank');
+              window.open(`/learning?session=${roomId}`, '_blank');
             }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-green-400 hover:text-white hover:bg-green-700/40 transition">
             <Video size={16} /> Start a Class

@@ -37,7 +37,6 @@ import FindTutoring from './pages/FindTutoring';
 import TutorDetail from './pages/TutorDetail';
 import BecomeTutor from './pages/BecomeTutor';
 import StudentOnboarding from './pages/StudentOnboarding';
-import GoClass from './pages/GoClass';
 import StateSchools from './pages/StateSchools';
 import AllSchools from './pages/AllSchools';
 import Videos from './pages/Videos';
@@ -84,7 +83,7 @@ function LearningRoute({ children }) {
 
 export default function App() {
   const location = useLocation();
-  const isShellless = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard') || location.pathname === '/dashboard/tutor' || location.pathname === '/student-onboarding' || location.pathname.startsWith('/classroom') || location.pathname.startsWith('/learning') || location.pathname.startsWith('/schedule') || location.pathname.startsWith('/book/') || location.pathname.startsWith('/subscribe/');
+  const isShellless = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard') || location.pathname === '/dashboard/tutor' || location.pathname === '/student-onboarding' || location.pathname.startsWith('/learning') || location.pathname.startsWith('/schedule') || location.pathname.startsWith('/book/') || location.pathname.startsWith('/subscribe/');
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -115,7 +114,6 @@ export default function App() {
           <Route path="/tutors/:id" element={<TutorDetail />} />
           <Route path="/become-a-tutor" element={<BecomeTutor />} />
           <Route path="/student-onboarding" element={<TutorRoute><StudentOnboarding /></TutorRoute>} />
-          <Route path="/classroom/:roomId" element={<TutorRoute><GoClass /></TutorRoute>} />
 
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/schools" element={<AdminRoute><ManageSchools /></AdminRoute>} />
