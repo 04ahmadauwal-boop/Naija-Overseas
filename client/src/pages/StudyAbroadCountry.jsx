@@ -507,7 +507,7 @@ export default function StudyAbroadCountry() {
     setAvailability(null);
   };
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
+
 
   return (
     <div>
@@ -867,9 +867,10 @@ export default function StudyAbroadCountry() {
         </div>
       </section>
 
-      {/* ── APPLICATION MODAL ────────────────────────────────── */}
+      {/* ── CONSULTATION BOOKING MODAL ───────────────────────── */}
       {showForm && (() => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
         const calYear = calMonth.getFullYear();
         const calMonthIdx = calMonth.getMonth();
         const daysInMonth = new Date(calYear, calMonthIdx + 1, 0).getDate();
@@ -880,309 +881,416 @@ export default function StudyAbroadCountry() {
           const [y, m, d] = ds.split('-');
           return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         };
+        const totalAmount = coupon ? coupon.finalAmount : 10000;
 
         return (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
-            <div className={`bg-white rounded-3xl w-full my-auto shadow-2xl overflow-hidden ${step === 1 ? 'max-w-2xl' : 'max-w-md'}`}>
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div className="relative bg-white rounded-3xl w-full max-w-4xl my-auto shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
-              {/* Header */}
-              <div className="bg-green-900 px-7 py-5 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-extrabold text-white">
-                    {submitted ? 'Booking Confirmed!' : step === 1 ? `Book a Consultation — ${data.country}` : 'Review & Pay'}
-                  </h2>
-                  <p className="text-green-300 text-xs mt-0.5">
-                    {submitted ? 'Your slot is reserved' : step === 1 ? 'Pick a date and time that works for you' : 'Consultation fee — ₦10,000'}
-                  </p>
-                </div>
-                <button onClick={resetForm}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-800 text-green-300 hover:bg-green-700 transition">
-                  <X size={16} />
-                </button>
-              </div>
+              {/* ── Close button ── */}
+              <button onClick={resetForm}
+                className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-white transition">
+                <X size={16} />
+              </button>
 
-              {/* Step indicator */}
-              {!submitted && (
-                <div className="flex border-b border-gray-100">
-                  {['Your Details', 'Confirm & Pay'].map((label, i) => (
-                    <div key={label} className={`flex-1 py-2.5 text-center text-xs font-semibold transition
-                      ${step === i + 1 ? 'text-green-700 border-b-2 border-green-600' : 'text-gray-400'}`}>
-                      {i + 1}. {label}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ── SUCCESS ── */}
-              {submitted && (
-                <div className="p-10 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <CheckCircle size={32} className="text-green-600" />
+              {/* ── LEFT SIDEBAR ── */}
+              <div className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-gradient-to-b from-green-900 via-green-900 to-green-950 p-7 relative overflow-hidden">
+                <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5 pointer-events-none" />
+                <div className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none" />
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center mb-5">
+                    <GraduationCap size={22} className="text-green-300" />
                   </div>
-                  <h3 className="text-xl font-extrabold text-gray-900 mb-2">Consultation Booked!</h3>
-                  <p className="text-gray-500 text-sm mb-1">Thank you, <strong>{form.fullName}</strong>.</p>
-                  <p className="text-gray-500 text-sm mb-4">
-                    Your consultation is scheduled for<br />
-                    <strong className="text-gray-800">{fmtDate(form.consultDate)} at {form.consultTime}</strong>.
-                  </p>
-                  <p className="text-gray-400 text-xs mb-6">A confirmation has been sent to <strong>{form.email}</strong> and via WhatsApp to <strong>{form.phone}</strong>. Our counsellor will reach out shortly before your slot.</p>
-                  <button onClick={resetForm}
-                    className="bg-green-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition text-sm">
-                    Done
-                  </button>
-                </div>
-              )}
-
-              {/* ── STEP 1: Details + Calendar ── */}
-              {!submitted && step === 1 && (
-                <form onSubmit={handleStep1} className="p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-
-                    {/* Left — personal info */}
-                    <div className="space-y-3">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Your Information</p>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
-                        <input type="text" required value={form.fullName}
-                          onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inp} placeholder="Your full name" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
-                        <input type="email" required value={form.email}
-                          onChange={(e) => setForm({ ...form, email: e.target.value })} className={inp} placeholder="you@email.com" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
-                        <input type="tel" required value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inp} placeholder="+234 800..." />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Destination</label>
-                        <input className={`${inp} bg-green-50 text-green-800 font-semibold`} readOnly value={data.country} />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Program / Course</label>
-                        <input value={form.program}
-                          onChange={(e) => setForm({ ...form, program: e.target.value })} className={inp} placeholder="e.g. Computer Science" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Highest Level of Education <span className="text-red-500">*</span></label>
-                        <select required value={form.educationLevel}
-                          onChange={(e) => setForm({ ...form, educationLevel: e.target.value })} className={inp}>
-                          <option value="">Select education level</option>
-                          <option>WAEC / SSCE (Secondary School)</option>
-                          <option>OND (Ordinary National Diploma)</option>
-                          <option>HND (Higher National Diploma)</option>
-                          <option>B.Sc / B.A (Bachelor&apos;s Degree)</option>
-                          <option>M.Sc / M.A (Master&apos;s Degree)</option>
-                          <option>PhD</option>
-                          <option>Other</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Right — calendar + time slots */}
-                    <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Pick a Date <span className="text-red-500">*</span></p>
-
-                      {/* Month nav */}
-                      <div className="flex items-center justify-between mb-2">
-                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))}
-                          disabled={!canGoPrev}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition">
-                          <ChevronLeft size={16} />
-                        </button>
-                        <span className="text-sm font-bold text-gray-800">
-                          {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                        </span>
-                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 transition">
-                          <ChevronRight size={16} />
-                        </button>
-                      </div>
-
-                      {/* Day headers */}
-                      <div className="grid grid-cols-7 mb-1">
-                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                          <div key={d} className="text-center text-[10px] font-bold text-gray-400 py-1">{d}</div>
-                        ))}
-                      </div>
-
-                      {/* Day cells */}
-                      <div className="grid grid-cols-7 gap-0.5">
-                        {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
-                        {Array.from({ length: daysInMonth }).map((_, i) => {
-                          const day = i + 1;
-                          const date = new Date(calYear, calMonthIdx, day);
-                          const isPast = date < today;
-                          const dateStr = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                          const isSelected = form.consultDate === dateStr;
-                          const isUnavail = !isPast && isDayUnavailable(dateStr, date.getDay());
-                          const disabled = isPast || isUnavail;
-                          return (
-                            <button key={day} type="button" disabled={disabled}
-                              onClick={() => handleDateSelect(dateStr)}
-                              title={isUnavail ? 'Not available' : undefined}
-                              className={`aspect-square rounded-lg text-xs font-medium transition flex items-center justify-center
-                                ${isPast ? 'text-gray-300 cursor-not-allowed' :
-                                  isUnavail ? 'text-gray-300 bg-gray-50 cursor-not-allowed' :
-                                  isSelected ? 'bg-green-600 text-white font-bold shadow' :
-                                  'hover:bg-green-50 text-gray-700'}`}>
-                              {day}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Time slots */}
-                      {form.consultDate && (
-                        <div className="mt-4">
-                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pick a Time <span className="text-red-500">*</span></p>
-                          {slotsLoading ? (
-                            <div className="flex items-center justify-center py-4 gap-2 text-gray-400 text-xs">
-                              <span className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
-                              Loading available times…
-                            </div>
-                          ) : !slotData?.enabled || slotData?.slots?.length === 0 ? (
-                            <p className="text-xs text-gray-400 text-center py-3 bg-gray-50 rounded-xl">
-                              No consultation slots available on this date.
-                            </p>
-                          ) : (
-                            <div className="grid grid-cols-4 gap-1.5">
-                              {slotData.slots.map(({ time, booked }) => (
-                                <button key={time} type="button"
-                                  disabled={booked}
-                                  onClick={() => !booked && setForm({ ...form, consultTime: time })}
-                                  className={`py-2 rounded-xl text-xs font-semibold border transition
-                                    ${booked
-                                      ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
-                                      : form.consultTime === time
-                                        ? 'bg-green-600 text-white border-green-600'
-                                        : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'}`}>
-                                  {booked ? 'Booked' : time}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 mt-6">
-                    <button type="button" onClick={resetForm}
-                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
-                      Cancel
-                    </button>
-                    <button type="submit" disabled={loading}
-                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                      {loading
-                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Checking…</>
-                        : <>Continue <ArrowRight size={15} /></>}
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* ── STEP 2: Review & Pay ── */}
-              {!submitted && step === 2 && (
-                <div className="p-7">
-                  <div className="bg-gray-50 rounded-2xl p-5 mb-5 space-y-3 border border-gray-100">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Booking Summary</p>
+                  <h3 className="text-xl font-extrabold text-white leading-snug mb-1">
+                    Study in<br /><span className="text-green-400">{data.country}</span>
+                  </h3>
+                  <p className="text-green-400 text-xs font-medium mb-6">Speak with a specialist counsellor</p>
+                  <p className="text-[10px] font-bold text-green-500 uppercase tracking-[0.15em] mb-3">What's Included</p>
+                  <div className="space-y-2.5 mb-7">
                     {[
-                      ['Name', form.fullName],
-                      ['Email', form.email],
-                      ['Phone', form.phone],
-                      ['Education Level', form.educationLevel || '—'],
-                      ['Destination', data.country],
-                      ['Program', form.program || '—'],
-                      ['Date', fmtDate(form.consultDate)],
-                      ['Time', form.consultTime],
-                    ].map(([label, value]) => (
-                      <div key={label} className="flex justify-between text-sm">
-                        <span className="text-gray-500">{label}</span>
-                        <span className="font-semibold text-gray-800 text-right max-w-[60%]">{value}</span>
+                      `${data.country} university shortlist`,
+                      'Scholarship identification',
+                      'Visa requirements review',
+                      'Application strategy session',
+                      '48-hour response guarantee',
+                    ].map((item) => (
+                      <div key={item} className="flex items-start gap-2.5">
+                        <div className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center shrink-0 mt-px">
+                          <CheckCircle size={10} className="text-green-400" />
+                        </div>
+                        <span className="text-white/75 text-xs leading-relaxed">{item}</span>
                       </div>
                     ))}
                   </div>
+                  <div className="bg-white/8 border border-white/15 rounded-2xl p-4 mb-4">
+                    <p className="text-green-400 text-[10px] font-bold uppercase tracking-widest mb-1">Consultation Fee</p>
+                    <p className="text-white text-3xl font-extrabold tracking-tight">₦10,000</p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Shield size={11} className="text-green-400" />
+                      <p className="text-green-400/80 text-[10px]">Secured by Paystack</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-auto">
+                    {[['100+','Students Placed'],['95%','Visa Success']].map(([n,l]) => (
+                      <div key={l} className="bg-white/8 border border-white/10 rounded-xl p-3 text-center">
+                        <div className="text-white font-extrabold text-base leading-none">{n}</div>
+                        <div className="text-green-400 text-[9px] mt-0.5 leading-tight">{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-                  {/* Coupon code */}
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      Coupon Code <span className="normal-case font-normal text-gray-400">(optional)</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        value={couponInput}
-                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
-                        onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
-                        className={`flex-1 border rounded-xl px-4 py-2.5 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 transition
-                          ${coupon ? 'border-green-400 bg-green-50 focus:ring-green-400' : couponError ? 'border-red-400 bg-red-50 focus:ring-red-400' : 'border-gray-200 bg-gray-50 focus:ring-green-500'}`}
-                        placeholder="ENTER CODE"
-                        disabled={!!coupon}
-                      />
-                      {coupon ? (
-                        <button type="button" onClick={() => { setCoupon(null); setCouponInput(''); setCouponError(''); }}
-                          className="px-4 py-2.5 text-xs font-bold border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-100 transition">
-                          Remove
+              {/* ── RIGHT PANEL ── */}
+              <div className="flex-1 min-w-0 flex flex-col max-h-[92vh] md:max-h-none overflow-y-auto">
+
+                {/* Mobile header */}
+                <div className="md:hidden bg-green-900 px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                      <GraduationCap size={16} className="text-green-300" />
+                    </div>
+                    <div>
+                      <p className="text-white font-extrabold text-sm leading-tight">Study in {data.country}</p>
+                      <p className="text-green-400 text-[10px]">Senior admissions counsellor · ₦10,000</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step indicator */}
+                {!submitted && (
+                  <div className="flex items-center gap-2 px-6 pt-5 pb-4 border-b border-gray-100">
+                    {[['1','Your Details'],['2','Review & Pay']].map(([num, label], i) => (
+                      <div key={num} className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all
+                          ${step > i+1 ? 'bg-green-600 text-white' :
+                            step === i+1 ? 'bg-green-600 text-white ring-4 ring-green-100' :
+                            'bg-gray-100 text-gray-400'}`}>
+                          {step > i+1 ? <CheckCircle size={13} /> : num}
+                        </div>
+                        <span className={`text-xs font-semibold hidden sm:block ${step === i+1 ? 'text-gray-900' : 'text-gray-400'}`}>{label}</span>
+                        {i < 1 && <div className={`mx-2 h-px w-8 sm:w-16 ${step > 1 ? 'bg-green-500' : 'bg-gray-200'}`} />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── SUCCESS ── */}
+                {submitted && (
+                  <div className="flex flex-col items-center justify-center p-8 text-center flex-1">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 ring-8 ring-green-50">
+                      <CheckCircle size={38} className="text-green-600" />
+                    </div>
+                    <h3 className="text-2xl font-extrabold text-gray-900 mb-1">Booking Confirmed!</h3>
+                    <p className="text-gray-500 text-sm mb-5">Thank you, <strong className="text-gray-800">{form.fullName}</strong>. Your slot has been reserved.</p>
+                    <div className="w-full max-w-sm bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden mb-5 text-left">
+                      <div className="bg-green-700 px-5 py-3">
+                        <p className="text-green-200 text-[10px] font-bold uppercase tracking-widest">Booking Details</p>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {[
+                          [Clock, fmtDate(form.consultDate)],
+                          [Star, form.consultTime],
+                          [MapPin, data.country],
+                          [Mail, form.email],
+                        ].map(([Icon, val], i) => (
+                          <div key={i} className="flex items-center gap-3 px-5 py-3">
+                            <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                              <Icon size={13} className="text-green-700" />
+                            </div>
+                            <span className="text-sm text-gray-700 font-medium">{val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs max-w-xs mb-6">
+                      A confirmation has been sent to <strong className="text-gray-600">{form.email}</strong> and via WhatsApp to <strong className="text-gray-600">{form.phone}</strong>.
+                    </p>
+                    <button onClick={resetForm}
+                      className="bg-green-700 text-white px-10 py-3.5 rounded-xl font-bold hover:bg-green-800 transition text-sm">
+                      Done
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 1 ── */}
+                {!submitted && step === 1 && (
+                  <form onSubmit={handleStep1} className="p-5 sm:p-6">
+                    <div className="grid md:grid-cols-2 gap-5 lg:gap-6">
+
+                      {/* Left — personal info */}
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">Your Information</p>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1.5">Full Name <span className="text-red-400">*</span></label>
+                          <input type="text" required value={form.fullName}
+                            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition placeholder:text-gray-300"
+                            placeholder="e.g. Chukwuemeka Obi" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-600 mb-1.5">Email <span className="text-red-400">*</span></label>
+                            <input type="email" required value={form.email}
+                              onChange={(e) => setForm({ ...form, email: e.target.value })}
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition placeholder:text-gray-300"
+                              placeholder="you@email.com" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-600 mb-1.5">Phone <span className="text-red-400">*</span></label>
+                            <input type="tel" required value={form.phone}
+                              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition placeholder:text-gray-300"
+                              placeholder="+234 800..." />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1.5">Destination</label>
+                          <div className="flex items-center gap-2 border border-green-200 bg-green-50 rounded-xl px-4 py-2.5">
+                            <FlagImg code={data.code} w={40} className="h-4 rounded-sm shrink-0" />
+                            <span className="text-sm font-bold text-green-800">{data.country}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1.5">Program / Course of Interest</label>
+                          <input value={form.program}
+                            onChange={(e) => setForm({ ...form, program: e.target.value })}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition placeholder:text-gray-300"
+                            placeholder="e.g. Computer Science, MBA, Nursing" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1.5">Highest Education Level <span className="text-red-400">*</span></label>
+                          <select required value={form.educationLevel}
+                            onChange={(e) => setForm({ ...form, educationLevel: e.target.value })}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition text-gray-700 appearance-none">
+                            <option value="">Select level</option>
+                            <option>WAEC / SSCE (Secondary School)</option>
+                            <option>OND (Ordinary National Diploma)</option>
+                            <option>HND (Higher National Diploma)</option>
+                            <option>B.Sc / B.A (Bachelor's Degree)</option>
+                            <option>M.Sc / M.A (Master's Degree)</option>
+                            <option>PhD</option>
+                            <option>Other</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Right — calendar + time slots */}
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Select Date & Time <span className="text-red-400">*</span></p>
+                        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3.5">
+                          <div className="flex items-center justify-between mb-3">
+                            <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))}
+                              disabled={!canGoPrev}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white border border-transparent hover:border-gray-200 disabled:opacity-25 transition">
+                              <ChevronLeft size={14} className="text-gray-500" />
+                            </button>
+                            <span className="text-sm font-bold text-gray-800">
+                              {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </span>
+                            <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition">
+                              <ChevronRight size={14} className="text-gray-500" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-7 mb-1">
+                            {['S','M','T','W','T','F','S'].map((d, i) => (
+                              <div key={i} className="text-center text-[10px] font-bold text-gray-400 py-1">{d}</div>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-7 gap-0.5">
+                            {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+                            {Array.from({ length: daysInMonth }).map((_, i) => {
+                              const day = i + 1;
+                              const date = new Date(calYear, calMonthIdx, day);
+                              const isPast = date < today;
+                              const dateStr = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                              const isSelected = form.consultDate === dateStr;
+                              const isToday = dateStr === todayStr;
+                              const isUnavail = !isPast && isDayUnavailable(dateStr, date.getDay());
+                              const disabled = isPast || isUnavail;
+                              return (
+                                <button key={day} type="button" disabled={disabled}
+                                  onClick={() => handleDateSelect(dateStr)}
+                                  title={isUnavail ? 'Not available' : undefined}
+                                  className={`aspect-square rounded-full text-[11px] font-semibold transition-all flex items-center justify-center
+                                    ${isPast ? 'text-gray-300 cursor-not-allowed' :
+                                      isUnavail ? 'text-gray-300 cursor-not-allowed' :
+                                      isSelected ? 'bg-green-600 text-white shadow-md shadow-green-200 scale-110' :
+                                      isToday ? 'ring-2 ring-green-500 text-green-700 font-bold' :
+                                      'hover:bg-green-100 text-gray-700 hover:text-green-700'}`}>
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {form.consultDate && (
+                          <div className="mt-2 px-1">
+                            <p className="text-[11px] text-green-700 font-semibold">{fmtDate(form.consultDate)}</p>
+                          </div>
+                        )}
+                        {form.consultDate && (
+                          <div className="mt-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Available Times</p>
+                            {slotsLoading ? (
+                              <div className="flex items-center justify-center gap-2 py-5 text-gray-400 text-xs bg-gray-50 rounded-xl">
+                                <span className="w-4 h-4 border-2 border-gray-200 border-t-green-500 rounded-full animate-spin" />
+                                Fetching available times…
+                              </div>
+                            ) : !slotData?.enabled || !slotData?.slots?.length ? (
+                              <div className="py-4 px-4 bg-amber-50 border border-amber-100 rounded-xl text-center">
+                                <p className="text-xs text-amber-700 font-semibold">No slots available on this date</p>
+                                <p className="text-[11px] text-amber-500 mt-0.5">Please select a different date</p>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-3 gap-1.5">
+                                {slotData.slots.map(({ time, booked }) => (
+                                  <button key={time} type="button" disabled={booked}
+                                    onClick={() => !booked && setForm({ ...form, consultTime: time })}
+                                    className={`py-2 px-1 rounded-xl text-[11px] font-bold border transition-all flex flex-col items-center gap-0.5
+                                      ${booked
+                                        ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                                        : form.consultTime === time
+                                          ? 'bg-green-600 text-white border-green-600 shadow-md shadow-green-100 scale-105'
+                                          : 'bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50'}`}>
+                                    <Clock size={10} className={booked ? 'text-gray-300' : form.consultTime === time ? 'text-green-200' : 'text-gray-400'} />
+                                    {booked ? <span className="text-[9px]">Booked</span> : time}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-gray-100 flex gap-3">
+                      <button type="button" onClick={resetForm}
+                        className="px-5 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition">
+                        Cancel
+                      </button>
+                      <button type="submit" disabled={loading}
+                        className="flex-1 bg-green-700 text-white rounded-xl py-3 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/20">
+                        {loading
+                          ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Checking…</>
+                          : <>Continue to Review <ArrowRight size={15} /></>}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* ── STEP 2 ── */}
+                {!submitted && step === 2 && (
+                  <div className="p-5 sm:p-6">
+                    <div className="border border-gray-100 rounded-2xl overflow-hidden mb-4 shadow-sm">
+                      <div className="bg-gradient-to-r from-green-800 to-green-700 px-5 py-3 flex items-center justify-between">
+                        <p className="text-green-200 text-[10px] font-bold uppercase tracking-widest">Booking Summary</p>
+                        <button type="button" onClick={() => setStep(1)}
+                          className="text-green-300 text-[10px] font-semibold hover:text-white transition">
+                          Edit details
                         </button>
-                      ) : (
-                        <button type="button" onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
-                          className="px-4 py-2.5 text-xs font-bold bg-gray-800 text-white rounded-xl hover:bg-gray-700 disabled:opacity-40 transition">
-                          {couponLoading ? '...' : 'Apply'}
-                        </button>
+                      </div>
+                      <div className="divide-y divide-gray-50 bg-white">
+                        {[
+                          [GraduationCap, 'Consultation', `${data.country} Advisory Session`],
+                          [Clock, 'Date & Time', `${fmtDate(form.consultDate)} · ${form.consultTime}`],
+                          [MapPin, 'Destination', data.country],
+                          [BookOpen, 'Program', form.program || '—'],
+                          [Globe, 'Education', form.educationLevel || '—'],
+                          [Mail, 'Email', form.email],
+                          [Phone, 'WhatsApp', form.phone],
+                        ].map(([Icon, label, value]) => (
+                          <div key={label} className="flex items-start gap-3 px-5 py-2.5">
+                            <div className="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+                              <Icon size={11} className="text-green-700" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-gray-400 font-semibold">{label}</p>
+                              <p className="text-xs text-gray-800 font-semibold truncate">{value}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Have a coupon code?</label>
+                      <div className="flex gap-2">
+                        <input
+                          value={couponInput}
+                          onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
+                          onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                          className={`flex-1 border rounded-xl px-4 py-2.5 text-sm font-mono tracking-[0.2em] focus:outline-none focus:ring-2 transition
+                            ${coupon ? 'border-green-400 bg-green-50 text-green-800 focus:ring-green-400'
+                              : couponError ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                              : 'border-gray-200 bg-gray-50 focus:ring-green-500'}`}
+                          placeholder="ENTER CODE"
+                          disabled={!!coupon}
+                        />
+                        {coupon ? (
+                          <button type="button" onClick={() => { setCoupon(null); setCouponInput(''); setCouponError(''); }}
+                            className="px-4 py-2.5 text-xs font-bold border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-100 transition whitespace-nowrap">
+                            Remove
+                          </button>
+                        ) : (
+                          <button type="button" onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
+                            className="px-5 py-2.5 text-xs font-bold bg-gray-900 text-white rounded-xl hover:bg-gray-700 disabled:opacity-40 transition whitespace-nowrap">
+                            {couponLoading ? '…' : 'Apply'}
+                          </button>
+                        )}
+                      </div>
+                      {coupon && (
+                        <p className="mt-1.5 text-xs font-semibold text-green-700 flex items-center gap-1">
+                          <CheckCircle size={11} /> {coupon.message}
+                        </p>
+                      )}
+                      {couponError && (
+                        <p className="mt-1.5 text-xs font-semibold text-red-500">{couponError}</p>
                       )}
                     </div>
-                    {coupon && (
-                      <p className="mt-1.5 text-xs font-semibold text-green-700 flex items-center gap-1">
-                        <CheckCircle size={12} /> {coupon.message}
-                      </p>
-                    )}
-                    {couponError && (
-                      <p className="mt-1.5 text-xs font-semibold text-red-600">{couponError}</p>
-                    )}
-                  </div>
 
-                  {/* Fee breakdown */}
-                  <div className="rounded-2xl p-4 mb-5 bg-green-50 border border-green-200">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600">Consultation Fee</span>
-                      <span className={`text-sm font-semibold ${coupon ? 'line-through text-gray-400' : 'text-gray-800'}`}>₦10,000</span>
-                    </div>
-                    {coupon && coupon.discountAmount > 0 && (
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-green-700">Discount ({coupon.type === 'full' ? '100%' : coupon.value + '%'})</span>
-                        <span className="text-sm font-semibold text-green-700">− ₦{coupon.discountAmount.toLocaleString()}</span>
+                    <div className="bg-green-50 border border-green-100 rounded-2xl p-4 mb-5">
+                      <div className="flex justify-between items-center text-sm mb-2">
+                        <span className="text-gray-500">Consultation Fee</span>
+                        <span className={coupon ? 'line-through text-gray-400' : 'font-semibold text-gray-900'}>₦10,000</span>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between pt-2 border-t border-green-200 mt-2">
-                      <span className="text-sm font-bold text-green-900">Total</span>
-                      <span className="text-xl font-extrabold text-green-700">
-                        {coupon && coupon.finalAmount === 0 ? 'FREE' : `₦${(coupon ? coupon.finalAmount : 10000).toLocaleString()}`}
-                      </span>
+                      {coupon && coupon.discountAmount > 0 && (
+                        <div className="flex justify-between items-center text-sm mb-2">
+                          <span className="text-green-700 font-medium">Discount {coupon.type === 'full' ? '(100%)' : `(${coupon.value}%)`}</span>
+                          <span className="font-semibold text-green-700">− ₦{coupon.discountAmount.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center pt-3 border-t border-green-200">
+                        <span className="font-bold text-gray-900">Total Due</span>
+                        <span className="text-2xl font-extrabold text-green-700">
+                          {totalAmount === 0 ? 'FREE' : `₦${totalAmount.toLocaleString()}`}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => setStep(1)}
-                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
-                      <ChevronLeft size={15} /> Back
-                    </button>
-                    <button type="button" onClick={handlePayment} disabled={loading}
-                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                      {loading
-                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
-                        : coupon && coupon.finalAmount === 0
-                          ? <>Confirm Free Booking <ArrowRight size={15} /></>
-                          : <>Pay ₦{(coupon ? coupon.finalAmount : 10000).toLocaleString()} <ArrowRight size={15} /></>}
-                    </button>
+                    <div className="flex gap-3">
+                      <button type="button" onClick={() => setStep(1)}
+                        className="flex items-center gap-1.5 px-5 py-3.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition">
+                        <ChevronLeft size={14} /> Back
+                      </button>
+                      <button type="button" onClick={handlePayment} disabled={loading}
+                        className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/25">
+                        {loading
+                          ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing…</>
+                          : totalAmount === 0
+                            ? <>Confirm Free Booking <ArrowRight size={15} /></>
+                            : <><Shield size={14} /> Pay ₦{totalAmount.toLocaleString()} <ArrowRight size={15} /></>}
+                      </button>
+                    </div>
+                    <p className="text-center text-[10px] text-gray-400 mt-3">
+                      {totalAmount === 0 ? 'No payment required — coupon covers the full fee' : '🔒 Payments are secured and encrypted by Paystack'}
+                    </p>
                   </div>
-                  <p className="text-center text-xs text-gray-400 mt-3">
-                    {coupon && coupon.finalAmount === 0 ? 'No payment required — coupon covers full fee' : 'Secured by Paystack · SSL encrypted'}
-                  </p>
-                </div>
-              )}
-            </div>
+                )}
+
+              </div>{/* end right panel */}
+            </div>{/* end modal card */}
           </div>
         );
       })()}
