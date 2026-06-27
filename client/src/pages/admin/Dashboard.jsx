@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, School, CalendarCheck, Globe,
   FileText, MessageSquare, ExternalLink, GraduationCap,
-  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video, Star, Megaphone, Ticket, DollarSign
+  TrendingUp, Clock, Plus, Users, Menu, X, LogOut, Video, Star, Megaphone, Ticket, DollarSign, CalendarClock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/admin/tutors', icon: GraduationCap, label: 'Tutors' },
   { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
   { to: '/admin/applications', icon: Globe, label: 'Study Abroad' },
+  { to: '/admin/consultation-slots', icon: CalendarClock, label: 'Consult Slots' },
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/blog', icon: FileText, label: 'Blog Posts' },
   { to: '/admin/videos', icon: Video, label: 'Videos' },

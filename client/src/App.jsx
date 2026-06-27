@@ -45,6 +45,7 @@ import ManageReviews from './pages/admin/ManageReviews';
 import ManageBanner from './pages/admin/ManageBanner';
 import ManageCoupons from './pages/admin/ManageCoupons';
 import ManagePayroll from './pages/admin/ManagePayroll';
+import ManageConsultationSlots from './pages/admin/ManageConsultationSlots';
 import AllReviews from './pages/AllReviews';
 import BookSession from './pages/schedule/BookSession';
 import SchedulePage from './pages/schedule/SchedulePage';
@@ -128,6 +129,7 @@ export default function App() {
           <Route path="/admin/banner" element={<AdminRoute><ManageBanner /></AdminRoute>} />
           <Route path="/admin/coupons" element={<AdminRoute><ManageCoupons /></AdminRoute>} />
           <Route path="/admin/payroll" element={<AdminRoute><ManagePayroll /></AdminRoute>} />
+          <Route path="/admin/consultation-slots" element={<AdminRoute><ManageConsultationSlots /></AdminRoute>} />
 
           <Route path="/dashboard/student" element={<DashboardRoute role="student"><StudentDashboard /></DashboardRoute>} />
           <Route path="/dashboard/parent" element={<DashboardRoute role="parent"><ParentDashboard /></DashboardRoute>} />

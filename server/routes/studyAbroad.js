@@ -7,12 +7,115 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Coupon = require('../models/Coupon');
 const EmailOTP = require('../models/EmailOTP');
+const ConsultationAvailability = require('../models/ConsultationAvailability');
 const { protect, optionalAuth } = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 const sendEmail = require('../utils/sendEmail');
 const sendWhatsApp = require('../utils/sendWhatsApp');
 
 const CLIENT_URL = process.env.CLIENT_URL || 'https://www.visiteno.com';
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+async function getAvailability() {
+  let doc = await ConsultationAvailability.findOne();
+  if (!doc) doc = await ConsultationAvailability.create({});
+  return doc;
+}
+
+// GET /api/study-abroad/availability — public: weekly schedule for calendar rendering
+router.get('/availability', async (req, res) => {
+  try {
+    const doc = await getAvailability();
+    const weeklySchedule = {};
+    DAY_KEYS.forEach((key) => {
+      weeklySchedule[key] = { enabled: doc[key].enabled, slots: doc[key].slots };
+    });
+    res.json({ weeklySchedule, dateOverrides: doc.dateOverrides });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/study-abroad/slots?date=YYYY-MM-DD — public: slots for a date with booked status
+router.get('/slots', async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ message: 'date is required' });
+
+    const doc = await getAvailability();
+    const dayObj = new Date(date + 'T12:00:00Z');
+    const dayKey = DAY_KEYS[dayObj.getUTCDay()];
+
+    const override = doc.dateOverrides.find((o) => o.date === date);
+    let enabled, slots;
+    if (override) {
+      enabled = override.enabled;
+      slots = override.slots.length > 0 ? override.slots : doc[dayKey].slots;
+    } else {
+      enabled = doc[dayKey].enabled;
+      slots = doc[dayKey].slots;
+    }
+
+    if (!enabled || slots.length === 0) {
+      return res.json({ enabled: false, slots: [] });
+    }
+
+    const bookingDate = new Date(date);
+    const startOfDay = new Date(bookingDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(bookingDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const bookedDocs = await Booking.find({
+      service: 'study-abroad-consultation',
+      date: { $gte: startOfDay, $lte: endOfDay },
+      status: { $ne: 'cancelled' },
+    }).select('timeSlot');
+
+    const bookedSet = new Set(bookedDocs.map((b) => b.timeSlot));
+
+    res.json({
+      enabled: true,
+      slots: slots.map((time) => ({ time, booked: bookedSet.has(time) })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/study-abroad/admin/availability — admin: full config
+router.get('/admin/availability', protect, isAdmin, async (req, res) => {
+  try {
+    const doc = await getAvailability();
+    res.json(doc);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/study-abroad/admin/availability — admin: update config
+router.put('/admin/availability', protect, isAdmin, async (req, res) => {
+  try {
+    let doc = await ConsultationAvailability.findOne();
+    if (!doc) {
+      doc = await ConsultationAvailability.create(req.body);
+    } else {
+      const { sun, mon, tue, wed, thu, fri, sat, dateOverrides } = req.body;
+      if (sun !== undefined) doc.sun = sun;
+      if (mon !== undefined) doc.mon = mon;
+      if (tue !== undefined) doc.tue = tue;
+      if (wed !== undefined) doc.wed = wed;
+      if (thu !== undefined) doc.thu = thu;
+      if (fri !== undefined) doc.fri = fri;
+      if (sat !== undefined) doc.sat = sat;
+      if (dateOverrides !== undefined) doc.dateOverrides = dateOverrides;
+      await doc.save();
+    }
+    res.json(doc);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // POST /api/study-abroad/check-email — duplicate booking check before payment
 router.post('/check-email', async (req, res) => {
@@ -167,6 +270,23 @@ router.post('/consultation', optionalAuth, async (req, res) => {
     if (duplicate) {
       return res.status(400).json({
         message: 'This email has already been used to book a consultation.',
+      });
+    }
+
+    // Slot conflict check — prevent double-booking the same date+time
+    const bookingDate = new Date(consultDate);
+    const startOfDay = new Date(bookingDate); startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(bookingDate); endOfDay.setUTCHours(23, 59, 59, 999);
+    const slotConflict = await Booking.findOne({
+      service: 'study-abroad-consultation',
+      date: { $gte: startOfDay, $lte: endOfDay },
+      timeSlot: consultTime,
+      status: { $ne: 'cancelled' },
+    });
+    if (slotConflict) {
+      return res.status(400).json({
+        message: 'This time slot was just booked by someone else. Please go back and select a different time.',
+        slotTaken: true,
       });
     }
 

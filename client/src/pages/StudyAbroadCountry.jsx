@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import {
   Globe, BookOpen, FileText, CheckCircle, ArrowRight, ArrowLeft,
-  Users, Award, Shield, GraduationCap, MapPin, TrendingUp, Clock, Star
+  Users, Award, Shield, GraduationCap, MapPin, TrendingUp, Clock, Star,
+  X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { initializePaystack } from '../utils/paystack';
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
 
@@ -350,26 +352,159 @@ export default function StudyAbroadCountry() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState(1);
+  const [, setPayRef] = useState('');
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
   const [form, setForm] = useState({
     fullName: '', email: '', phone: '',
     destinationCountry: data?.country || '',
-    university: '', program: '', intake: '',
-    currentQualification: '', requiresVisa: true,
+    program: '', educationLevel: '',
+    consultDate: '', consultTime: '',
   });
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [coupon, setCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [availability, setAvailability] = useState(null);
+  const [slotData, setSlotData] = useState(null);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+  useEffect(() => {
+    if (!showForm) return;
+    api.get('/study-abroad/availability')
+      .then(({ data: d }) => setAvailability(d))
+      .catch(() => {});
+  }, [showForm]);
 
   if (!data) return <Navigate to="/study-abroad" />;
 
-  const handleSubmit = async (e) => {
+  const handleDateSelect = async (dateStr) => {
+    setForm((f) => ({ ...f, consultDate: dateStr, consultTime: '' }));
+    setSlotData(null);
+    setSlotsLoading(true);
+    try {
+      const { data: sd } = await api.get(`/study-abroad/slots?date=${dateStr}`);
+      setSlotData(sd);
+    } catch {
+      setSlotData({ enabled: false, slots: [] });
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  const isDayUnavailable = (dateStr, dayOfWeek) => {
+    if (!availability) return false;
+    const override = availability.dateOverrides?.find((o) => o.date === dateStr);
+    if (override) return !override.enabled;
+    const key = DAY_KEYS[dayOfWeek];
+    return !availability.weeklySchedule?.[key]?.enabled;
+  };
+
+  const handleStep1 = async (e) => {
     e.preventDefault();
+    if (!form.consultDate) { toast.error('Please select a consultation date.'); return; }
+    if (!form.consultTime) { toast.error('Please select a consultation time.'); return; }
     setLoading(true);
     try {
-      await api.post('/study-abroad', { ...form, destinationCountry: data.country });
-      setSubmitted(true);
+      await api.post('/study-abroad/check-email', { email: form.email });
+      setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Submission failed. Please try again.');
+      toast.error(err.response?.data?.message || 'Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError('');
+    setCoupon(null);
+    try {
+      const { data: couponData } = await api.post('/coupons/validate', { code });
+      setCoupon(couponData);
+    } catch (err) {
+      setCouponError(err.response?.data?.message || 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const saveBooking = async (reference, finalAmount) => {
+    setPayRef(reference);
+    await api.post('/study-abroad/consultation', {
+      ...form,
+      destinationCountry: data.country,
+      reference,
+      couponCode: coupon ? couponInput.trim().toUpperCase() : undefined,
+      finalAmount,
+    });
+  };
+
+  const handlePayment = async () => {
+    const finalAmount = coupon ? coupon.finalAmount : 10000;
+
+    if (finalAmount === 0) {
+      setLoading(true);
+      try {
+        await saveBooking(`FREE-${couponInput.trim().toUpperCase()}-${Date.now()}`, 0);
+        setSubmitted(true);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Booking failed. Please contact us.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    initializePaystack({
+      email: form.email,
+      amount: finalAmount,
+      metadata: {
+        name: form.fullName,
+        phone: form.phone,
+        educationLevel: form.educationLevel,
+        destination: data.country,
+        program: form.program,
+        consultDate: form.consultDate,
+        consultTime: form.consultTime,
+        couponCode: coupon ? couponInput.trim().toUpperCase() : undefined,
+      },
+      onSuccess: async (reference) => {
+        setLoading(true);
+        try {
+          await saveBooking(reference, finalAmount);
+          setSubmitted(true);
+        } catch (err) {
+          toast.error(
+            err.response?.data?.message ||
+            'Payment received but booking failed. Contact us with reference: ' + reference
+          );
+        } finally {
+          setLoading(false);
+        }
+      },
+      onClose: () => {},
+    });
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setSubmitted(false);
+    setStep(1);
+    setPayRef('');
+    setForm({ fullName: '', email: '', phone: '', destinationCountry: data?.country || '', program: '', educationLevel: '', consultDate: '', consultTime: '' });
+    setCouponInput('');
+    setCoupon(null);
+    setCouponError('');
+    setSlotData(null);
+    setAvailability(null);
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
@@ -420,7 +555,7 @@ export default function StudyAbroadCountry() {
             <div className="flex flex-wrap gap-3">
               <button onClick={() => setShowForm(true)}
                 className="flex items-center gap-2 bg-green-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-700 transition shadow-lg">
-                Apply Now — Free Consultation <ArrowRight size={16} />
+                Book a Consultation <ArrowRight size={16} />
               </button>
               <Link to="/study-abroad"
                 className="flex items-center gap-2 border border-white/30 text-white font-semibold px-6 py-4 rounded-xl hover:bg-white/10 transition">
@@ -716,13 +851,13 @@ export default function StudyAbroadCountry() {
           <div className="mb-5 flex justify-center"><FlagImg code={data.code} w={80} className="h-14 rounded-md shadow-lg" /></div>
           <h2 className="text-3xl font-extrabold mb-3">Ready to Study in {data.country}?</h2>
           <p className="text-green-200 mb-8 max-w-xl mx-auto">
-            Get a free consultation with our {data.country} admissions experts. We'll assess your profile
+            Book a consultation with our {data.country} admissions experts. We'll assess your profile
             and tell you exactly which universities you can get into.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <button onClick={() => setShowForm(true)}
               className="bg-white text-green-900 font-bold px-8 py-4 rounded-xl hover:bg-green-50 transition">
-              Book Free Consultation →
+              Book Consultation →
             </button>
             <Link to="/study-abroad"
               className="border border-white/40 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition flex items-center gap-2">
@@ -733,100 +868,324 @@ export default function StudyAbroadCountry() {
       </section>
 
       {/* ── APPLICATION MODAL ────────────────────────────────── */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-7 py-5 flex items-center justify-between rounded-t-3xl">
-              <div>
-                <h3 className="font-extrabold text-gray-900">Apply for {data.country}</h3>
-                <p className="text-gray-400 text-xs mt-0.5">Free consultation. Response within 48 hours.</p>
-              </div>
-              <button onClick={() => setShowForm(false)}
-                className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition text-gray-600 text-xl font-bold">
-                Ã—
-              </button>
-            </div>
+      {showForm && (() => {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const calYear = calMonth.getFullYear();
+        const calMonthIdx = calMonth.getMonth();
+        const daysInMonth = new Date(calYear, calMonthIdx + 1, 0).getDate();
+        const firstDay = new Date(calYear, calMonthIdx, 1).getDay();
+        const canGoPrev = calMonth > new Date(today.getFullYear(), today.getMonth(), 1);
+        const fmtDate = (ds) => {
+          if (!ds) return '';
+          const [y, m, d] = ds.split('-');
+          return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        };
 
-            {submitted ? (
-              <div className="p-10 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle className="text-green-600" size={28} />
+        return (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 py-8 overflow-y-auto">
+            <div className={`bg-white rounded-3xl w-full my-auto shadow-2xl overflow-hidden ${step === 1 ? 'max-w-2xl' : 'max-w-md'}`}>
+
+              {/* Header */}
+              <div className="bg-green-900 px-7 py-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-extrabold text-white">
+                    {submitted ? 'Booking Confirmed!' : step === 1 ? `Book a Consultation — ${data.country}` : 'Review & Pay'}
+                  </h2>
+                  <p className="text-green-300 text-xs mt-0.5">
+                    {submitted ? 'Your slot is reserved' : step === 1 ? 'Pick a date and time that works for you' : 'Consultation fee — ₦10,000'}
+                  </p>
                 </div>
-                <h4 className="text-xl font-extrabold text-gray-900 mb-2">Application Submitted!</h4>
-                <p className="text-gray-500 text-sm mb-6">
-                  Our {data.country} specialist will contact you within 48 hours.
-                </p>
-                <button onClick={() => { setShowForm(false); setSubmitted(false); }}
-                  className="bg-green-700 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-green-800 transition">
-                  Done
+                <button onClick={resetForm}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-800 text-green-300 hover:bg-green-700 transition">
+                  <X size={16} />
                 </button>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="p-7 space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Full Name *</label>
-                  <input className={inp} required placeholder="Your full name"
-                    value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+
+              {/* Step indicator */}
+              {!submitted && (
+                <div className="flex border-b border-gray-100">
+                  {['Your Details', 'Confirm & Pay'].map((label, i) => (
+                    <div key={label} className={`flex-1 py-2.5 text-center text-xs font-semibold transition
+                      ${step === i + 1 ? 'text-green-700 border-b-2 border-green-600' : 'text-gray-400'}`}>
+                      {i + 1}. {label}
+                    </div>
+                  ))}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Email *</label>
-                    <input type="email" className={inp} required placeholder="you@email.com"
-                      value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              )}
+
+              {/* ── SUCCESS ── */}
+              {submitted && (
+                <div className="p-10 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <CheckCircle size={32} className="text-green-600" />
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Phone *</label>
-                    <input className={inp} required placeholder="+234..."
-                      value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                  <h3 className="text-xl font-extrabold text-gray-900 mb-2">Consultation Booked!</h3>
+                  <p className="text-gray-500 text-sm mb-1">Thank you, <strong>{form.fullName}</strong>.</p>
+                  <p className="text-gray-500 text-sm mb-4">
+                    Your consultation is scheduled for<br />
+                    <strong className="text-gray-800">{fmtDate(form.consultDate)} at {form.consultTime}</strong>.
+                  </p>
+                  <p className="text-gray-400 text-xs mb-6">A confirmation has been sent to <strong>{form.email}</strong> and via WhatsApp to <strong>{form.phone}</strong>. Our counsellor will reach out shortly before your slot.</p>
+                  <button onClick={resetForm}
+                    className="bg-green-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition text-sm">
+                    Done
+                  </button>
+                </div>
+              )}
+
+              {/* ── STEP 1: Details + Calendar ── */}
+              {!submitted && step === 1 && (
+                <form onSubmit={handleStep1} className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+
+                    {/* Left — personal info */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Your Information</p>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+                        <input type="text" required value={form.fullName}
+                          onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inp} placeholder="Your full name" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
+                        <input type="email" required value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })} className={inp} placeholder="you@email.com" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
+                        <input type="tel" required value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inp} placeholder="+234 800..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Destination</label>
+                        <input className={`${inp} bg-green-50 text-green-800 font-semibold`} readOnly value={data.country} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Program / Course</label>
+                        <input value={form.program}
+                          onChange={(e) => setForm({ ...form, program: e.target.value })} className={inp} placeholder="e.g. Computer Science" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Highest Level of Education <span className="text-red-500">*</span></label>
+                        <select required value={form.educationLevel}
+                          onChange={(e) => setForm({ ...form, educationLevel: e.target.value })} className={inp}>
+                          <option value="">Select education level</option>
+                          <option>WAEC / SSCE (Secondary School)</option>
+                          <option>OND (Ordinary National Diploma)</option>
+                          <option>HND (Higher National Diploma)</option>
+                          <option>B.Sc / B.A (Bachelor&apos;s Degree)</option>
+                          <option>M.Sc / M.A (Master&apos;s Degree)</option>
+                          <option>PhD</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Right — calendar + time slots */}
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Pick a Date <span className="text-red-500">*</span></p>
+
+                      {/* Month nav */}
+                      <div className="flex items-center justify-between mb-2">
+                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))}
+                          disabled={!canGoPrev}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition">
+                          <ChevronLeft size={16} />
+                        </button>
+                        <span className="text-sm font-bold text-gray-800">
+                          {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button type="button" onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+
+                      {/* Day headers */}
+                      <div className="grid grid-cols-7 mb-1">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                          <div key={d} className="text-center text-[10px] font-bold text-gray-400 py-1">{d}</div>
+                        ))}
+                      </div>
+
+                      {/* Day cells */}
+                      <div className="grid grid-cols-7 gap-0.5">
+                        {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                          const day = i + 1;
+                          const date = new Date(calYear, calMonthIdx, day);
+                          const isPast = date < today;
+                          const dateStr = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const isSelected = form.consultDate === dateStr;
+                          const isUnavail = !isPast && isDayUnavailable(dateStr, date.getDay());
+                          const disabled = isPast || isUnavail;
+                          return (
+                            <button key={day} type="button" disabled={disabled}
+                              onClick={() => handleDateSelect(dateStr)}
+                              title={isUnavail ? 'Not available' : undefined}
+                              className={`aspect-square rounded-lg text-xs font-medium transition flex items-center justify-center
+                                ${isPast ? 'text-gray-300 cursor-not-allowed' :
+                                  isUnavail ? 'text-gray-300 bg-gray-50 cursor-not-allowed' :
+                                  isSelected ? 'bg-green-600 text-white font-bold shadow' :
+                                  'hover:bg-green-50 text-gray-700'}`}>
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Time slots */}
+                      {form.consultDate && (
+                        <div className="mt-4">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pick a Time <span className="text-red-500">*</span></p>
+                          {slotsLoading ? (
+                            <div className="flex items-center justify-center py-4 gap-2 text-gray-400 text-xs">
+                              <span className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
+                              Loading available times…
+                            </div>
+                          ) : !slotData?.enabled || slotData?.slots?.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-3 bg-gray-50 rounded-xl">
+                              No consultation slots available on this date.
+                            </p>
+                          ) : (
+                            <div className="grid grid-cols-4 gap-1.5">
+                              {slotData.slots.map(({ time, booked }) => (
+                                <button key={time} type="button"
+                                  disabled={booked}
+                                  onClick={() => !booked && setForm({ ...form, consultTime: time })}
+                                  className={`py-2 rounded-xl text-xs font-semibold border transition
+                                    ${booked
+                                      ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
+                                      : form.consultTime === time
+                                        ? 'bg-green-600 text-white border-green-600'
+                                        : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'}`}>
+                                  {booked ? 'Booked' : time}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Destination</label>
-                  <input className={`${inp} bg-green-50 text-green-800 font-semibold`} readOnly value={data.country} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Program of Interest</label>
-                    <input className={inp} placeholder="e.g. Computer Science"
-                      value={form.program} onChange={e => setForm(f => ({ ...f, program: e.target.value }))} />
+
+                  <div className="flex gap-3 mt-6">
+                    <button type="button" onClick={resetForm}
+                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={loading}
+                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
+                      {loading
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Checking…</>
+                        : <>Continue <ArrowRight size={15} /></>}
+                    </button>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Intended Intake</label>
-                    <select className={inp} value={form.intake} onChange={e => setForm(f => ({ ...f, intake: e.target.value }))}>
-                      <option value="">Select intake</option>
-                      <option>2025 Entry</option>
-                      <option>Jan 2026 Entry</option>
-                      <option>Sep 2026 Entry</option>
-                      <option>2027 Entry</option>
-                    </select>
+                </form>
+              )}
+
+              {/* ── STEP 2: Review & Pay ── */}
+              {!submitted && step === 2 && (
+                <div className="p-7">
+                  <div className="bg-gray-50 rounded-2xl p-5 mb-5 space-y-3 border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Booking Summary</p>
+                    {[
+                      ['Name', form.fullName],
+                      ['Email', form.email],
+                      ['Phone', form.phone],
+                      ['Education Level', form.educationLevel || '—'],
+                      ['Destination', data.country],
+                      ['Program', form.program || '—'],
+                      ['Date', fmtDate(form.consultDate)],
+                      ['Time', form.consultTime],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex justify-between text-sm">
+                        <span className="text-gray-500">{label}</span>
+                        <span className="font-semibold text-gray-800 text-right max-w-[60%]">{value}</span>
+                      </div>
+                    ))}
                   </div>
+
+                  {/* Coupon code */}
+                  <div className="mb-4">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      Coupon Code <span className="normal-case font-normal text-gray-400">(optional)</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
+                        onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                        className={`flex-1 border rounded-xl px-4 py-2.5 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 transition
+                          ${coupon ? 'border-green-400 bg-green-50 focus:ring-green-400' : couponError ? 'border-red-400 bg-red-50 focus:ring-red-400' : 'border-gray-200 bg-gray-50 focus:ring-green-500'}`}
+                        placeholder="ENTER CODE"
+                        disabled={!!coupon}
+                      />
+                      {coupon ? (
+                        <button type="button" onClick={() => { setCoupon(null); setCouponInput(''); setCouponError(''); }}
+                          className="px-4 py-2.5 text-xs font-bold border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-100 transition">
+                          Remove
+                        </button>
+                      ) : (
+                        <button type="button" onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
+                          className="px-4 py-2.5 text-xs font-bold bg-gray-800 text-white rounded-xl hover:bg-gray-700 disabled:opacity-40 transition">
+                          {couponLoading ? '...' : 'Apply'}
+                        </button>
+                      )}
+                    </div>
+                    {coupon && (
+                      <p className="mt-1.5 text-xs font-semibold text-green-700 flex items-center gap-1">
+                        <CheckCircle size={12} /> {coupon.message}
+                      </p>
+                    )}
+                    {couponError && (
+                      <p className="mt-1.5 text-xs font-semibold text-red-600">{couponError}</p>
+                    )}
+                  </div>
+
+                  {/* Fee breakdown */}
+                  <div className="rounded-2xl p-4 mb-5 bg-green-50 border border-green-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-600">Consultation Fee</span>
+                      <span className={`text-sm font-semibold ${coupon ? 'line-through text-gray-400' : 'text-gray-800'}`}>₦10,000</span>
+                    </div>
+                    {coupon && coupon.discountAmount > 0 && (
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-green-700">Discount ({coupon.type === 'full' ? '100%' : coupon.value + '%'})</span>
+                        <span className="text-sm font-semibold text-green-700">− ₦{coupon.discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-green-200 mt-2">
+                      <span className="text-sm font-bold text-green-900">Total</span>
+                      <span className="text-xl font-extrabold text-green-700">
+                        {coupon && coupon.finalAmount === 0 ? 'FREE' : `₦${(coupon ? coupon.finalAmount : 10000).toLocaleString()}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => setStep(1)}
+                      className="flex-1 border border-gray-200 rounded-xl py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+                      <ChevronLeft size={15} /> Back
+                    </button>
+                    <button type="button" onClick={handlePayment} disabled={loading}
+                      className="flex-1 bg-green-700 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
+                      {loading
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
+                        : coupon && coupon.finalAmount === 0
+                          ? <>Confirm Free Booking <ArrowRight size={15} /></>
+                          : <>Pay ₦{(coupon ? coupon.finalAmount : 10000).toLocaleString()} <ArrowRight size={15} /></>}
+                    </button>
+                  </div>
+                  <p className="text-center text-xs text-gray-400 mt-3">
+                    {coupon && coupon.finalAmount === 0 ? 'No payment required — coupon covers full fee' : 'Secured by Paystack · SSL encrypted'}
+                  </p>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Highest Qualification</label>
-                  <select className={inp} value={form.currentQualification} onChange={e => setForm(f => ({ ...f, currentQualification: e.target.value }))}>
-                    <option value="">Select qualification</option>
-                    <option>WAEC/NECO</option>
-                    <option>OND</option>
-                    <option>HND</option>
-                    <option>BSc/BA/BEng</option>
-                    <option>MSc/MBA/MA</option>
-                    <option>PhD</option>
-                  </select>
-                </div>
-                <button type="submit" disabled={loading}
-                  className="w-full bg-green-700 text-white font-bold py-4 rounded-xl hover:bg-green-800 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                  {loading
-                    ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
-                    : <>Submit Application <ArrowRight size={15} /></>}
-                </button>
-                <p className="text-gray-400 text-xs text-center">
-                  Free consultation. No obligation. Response within 48 hours.
-                </p>
-              </form>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

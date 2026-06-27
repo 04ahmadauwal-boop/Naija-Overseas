@@ -136,7 +136,7 @@ const AFFILIATIONS = [
 ];
 
 const FAQS = [
-  { q: 'What are the requirements to study abroad?', a: 'Requirements vary by country and university but typically include: a completed secondary/tertiary qualification, English proficiency (IELTS or equivalent), a personal statement, referee letters, and financial proof. We assess your exact requirements during a free consultation.' },
+  { q: 'What are the requirements to study abroad?', a: 'Requirements vary by country and university but typically include: a completed secondary/tertiary qualification, English proficiency (IELTS or equivalent), a personal statement, referee letters, and financial proof. We assess your exact requirements during your consultation.' },
   { q: 'Do I need IELTS to study abroad?', a: 'Many universities and countries now accept IELTS alternatives or offer waivers for students who studied in English-medium institutions. We will advise you on whether you need IELTS or qualify for an exemption based on your profile.' },
   { q: 'How much does it cost to study abroad?', a: 'Costs vary widely. UK tuition: £10,000–£25,000/year. Canada: CAD 15,000–35,000/year. Germany: often free or €500/semester. We help you identify affordable options and scholarships to reduce costs significantly.' },
   { q: 'How long does the application process take?', a: 'Typically 4–8 weeks from initial consultation to submitting applications. Visa processing adds 2–8 weeks depending on the country. We recommend starting at least 6 months before your intended intake.' },
@@ -145,7 +145,7 @@ const FAQS = [
 ];
 
 const PROCESS_STEPS = [
-  { icon: FileText, title: 'Free Consultation', desc: 'Submit your profile for a free assessment. A senior counsellor will review your qualifications and contact you within 48 hours with personalised advice.', time: 'Day 1', badge: '01' },
+  { icon: FileText, title: 'Consultation', desc: 'Submit your profile and book a consultation. A senior counsellor will review your qualifications and contact you within 48 hours with personalised advice.', time: 'Day 1', badge: '01' },
   { icon: BookOpen, title: 'University Shortlisting', desc: 'We prepare a personalised list of 5–10 universities that match your academic profile, budget, career goals, and location preferences.', time: '24–48 hrs', badge: '02' },
   { icon: Globe, title: 'Application & Documents', desc: 'We help you write a compelling personal statement, prepare all required documents, and submit strong applications to your chosen universities.', time: '2–4 weeks', badge: '03' },
   { icon: Plane, title: 'Visa & Departure', desc: 'Once you receive your offer letter, we guide you through the visa application, pre-departure briefing, and provide support throughout your first semester.', time: 'Ongoing', badge: '04' },
@@ -199,8 +199,11 @@ export default function StudyAbroad() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [coupon, setCoupon] = useState(null); // { type, value, discountAmount, finalAmount, message }
   const [couponError, setCouponError] = useState('');
+  const [availability, setAvailability] = useState(null); // weekly schedule + date overrides
+  const [slotData, setSlotData] = useState(null); // { enabled, slots: [{time, booked}] }
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
-  const TIME_SLOTS = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
+  const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const intervalRef = useRef(null);
   const progressRef = useRef(null);
   const tickRef = useRef(0);
@@ -229,6 +232,35 @@ export default function StudyAbroad() {
     }, 50);
     return () => clearInterval(progressRef.current);
   }, [slide, paused, TOTAL_TICKS]);
+
+  useEffect(() => {
+    if (!showForm) return;
+    api.get('/study-abroad/availability')
+      .then(({ data }) => setAvailability(data))
+      .catch(() => {});
+  }, [showForm]);
+
+  const handleDateSelect = async (dateStr) => {
+    setForm((f) => ({ ...f, consultDate: dateStr, consultTime: '' }));
+    setSlotData(null);
+    setSlotsLoading(true);
+    try {
+      const { data } = await api.get(`/study-abroad/slots?date=${dateStr}`);
+      setSlotData(data);
+    } catch {
+      setSlotData({ enabled: false, slots: [] });
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  const isDayUnavailable = (dateStr, dayOfWeek) => {
+    if (!availability) return false;
+    const override = availability.dateOverrides?.find((o) => o.date === dateStr);
+    if (override) return !override.enabled;
+    const key = DAY_KEYS[dayOfWeek];
+    return !availability.weeklySchedule?.[key]?.enabled;
+  };
 
   const handleStep1 = async (e) => {
     e.preventDefault();
@@ -331,6 +363,8 @@ export default function StudyAbroad() {
     setCouponInput('');
     setCoupon(null);
     setCouponError('');
+    setSlotData(null);
+    setAvailability(null);
   };
 
   const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition';
@@ -396,7 +430,7 @@ export default function StudyAbroad() {
                 </a>
               </div>
 
-              <p className="text-white/30 text-xs mt-4">Free consultation. No commitment required.</p>
+              <p className="text-white/30 text-xs mt-4">Consultation fee: ₦10,000</p>
             </div>
 
             {/* RIGHT: Universities card */}
@@ -531,7 +565,7 @@ export default function StudyAbroad() {
             </div>
             <button onClick={() => setShowForm(true)}
               className="mt-8 flex items-center gap-2 bg-green-700 text-white font-bold px-8 py-4 rounded-xl hover:bg-green-800 transition">
-              Book Free Consultation <ArrowRight size={16} />
+              Book Consultation <ArrowRight size={16} />
             </button>
           </div>
 
@@ -629,7 +663,7 @@ export default function StudyAbroad() {
           <div className="mt-10 text-center">
             <button onClick={() => setShowForm(true)}
               className="inline-flex items-center gap-2 bg-green-700 text-white font-bold px-10 py-4 rounded-xl hover:bg-green-800 transition">
-              Start with a Free Consultation <ArrowRight size={16} />
+              Start with a Consultation <ArrowRight size={16} />
             </button>
           </div>
         </div>
@@ -742,7 +776,7 @@ export default function StudyAbroad() {
             <div className="hidden sm:block absolute top-[30px] left-[calc(12.5%+8px)] right-[calc(12.5%+8px)] h-px bg-linear-to-r from-green-800 via-green-600 to-green-800 z-0" />
 
             {[
-              { icon: FileText, badge: '01', time: 'Day 1',       title: 'Free Consultation',       desc: 'Profile review by a senior counsellor within 48 hrs.'       },
+              { icon: FileText, badge: '01', time: 'Day 1',       title: 'Consultation',       desc: 'Profile review by a senior counsellor within 48 hrs.'       },
               { icon: BookOpen, badge: '02', time: '24–48 hrs',   title: 'University Shortlist',    desc: '5–10 universities matched to your goals and budget.'        },
               { icon: Globe,    badge: '03', time: '2–4 weeks',   title: 'Apply & Document',        desc: 'Personal statement, documents, and applications handled.'   },
               { icon: Plane,    badge: '04', time: 'Offer stage', title: 'Visa & Departure',        desc: 'Visa support, pre-departure prep, first semester guidance.' },
@@ -773,7 +807,7 @@ export default function StudyAbroad() {
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold px-7 sm:px-8 py-3 sm:py-3.5 rounded-full transition shadow-lg shadow-green-900/40 text-sm">
               Start My Application <ArrowRight size={15} />
             </button>
-            <p className="text-gray-600 text-xs mt-3">Free assessment · No upfront commitment</p>
+            <p className="text-gray-600 text-xs mt-3">Consultation fee: ₦10,000 · Secured by Paystack</p>
           </div>
         </div>
       </section>
@@ -898,7 +932,7 @@ export default function StudyAbroad() {
           <div>
             <h2 className="text-xl sm:text-2xl md:text-4xl font-extrabold mb-4">Ready to start your international journey?</h2>
             <p className="text-green-200 mb-8 leading-relaxed">
-              Submit a free application today. A senior admissions counsellor will review your profile and contact you within 48 hours with a personalised university shortlist.
+              Book a consultation today. A senior admissions counsellor will review your profile and contact you within 48 hours with a personalised university shortlist.
             </p>
             <div className="space-y-3">
               {[
@@ -917,11 +951,11 @@ export default function StudyAbroad() {
           </div>
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center">
             <GraduationCap size={36} className="text-green-400 mx-auto mb-4" />
-            <h3 className="text-xl font-extrabold text-white mb-2">Get Started Today — It&apos;s Free</h3>
-            <p className="text-green-300 text-sm mb-6">No payment, no commitment. Just expert advice tailored to your goals.</p>
+            <h3 className="text-xl font-extrabold text-white mb-2">Get Started Today</h3>
+            <p className="text-green-300 text-sm mb-6">Expert advice tailored to your goals. Consultation fee: ₦10,000.</p>
             <button onClick={() => setShowForm(true)}
               className="w-full bg-yellow-400 text-green-900 font-extrabold py-4 rounded-xl hover:bg-yellow-300 transition text-base shadow-lg">
-              Start Free Application →
+              Book Your Consultation →
             </button>
             <p className="text-green-500 text-xs mt-3">Response within 48 hours guaranteed.</p>
           </div>
@@ -1085,11 +1119,17 @@ export default function StudyAbroad() {
                           const isPast = date < today;
                           const dateStr = `${calYear}-${String(calMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                           const isSelected = form.consultDate === dateStr;
+                          const isUnavail = !isPast && isDayUnavailable(dateStr, date.getDay());
+                          const disabled = isPast || isUnavail;
                           return (
-                            <button key={day} type="button" disabled={isPast}
-                              onClick={() => setForm({ ...form, consultDate: dateStr, consultTime: '' })}
+                            <button key={day} type="button" disabled={disabled}
+                              onClick={() => handleDateSelect(dateStr)}
+                              title={isUnavail ? 'Not available' : undefined}
                               className={`aspect-square rounded-lg text-xs font-medium transition flex items-center justify-center
-                                ${isPast ? 'text-gray-300 cursor-not-allowed' : isSelected ? 'bg-green-600 text-white font-bold shadow' : 'hover:bg-green-50 text-gray-700'}`}>
+                                ${isPast ? 'text-gray-300 cursor-not-allowed' :
+                                  isUnavail ? 'text-gray-300 bg-gray-50 cursor-not-allowed' :
+                                  isSelected ? 'bg-green-600 text-white font-bold shadow' :
+                                  'hover:bg-green-50 text-gray-700'}`}>
                               {day}
                             </button>
                           );
@@ -1100,16 +1140,32 @@ export default function StudyAbroad() {
                       {form.consultDate && (
                         <div className="mt-4">
                           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pick a Time <span className="text-red-500">*</span></p>
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {TIME_SLOTS.map((t) => (
-                              <button key={t} type="button"
-                                onClick={() => setForm({ ...form, consultTime: t })}
-                                className={`py-2 rounded-xl text-xs font-semibold border transition
-                                  ${form.consultTime === t ? 'bg-green-600 text-white border-green-600' : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'}`}>
-                                {t}
-                              </button>
-                            ))}
-                          </div>
+                          {slotsLoading ? (
+                            <div className="flex items-center justify-center py-4 gap-2 text-gray-400 text-xs">
+                              <span className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
+                              Loading available times…
+                            </div>
+                          ) : !slotData?.enabled || slotData?.slots?.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-3 bg-gray-50 rounded-xl">
+                              No consultation slots available on this date.
+                            </p>
+                          ) : (
+                            <div className="grid grid-cols-4 gap-1.5">
+                              {slotData.slots.map(({ time, booked }) => (
+                                <button key={time} type="button"
+                                  disabled={booked}
+                                  onClick={() => !booked && setForm({ ...form, consultTime: time })}
+                                  className={`py-2 rounded-xl text-xs font-semibold border transition relative
+                                    ${booked
+                                      ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
+                                      : form.consultTime === time
+                                        ? 'bg-green-600 text-white border-green-600'
+                                        : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'}`}>
+                                  {booked ? 'Booked' : time}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
