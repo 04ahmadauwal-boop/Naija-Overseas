@@ -37,7 +37,7 @@ function ClaimsView() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchClaims(); }, [claimFilter]);
+  useEffect(() => { fetchClaims(); });
 
   const handleClaim = async (claimId, action) => {
     try {
@@ -266,7 +266,7 @@ export default function ManageSchools() {
 
   useEffect(() => {
     if (viewMode === 'schools') fetchSchools();
-  }, [filter, viewMode]);
+  });
 
   const approve = async (id, status) => {
     try {
@@ -341,29 +341,34 @@ export default function ManageSchools() {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Top bar */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Manage Schools</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Review, approve, and select Popular Listings</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                  <School size={15} className="text-green-700" />
+                </div>
+                Manage Schools
+              </h1>
+              <p className="text-gray-400 text-sm mt-1.5 ml-10.5">Review, approve, and select Popular Listings</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-full shrink-0 ${
+              <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${
                 featuredCount >= 4
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-green-50 text-green-700 border border-green-200'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-green-50 text-green-700 border-green-200'
               }`}>
-                <Star size={13} fill="currentColor" />
-                Popular Listings: {featuredCount}/4
-                {featuredCount >= 4 && <span className="text-[11px] font-medium ml-1">(full)</span>}
+                <Star size={11} fill="currentColor" />
+                Popular: {featuredCount}/4
+                {featuredCount >= 4 && <span className="font-medium ml-0.5">(full)</span>}
               </span>
               {viewMode === 'schools' && filter === 'pending' && pendingCount > 0 && (
-                <span className="bg-yellow-100 text-yellow-800 text-sm font-bold px-4 py-2 rounded-full shrink-0">
+                <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-3 py-1.5 rounded-full shrink-0">
                   {pendingCount} awaiting review
                 </span>
               )}
@@ -371,27 +376,27 @@ export default function ManageSchools() {
           </div>
 
           {/* View mode switcher */}
-          <div className="flex gap-2 mt-4 mb-3">
+          <div className="flex gap-1.5 mb-3 bg-gray-100 rounded-xl p-1 w-fit">
             <button onClick={() => setViewMode('schools')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition ${
-                viewMode === 'schools' ? 'bg-green-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition ${
+                viewMode === 'schools' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}>
               <School size={14} /> Schools
             </button>
             <button onClick={() => setViewMode('claims')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition ${
-                viewMode === 'claims' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition ${
+                viewMode === 'claims' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}>
               <Flag size={14} /> Claims
             </button>
           </div>
 
-          {/* Schools status filter tabs — only shown in schools view */}
+          {/* Schools status filter tabs */}
           {viewMode === 'schools' && (
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {STATUS_TABS.map(({ value, label }) => (
                 <button key={label} onClick={() => setFilter(value)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
                     filter === value ? 'bg-green-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}>
                   {label}
@@ -406,7 +411,7 @@ export default function ManageSchools() {
 
         {/* Schools view */}
         {viewMode === 'schools' && (
-          <div className="p-4 md:p-8">
+          <div className="p-4 md:p-6">
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -455,12 +460,12 @@ export default function ManageSchools() {
                   <table className="w-full text-sm min-w-175">
                     <thead className="bg-gray-50 text-gray-500 text-left border-b border-gray-100">
                       <tr>
-                        <th className="px-6 py-4 font-semibold">School</th>
-                        <th className="px-6 py-4 font-semibold">Location</th>
-                        <th className="px-6 py-4 font-semibold">Type</th>
-                        <th className="px-6 py-4 font-semibold">Status</th>
-                        <th className="px-6 py-4 font-semibold">Owner</th>
-                        <th className="px-6 py-4 font-semibold">Actions</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">School</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">Location</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">Type</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">Status</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">Owner</th>
+                        <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wide text-gray-500">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">

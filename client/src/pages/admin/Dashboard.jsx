@@ -6,7 +6,7 @@ import {
   Plus, Users, Menu, X, LogOut, Video, Star,
   Megaphone, Ticket, DollarSign, CalendarClock,
   AlertCircle, CheckCircle2, ArrowRight, Activity,
-  Zap, Bell, ChevronRight, BookOpen, TrendingUp,
+  Zap, Bell, ChevronRight, TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -379,7 +379,7 @@ export function Dashboard() {
                 <Link to="/admin/messages"
                   className="relative w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
                   <Bell size={17} />
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+                  <span className="absolute -top-1 -right-1 min-w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
                     {stats.unreadMessages > 9 ? '9+' : stats.unreadMessages}
                   </span>
                 </Link>
@@ -421,7 +421,7 @@ export function Dashboard() {
           {loading ? (
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-[110px] animate-pulse border border-gray-100" />
+                <div key={i} className="bg-white rounded-2xl h-27.5 animate-pulse border border-gray-100" />
               ))}
             </div>
           ) : (
@@ -461,7 +461,7 @@ export function Dashboard() {
                 <div className="divide-y divide-gray-50 flex-1">
                   {recentBookings.map(b => (
                     <div key={b._id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/70 transition">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xs font-bold text-gray-700 shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-linear-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xs font-bold text-gray-700 shrink-0">
                         {(b.name?.[0] || '?').toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -529,7 +529,7 @@ export function Dashboard() {
               <div className="divide-y divide-gray-50">
                 {recentApps.map(app => (
                   <div key={app._id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/70 transition">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center text-xs font-bold text-indigo-700 shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-200 to-purple-200 flex items-center justify-center text-xs font-bold text-indigo-700 shrink-0">
                       {(app.fullName?.[0] || '?').toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">

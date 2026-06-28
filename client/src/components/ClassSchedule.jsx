@@ -211,7 +211,7 @@ export function TodayScheduleBanner({ sessions = [], role = 'student' }) {
               }`}
             >
               {/* Time block */}
-              <div className="shrink-0 bg-white rounded-xl px-3 py-2 text-center shadow-sm min-w-[66px]">
+              <div className="shrink-0 bg-white rounded-xl px-3 py-2 text-center shadow-sm min-w-16.5">
                 <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-0.5">
                   {new Date(s.date).toLocaleDateString('en-GB', { weekday: 'short' })}
                 </p>

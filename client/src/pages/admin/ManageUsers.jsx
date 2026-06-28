@@ -48,7 +48,7 @@ export default function ManageUsers() {
     }
   };
 
-  useEffect(() => { fetchUsers(); }, [roleFilter, search]);
+  useEffect(() => { fetchUsers(); });
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -82,27 +82,32 @@ export default function ManageUsers() {
   }, {});
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Manage Users</h1>
-              <p className="text-gray-400 text-sm mt-0.5">All registered accounts across roles</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <Users size={15} className="text-blue-700" />
+                </div>
+                Manage Users
+              </h1>
+              <p className="text-gray-400 text-sm mt-1.5 ml-10.5">All registered accounts across roles</p>
             </div>
-            <div className="bg-blue-50 text-blue-700 text-sm font-bold px-4 py-2 rounded-full">
+            <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-full shrink-0">
               {total} total users
-            </div>
+            </span>
           </div>
 
           {/* Role tabs */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {ROLE_TABS.map((tab) => (
               <button key={tab} onClick={() => setRoleFilter(tab)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                   roleFilter === tab
                     ? 'bg-green-700 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -137,7 +142,7 @@ export default function ManageUsers() {
         </div>
 
         {/* Stats row */}
-        <div className="px-4 md:px-8 py-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="px-5 md:px-8 py-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ROLE_TABS.slice(1).map((role) => {
             const s = ROLE_STYLES[role];
             const Icon = s.icon;
@@ -157,7 +162,7 @@ export default function ManageUsers() {
         </div>
 
         {/* Table */}
-        <div className="px-4 md:px-8 pb-8">
+        <div className="px-4 md:px-6 pb-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
             {loading ? (
               <div className="space-y-px">

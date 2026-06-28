@@ -97,28 +97,40 @@ export default function ManageTutors() {
   const activeCount = tutors.filter((t) => t.isActive).length;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
 
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Manage Tutors</h1>
-              <p className="text-gray-400 text-sm mt-0.5">
-                {pendingCount} pending approval · {activeCount} active
-              </p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                  <GraduationCap size={15} className="text-purple-700" />
+                </div>
+                Manage Tutors
+              </h1>
+              <div className="flex items-center gap-2 mt-1.5 ml-10.5">
+                {pendingCount > 0 && (
+                  <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                    {pendingCount} pending approval
+                  </span>
+                )}
+                <span className="bg-green-50 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                  {activeCount} active
+                </span>
+              </div>
             </div>
             <button onClick={fetchTutors}
-              className="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition self-start">
-              <RefreshCw size={15} /> Refresh
+              className="flex items-center gap-2 border border-gray-200 text-gray-600 px-3.5 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 transition self-start">
+              <RefreshCw size={14} /> Refresh
             </button>
           </div>
         </div>
 
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-6 space-y-5">
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3">

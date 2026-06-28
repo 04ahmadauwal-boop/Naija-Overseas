@@ -772,7 +772,7 @@ export default function StudyAbroad() {
           {/* Steps */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 sm:gap-0 relative">
             {/* Horizontal connector — desktop only */}
-            <div className="hidden sm:block absolute top-[30px] left-[calc(12.5%+8px)] right-[calc(12.5%+8px)] h-px bg-linear-to-r from-green-800 via-green-600 to-green-800 z-0" />
+            <div className="hidden sm:block absolute top-7.5 left-[calc(12.5%+8px)] right-[calc(12.5%+8px)] h-px bg-linear-to-r from-green-800 via-green-600 to-green-800 z-0" />
 
             {[
               { icon: FileText, badge: '01', time: 'Day 1',       title: 'Consultation',       desc: 'Profile review by a senior counsellor within 48 hrs.'       },
@@ -990,7 +990,7 @@ export default function StudyAbroad() {
               </button>
 
               {/* ── LEFT SIDEBAR ── */}
-              <div className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-gradient-to-b from-green-900 via-green-900 to-green-950 p-7 relative overflow-hidden">
+              <div className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-linear-to-b from-green-900 via-green-900 to-green-950 p-7 relative overflow-hidden">
                 {/* Decorative circles */}
                 <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5 pointer-events-none" />
                 <div className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none" />
@@ -1316,7 +1316,7 @@ export default function StudyAbroad() {
 
                     {/* Booking summary receipt */}
                     <div className="border border-gray-100 rounded-2xl overflow-hidden mb-4 shadow-sm">
-                      <div className="bg-gradient-to-r from-green-800 to-green-700 px-5 py-3 flex items-center justify-between">
+                      <div className="bg-linear-to-r from-green-800 to-green-700 px-5 py-3 flex items-center justify-between">
                         <p className="text-green-200 text-[10px] font-bold uppercase tracking-widest">Booking Summary</p>
                         <button type="button" onClick={() => setStep(1)}
                           className="text-green-300 text-[10px] font-semibold hover:text-white transition">

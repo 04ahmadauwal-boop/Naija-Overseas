@@ -3,9 +3,8 @@ import { AdminNav } from './Dashboard';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
-  DollarSign, CheckCircle, Clock, AlertCircle, Search,
-  ChevronDown, ChevronUp, X, Save, ExternalLink,
-  Building2, ShieldCheck, ShieldAlert, Star, BadgeCheck,
+  DollarSign, CheckCircle, Clock, AlertCircle, Search, X, Save,
+  Building2, ShieldAlert, Star, BadgeCheck,
   TrendingUp, Wallet, Users, Percent, Settings,
 } from 'lucide-react';
 
@@ -98,7 +97,7 @@ function PayrollDetailModal({ record, onClose, onUpdate }) {
   const Row = ({ label, value }) => value ? (
     <div className="flex items-start py-2 border-b border-gray-100 last:border-0">
       <span className="text-xs text-gray-400 w-36 shrink-0">{label}</span>
-      <span className="text-xs font-semibold text-gray-800 flex-1 break-words">{value}</span>
+      <span className="text-xs font-semibold text-gray-800 flex-1 wrap-break-word">{value}</span>
     </div>
   ) : null;
 
@@ -382,14 +381,19 @@ export default function ManagePayroll() {
     <div className="flex h-screen bg-gray-950 overflow-hidden">
       <AdminNav />
 
-      <div className="flex-1 overflow-auto bg-gray-50">
+      <div className="flex-1 overflow-auto bg-[#f5f6fa]">
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Tutor Payroll</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Review sessions, verify bank details, and disburse payments</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                  <DollarSign size={15} className="text-emerald-700" />
+                </div>
+                Tutor Payroll
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5 ml-10.5">Review sessions, verify bank details, and disburse payments</p>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => setShowFeePanel(v => !v)}
@@ -462,7 +466,7 @@ export default function ManagePayroll() {
             <div className="flex gap-1.5 flex-wrap">
               {STATUS_OPTIONS.map(({ value, label }) => (
                 <button key={value} onClick={() => setTab(value)}
-                  className={`text-sm font-semibold px-3.5 py-1.5 rounded-xl transition ${
+                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-lg transition ${
                     tab === value ? 'bg-green-700 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-green-300'
                   }`}>
                   {label}
@@ -521,7 +525,7 @@ export default function ManagePayroll() {
                             <p className="font-medium text-gray-700">{r.student?.name || '—'}</p>
                             <p className="text-xs text-gray-400">{r.student?.email}</p>
                           </td>
-                          <td className="px-4 py-3 max-w-[180px]">
+                          <td className="px-4 py-3 max-w-45">
                             <p className="text-gray-700 text-xs truncate">{r.description}</p>
                             <p className="text-xs text-gray-400">
                               {new Date(r.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}

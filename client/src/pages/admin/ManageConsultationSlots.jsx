@@ -4,7 +4,7 @@ import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Calendar, Clock, Save, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAY_KEYS   = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 const ALL_SLOTS = [
@@ -146,7 +146,7 @@ export default function ManageConsultationSlots() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex min-h-screen bg-[#f5f6fa]">
         <AdminNav />
         <main className="flex-1 lg:ml-0 pt-14 lg:pt-0 flex items-center justify-center">
           <span className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
@@ -169,7 +169,7 @@ export default function ManageConsultationSlots() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <main className="flex-1 lg:ml-0 pt-14 lg:pt-0 overflow-y-auto">
         <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -177,8 +177,13 @@ export default function ManageConsultationSlots() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-xl font-extrabold text-gray-900">Consultation Availability</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Control which days and times users can book consultations</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <Calendar size={15} className="text-blue-700" />
+                </div>
+                Consultation Slots
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5 ml-10.5">Control which days and times users can book consultations</p>
             </div>
             <button onClick={save} disabled={saving}
               className="flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-green-800 transition disabled:opacity-60">

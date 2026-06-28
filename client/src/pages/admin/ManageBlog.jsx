@@ -166,26 +166,36 @@ export default function ManageBlog() {
   const readTime = calcReadTime(form.content);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Blog Posts</h1>
-              <p className="text-gray-400 text-sm mt-0.5">{posts.length} article{posts.length !== 1 ? 's' : ''} total</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                  <FileText size={15} className="text-orange-700" />
+                </div>
+                Blog Posts
+              </h1>
+              <p className="text-gray-400 text-sm mt-0.5 ml-[42px]">Manage and publish articles</p>
             </div>
-            <button
-              onClick={() => { setShowForm(true); setEditing(null); setForm(BLANK); setPreview(false); }}
-              className="flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-green-800 transition">
-              <Plus size={15} /> New Post
-            </button>
+            <div className="flex items-center gap-3">
+              <span className="bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                {posts.length} posts
+              </span>
+              <button
+                onClick={() => { setShowForm(true); setEditing(null); setForm(BLANK); setPreview(false); }}
+                className="flex items-center gap-2 bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-800 transition shadow-sm">
+                <Plus size={15} /> New Post
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-6 space-y-6">
 
           {/* ── FORM PANEL ───────────────────────────────────────── */}
           {showForm && (

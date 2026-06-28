@@ -58,7 +58,7 @@ function AvailabilitySection({ tutorId, trialDurationMins, bookUrl }) {
     results.forEach(({ date, slots: s }) => { map[date] = s; });
     setSlots(map);
     setLoading(false);
-  }, [tutorId, weekOffset]);
+  });
 
   useEffect(() => { fetchSlots(); }, [fetchSlots]);
 
@@ -166,7 +166,7 @@ function AvailabilitySection({ tutorId, trialDurationMins, bookUrl }) {
       </div>
 
       {/* Slots panel */}
-      <div className="px-4 sm:px-6 py-4 min-h-[160px]">
+      <div className="px-4 sm:px-6 py-4 min-h-40">
         {loading ? (
           <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (

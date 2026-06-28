@@ -98,16 +98,23 @@ export default function ManageReviews() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Top bar */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">School Reviews</h1>
-              <p className="text-gray-400 text-sm mt-0.5">{total} total review{total !== 1 ? 's' : ''} submitted</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                  <Star size={15} className="text-amber-700" />
+                </div>
+                Manage Reviews
+              </h1>
+              <p className="text-gray-400 text-sm mt-0.5 ml-10.5">
+                <span className="text-xs font-bold px-3 py-1.5 rounded-full border bg-yellow-50 text-yellow-700 border-yellow-200">{total} review{total !== 1 ? 's' : ''}</span>
+              </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={handleSeed} disabled={seeding}
@@ -126,7 +133,7 @@ export default function ManageReviews() {
           </div>
         </div>
 
-        <div className="p-4 md:p-8 space-y-5">
+        <div className="p-4 md:p-6 space-y-5">
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3">

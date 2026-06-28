@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Plus, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
+import { Save, Plus, Trash2, ExternalLink, RefreshCw, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdminNav } from './Dashboard';
 import api from '../../utils/api';
@@ -119,8 +119,13 @@ export default function ManageBanner() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Home Page Banner</h1>
-              <p className="text-gray-500 text-sm mt-1">Changes publish instantly to the home page.</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                  <Megaphone size={15} className="text-orange-700" />
+                </div>
+                Home Page Banner
+              </h1>
+              <p className="text-gray-500 text-sm mt-1 ml-[42px]">Changes publish instantly to the home page.</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link to="/" target="_blank"

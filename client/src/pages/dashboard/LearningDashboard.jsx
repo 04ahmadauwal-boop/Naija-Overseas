@@ -76,7 +76,7 @@ function BulkNoteForm({ studentIds, studentNames, onDone }) {
           <input className="input" placeholder="Title *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
           <input className="input" placeholder="Subject (optional)" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} />
         </div>
-        <textarea className="input min-h-[90px]" placeholder="Write your note…" value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} />
+        <textarea className="input min-h-22.5" placeholder="Write your note…" value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} />
         <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Sending…' : `Send to ${studentIds.length} Student${studentIds.length > 1 ? 's' : ''}`}</button>
       </form>
     </div>
@@ -331,7 +331,7 @@ function NotesTab({ role, studentId }) {
               <input className="input" placeholder="Subject (optional)" value={form.subject}
                 onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} />
             </div>
-            <textarea className="input min-h-[100px]" placeholder="Write your note here…" value={form.body}
+            <textarea className="input min-h-25" placeholder="Write your note here…" value={form.body}
               onChange={e => setForm(p => ({ ...p, body: e.target.value }))} />
             <button type="submit" disabled={creating} className="btn-primary">
               {creating ? 'Saving…' : 'Upload Note'}
@@ -880,11 +880,11 @@ function ReportsTab({ studentId, studentName }) {
             <input className="input" type="number" placeholder="Total sessions" value={form.total}
               onChange={e => setForm(p => ({ ...p, total: e.target.value }))} />
           </div>
-          <textarea className="input min-h-[80px]" placeholder="Summary / overall comments" value={form.summary}
+          <textarea className="input min-h-20" placeholder="Summary / overall comments" value={form.summary}
             onChange={e => setForm(p => ({ ...p, summary: e.target.value }))} />
-          <textarea className="input min-h-[60px]" placeholder="Strengths (one per line)" value={form.strengths}
+          <textarea className="input min-h-15" placeholder="Strengths (one per line)" value={form.strengths}
             onChange={e => setForm(p => ({ ...p, strengths: e.target.value }))} />
-          <textarea className="input min-h-[60px]" placeholder="Areas to improve (one per line)" value={form.improvements}
+          <textarea className="input min-h-15" placeholder="Areas to improve (one per line)" value={form.improvements}
             onChange={e => setForm(p => ({ ...p, improvements: e.target.value }))} />
           <button type="submit" disabled={creating} className="btn-primary">
             {creating ? 'Saving…' : 'Save Report'}
@@ -1389,7 +1389,7 @@ function SessionScheduleView({ sessions, role, onEnterSession }) {
               return (
                 <div key={s._id} className="px-5 py-4 flex items-center gap-4">
                   {/* Date block */}
-                  <div className="shrink-0 text-center bg-gray-50 rounded-xl px-3 py-2 min-w-[64px]">
+                  <div className="shrink-0 text-center bg-gray-50 rounded-xl px-3 py-2 min-w-16">
                     <p className="text-[9px] font-bold text-gray-400 uppercase">
                       {new Date(s.date).toLocaleDateString('en-GB', { month: 'short' })}
                     </p>
@@ -1450,7 +1450,7 @@ function SessionScheduleView({ sessions, role, onEnterSession }) {
 }
 
 // ── Main LiveClassTab ────────────────────────────────────────────────────────
-function LiveClassTab({ role, userId }) {
+function LiveClassTab({ role }) {
   const [searchParams] = useSearchParams();
   const sessionParam   = searchParams.get('session');
 

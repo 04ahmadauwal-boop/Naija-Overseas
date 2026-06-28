@@ -386,8 +386,8 @@ export default function Home() {
   const [showAllMobile, setShowAllMobile] = useState(false);
 
   // Spotlight row (right under hero) — top choice near you, featured pick, many more
-  const [detectedState, setDetectedState] = useState('');
-  const [detectedLga, setDetectedLga] = useState('');
+  const [setDetectedState] = useState('');
+  const [setDetectedLga] = useState('');
   const [spotlightNear, setSpotlightNear] = useState(null);
   const [spotlightFeatured, setSpotlightFeatured] = useState(null);
   const [spotlightLoading, setSpotlightLoading] = useState(true);
@@ -834,10 +834,10 @@ export default function Home() {
                 className={`group relative flex flex-col gap-1.5 sm:gap-3 px-3 sm:px-5 lg:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl border backdrop-blur-xl transition-all duration-300 overflow-hidden
                   ${active
                     ? 'bg-white/12 border-green-400/40 shadow-lg shadow-green-950/30'
-                    : 'bg-white/[0.04] border-white/[0.07] hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-black/20'}`}
+                    : 'bg-white/4 border-white/[0.07] hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-black/20'}`}
               >
                 {/* Top gradient line */}
-                <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${accent} transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} />
+                <div className={`absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r ${accent} transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`} />
 
                 {/* Step + icon row */}
                 <div className="flex items-center justify-between">

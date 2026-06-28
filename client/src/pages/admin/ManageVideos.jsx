@@ -103,8 +103,18 @@ export default function ManageVideos() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-xl font-extrabold text-white">Manage Videos</h1>
-              <p className="text-gray-500 text-sm mt-0.5">{videos.length} video{videos.length !== 1 ? 's' : ''} total</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-white flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                  <Play size={15} className="text-purple-700" />
+                </div>
+                Manage Videos
+              </h1>
+              <p className="text-gray-500 text-sm mt-0.5 ml-10.5">{videos.length} video{videos.length !== 1 ? 's' : ''} total</p>
+              <div className="mt-2 ml-10.5">
+                <span className="text-xs font-bold px-3 py-1.5 rounded-full border bg-purple-50/10 text-purple-300 border-purple-500/30">
+                  {videos.length} video{videos.length !== 1 ? 's' : ''}
+                </span>
+              </div>
             </div>
             <div className="flex gap-3">
               <Link to="/videos" target="_blank"

@@ -109,34 +109,41 @@ export default function ManageBookings() {
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
-          <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Manage Bookings</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Consultation and appointment bookings</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                  <CalendarCheck size={15} className="text-teal-700" />
+                </div>
+                Manage Bookings
+              </h1>
+              <p className="text-gray-400 text-sm mt-1.5 ml-10.5">Consultation and appointment bookings</p>
             </div>
-            <div className="bg-blue-50 text-blue-700 text-sm font-bold px-4 py-2 rounded-full shrink-0">
-              {pendingCount} pending
-            </div>
+            {pendingCount > 0 && (
+              <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-3 py-1.5 rounded-full shrink-0">
+                {pendingCount} pending
+              </span>
+            )}
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1.5 flex-wrap mb-2">
             {STATUS_TABS.map((tab) => (
               <button key={tab} onClick={() => setStatusFilter(tab)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold capitalize transition ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                   statusFilter === tab ? 'bg-green-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}>
                 {tab}
               </button>
             ))}
           </div>
-          <div className="flex gap-2 flex-wrap mt-2">
+          <div className="flex gap-1.5 flex-wrap">
             {SERVICE_TABS.map(tab => (
               <button key={tab} onClick={() => setServiceFilter(tab)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                   serviceFilter === tab ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}>
                 {tab === 'all' ? 'All Services' : tab.replace(/-/g, ' ')}
@@ -145,7 +152,7 @@ export default function ManageBookings() {
           </div>
         </div>
 
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-6">
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (

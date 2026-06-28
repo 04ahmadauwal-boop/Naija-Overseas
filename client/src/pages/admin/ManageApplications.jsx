@@ -329,26 +329,33 @@ export default function ManageApplications() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#f5f6fa]">
       <AdminNav />
       <div className="flex-1 overflow-x-hidden pt-14 lg:pt-0">
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-5">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white border-b border-gray-100 px-5 md:px-8 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Study Abroad Applications</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Click any row to view full student details and documents</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                  <Globe size={15} className="text-indigo-700" />
+                </div>
+                Study Abroad Applications
+              </h1>
+              <p className="text-gray-400 text-sm mt-1.5 ml-10.5">Click any row to view full student details and documents</p>
             </div>
-            <div className="bg-purple-50 text-purple-700 text-sm font-bold px-4 py-2 rounded-full">
-              {apps.filter((a) => a.status === 'submitted').length} new submissions
-            </div>
+            {apps.filter((a) => a.status === 'submitted').length > 0 && (
+              <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold px-3 py-1.5 rounded-full shrink-0">
+                {apps.filter((a) => a.status === 'submitted').length} new submissions
+              </span>
+            )}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {STATUS_TABS.map((tab) => (
               <button key={tab} onClick={() => setStatusFilter(tab)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                   statusFilter === tab ? 'bg-green-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}>
                 {tab.replace(/-/g, ' ')}
@@ -357,7 +364,7 @@ export default function ManageApplications() {
           </div>
         </div>
 
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-6">
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -375,7 +382,7 @@ export default function ManageApplications() {
                 <thead className="bg-gray-50 text-gray-500 text-left border-b border-gray-100">
                   <tr>
                     {['Applicant', 'Destination', 'Program', 'Intake', 'Status', 'Date', ''].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wide">{h}</th>
+                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
