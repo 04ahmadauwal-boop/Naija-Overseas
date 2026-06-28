@@ -11,6 +11,21 @@ import { initializePaystack } from '../utils/paystack';
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
 
+function UniLogo({ name }) {
+  const [failed, setFailed] = useState(false);
+  const abbr = name.split(' ').filter(w => w.length > 1).slice(0, 3).map(w => w[0]).join('');
+  const url = UNI_LOGOS[name];
+  if (!url || failed) return <span>{abbr}</span>;
+  return (
+    <img
+      src={url}
+      alt={name}
+      className="w-full h-full object-contain p-1 bg-white rounded-xl"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function FlagImg({ code, w = 40, className = '' }) {
   return (
     <img
@@ -20,6 +35,66 @@ function FlagImg({ code, w = 40, className = '' }) {
     />
   );
 }
+
+/* ─── UNIVERSITY LOGOS ───────────────────────────────────────── */
+const UNI_LOGOS = {
+  // UK
+  'University of Oxford':           'https://logo.clearbit.com/ox.ac.uk',
+  'University of Cambridge':        'https://logo.clearbit.com/cam.ac.uk',
+  'Imperial College London':        'https://logo.clearbit.com/imperial.ac.uk',
+  'University College London':      'https://logo.clearbit.com/ucl.ac.uk',
+  'London School of Economics':     'https://logo.clearbit.com/lse.ac.uk',
+  'University of Manchester':       'https://logo.clearbit.com/manchester.ac.uk',
+  // Canada
+  'University of Toronto':          'https://logo.clearbit.com/utoronto.ca',
+  'University of British Columbia': 'https://logo.clearbit.com/ubc.ca',
+  'McGill University':              'https://logo.clearbit.com/mcgill.ca',
+  'McMaster University':            'https://logo.clearbit.com/mcmaster.ca',
+  'University of Waterloo':         'https://logo.clearbit.com/uwaterloo.ca',
+  'York University':                'https://logo.clearbit.com/yorku.ca',
+  // USA
+  'Harvard University':                   'https://logo.clearbit.com/harvard.edu',
+  'Massachusetts Institute of Technology':'https://logo.clearbit.com/mit.edu',
+  'Stanford University':                  'https://logo.clearbit.com/stanford.edu',
+  'Yale University':                      'https://logo.clearbit.com/yale.edu',
+  'Columbia University':                  'https://logo.clearbit.com/columbia.edu',
+  'University of Michigan':               'https://logo.clearbit.com/umich.edu',
+  // Australia
+  'University of Melbourne':       'https://logo.clearbit.com/unimelb.edu.au',
+  'Australian National University':'https://logo.clearbit.com/anu.edu.au',
+  'University of Sydney':          'https://logo.clearbit.com/sydney.edu.au',
+  'University of Queensland':      'https://logo.clearbit.com/uq.edu.au',
+  'Monash University':             'https://logo.clearbit.com/monash.edu',
+  'UNSW Sydney':                   'https://logo.clearbit.com/unsw.edu.au',
+  // Germany
+  'TU Munich':                  'https://logo.clearbit.com/tum.de',
+  'LMU Munich':                 'https://logo.clearbit.com/lmu.de',
+  'Heidelberg University':      'https://logo.clearbit.com/uni-heidelberg.de',
+  'RWTH Aachen':                'https://logo.clearbit.com/rwth-aachen.de',
+  'Freie Universität Berlin':   'https://logo.clearbit.com/fu-berlin.de',
+  'ESMT Berlin':                'https://logo.clearbit.com/esmt.org',
+  // Ireland
+  'Trinity College Dublin':         'https://logo.clearbit.com/tcd.ie',
+  'University College Dublin':      'https://logo.clearbit.com/ucd.ie',
+  'NUI Galway':                     'https://logo.clearbit.com/universityofgalway.ie',
+  'University College Cork':        'https://logo.clearbit.com/ucc.ie',
+  'Dublin City University':         'https://logo.clearbit.com/dcu.ie',
+  'Maynooth University':            'https://logo.clearbit.com/maynoothuniversity.ie',
+  // Netherlands
+  'University of Amsterdam':          'https://logo.clearbit.com/uva.nl',
+  'Delft University of Technology':   'https://logo.clearbit.com/tudelft.nl',
+  'Erasmus University Rotterdam':     'https://logo.clearbit.com/eur.nl',
+  'Utrecht University':               'https://logo.clearbit.com/uu.nl',
+  'Leiden University':                'https://logo.clearbit.com/leidenuniv.nl',
+  'Wageningen University':            'https://logo.clearbit.com/wur.nl',
+  // New Zealand
+  'University of Auckland':             'https://logo.clearbit.com/auckland.ac.nz',
+  'University of Otago':                'https://logo.clearbit.com/otago.ac.nz',
+  'Victoria University of Wellington':  'https://logo.clearbit.com/wgtn.ac.nz',
+  'University of Canterbury':           'https://logo.clearbit.com/canterbury.ac.nz',
+  'Massey University':                  'https://logo.clearbit.com/massey.ac.nz',
+  'Auckland University of Technology':  'https://logo.clearbit.com/aut.ac.nz',
+};
 
 /* ─── COUNTRY DATA ───────────────────────────────────────────── */
 
@@ -623,8 +698,8 @@ export default function StudyAbroadCountry() {
             {data.topUniversities.map(({ name, rank, location, type, programs, tuition }) => (
               <div key={name} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition group">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0">
-                    {name.split(' ').filter(w => w.length > 1).slice(0, 3).map(w => w[0]).join('')}
+                  <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 overflow-hidden">
+                    <UniLogo name={name} />
                   </div>
                   <span className="text-[11px] bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full text-center leading-tight">{rank}</span>
                 </div>

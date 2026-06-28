@@ -10,9 +10,9 @@ const CONTACT_CARDS = [
   {
     icon: Mail,
     label: 'Email Us',
-    value: 'info@naijaandoverseas.com',
+    value: 'info@visiteno.com',
     sub: 'We reply within 24 hours',
-    href: 'mailto:info@naijaandoverseas.com',
+    href: 'mailto:info@visiteno.com',
     color: 'bg-blue-700',
   },
   {
@@ -120,9 +120,9 @@ export default function Contact() {
 
           {/* Quick contact pills */}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-            <a href="mailto:info@naijaandoverseas.com"
+            <a href="mailto:info@visiteno.com"
               className="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/15 border border-white/15 text-white px-3 py-2 rounded-full transition">
-              <Mail size={12} className="text-green-400" /> info@naijaandoverseas.com
+              <Mail size={12} className="text-green-400" /> info@visiteno.com
             </a>
             <a href="https://wa.me/2347012345678" target="_blank" rel="noreferrer"
               className="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/15 border border-white/15 text-white px-3 py-2 rounded-full transition">
@@ -216,9 +216,9 @@ export default function Contact() {
             {/* Social / website */}
             <div className="bg-gray-950 rounded-2xl p-5 sm:p-6">
               <p className="text-white font-bold text-sm mb-3">Education Naija &amp; Overseas</p>
-              <a href="https://naijaandoverseas.com" target="_blank" rel="noreferrer"
+              <a href="https://visiteno.com" target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 text-green-400 text-xs font-semibold hover:underline mb-4">
-                <Globe size={13} /> naijaandoverseas.com
+                <Globe size={13} /> visiteno.com
               </a>
               <p className="text-gray-500 text-xs leading-relaxed">
                 West Africa&apos;s smartest school discovery and education platform. Free to use for parents and students.

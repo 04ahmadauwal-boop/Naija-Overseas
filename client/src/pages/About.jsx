@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 import {
   Target, Eye, Users, Globe, School, CheckCircle, ArrowRight,
-  BookOpen, Plane, MapPin, Mail, Phone, Zap, Heart, TrendingUp,
+  BookOpen, Plane, MapPin, Mail, Heart,
 } from 'lucide-react';
 
 const STATS = [
-  { n: '500+',    label: 'Schools Listed',      sub: 'Verified & up to date',   icon: School,     color: 'text-green-600',  bg: 'bg-green-50'  },
-  { n: '10,000+', label: 'Families Helped',     sub: 'Across West Africa',       icon: Users,      color: 'text-blue-600',   bg: 'bg-blue-50'   },
+  { n: '100+',    label: 'Schools Listed',      sub: 'Verified & up to date',   icon: School,     color: 'text-green-600',  bg: 'bg-green-50'  },
+  { n: '1,000+', label: 'Families Helped',     sub: 'Across West Africa',       icon: Users,      color: 'text-blue-600',   bg: 'bg-blue-50'   },
   { n: '4',       label: 'Countries Active',    sub: 'NG · GH · GM · CM',        icon: Globe,      color: 'text-purple-600', bg: 'bg-purple-50' },
-  { n: '50+',     label: 'Partner Universities',sub: 'UK, Canada, EU & more',    icon: BookOpen,   color: 'text-orange-600', bg: 'bg-orange-50' },
+  { n: '30+',     label: 'Partner Universities',sub: 'UK, Canada, EU & more',    icon: BookOpen,   color: 'text-orange-600', bg: 'bg-orange-50' },
 ];
 
 const VALUES = [
@@ -285,8 +285,8 @@ export default function About() {
           <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Find us online</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {[
-              { icon: Globe, label: 'Website',  value: 'www.naijaandoverseas.com',    href: 'https://naijaandoverseas.com',       color: 'bg-green-100 text-green-700'  },
-              { icon: Mail,  label: 'Email',    value: 'info@naijaandoverseas.com',   href: 'mailto:info@naijaandoverseas.com',  color: 'bg-blue-100 text-blue-700'    },
+              { icon: Globe, label: 'Website',  value: 'www.visiteno.com',    href: 'https://visiteno.com',       color: 'bg-green-100 text-green-700'  },
+              { icon: Mail,  label: 'Email',    value: 'info@visiteno.com',   href: 'mailto:info@visiteno.com',  color: 'bg-blue-100 text-blue-700'    },
               { icon: MapPin,label: 'HQ',       value: 'Lagos, Nigeria',              href: null,                                color: 'bg-orange-100 text-orange-700' },
             ].map(({ icon: Icon, label, value, href, color }) => (
               <div key={label} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 sm:px-5 py-4 shadow-sm">
