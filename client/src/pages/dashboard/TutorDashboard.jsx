@@ -253,9 +253,27 @@ function BookingsTab({ bookings: initialBookings, loading }) {
   const [bookings, setBookings]       = useState(initialBookings);
   const [acting, setActing]           = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [linkInputs, setLinkInputs]   = useState({});   // bookingId → typed URL
+  const [settingLink, setSettingLink] = useState(null);  // bookingId being saved
 
   // Keep in sync when parent re-fetches
   useEffect(() => { setBookings(initialBookings); }, [initialBookings]);
+
+  const handleSetLink = async (bookingId) => {
+    const url = (linkInputs[bookingId] || '').trim();
+    if (!url) return toast.error('Please enter a meeting link');
+    setSettingLink(bookingId);
+    try {
+      const { data } = await api.patch(`/bookings/${bookingId}/set-link`, { callLink: url });
+      setBookings(prev => prev.map(b => b._id === bookingId ? data.booking : b));
+      setLinkInputs(prev => ({ ...prev, [bookingId]: '' }));
+      toast.success('Meeting link saved — student notified by email!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save link');
+    } finally {
+      setSettingLink(null);
+    }
+  };
 
   const filters = [
     { value: 'all',       label: 'All' },
@@ -391,12 +409,66 @@ function BookingsTab({ bookings: initialBookings, loading }) {
                     </div>
                   )}
 
-                  {/* Smart class start — disabled until 15 min before, live-aware */}
-                  {b.status === 'confirmed' && b.callLink && (
-                    <ClassStartButton callLink={b.callLink} date={b.date} timeSlot={b.timeSlot} />
+                  {/* Confirmed session — link management */}
+                  {b.status === 'confirmed' && (
+                    b.callLink ? (
+                      /* Link already set — show Start button + change option */
+                      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                        <ClassStartButton callLink={b.callLink} date={b.date} timeSlot={b.timeSlot} />
+                        <button
+                          onClick={() => setLinkInputs(prev => ({ ...prev, [b._id]: b.callLink }))}
+                          className="text-[10px] text-gray-400 hover:text-green-700 font-semibold underline text-right transition">
+                          Change link
+                        </button>
+                        {/* Inline edit field (appears when "Change link" clicked) */}
+                        {linkInputs[b._id] !== undefined && linkInputs[b._id] !== '' && (
+                          <div className="flex gap-1.5 mt-1">
+                            <input
+                              value={linkInputs[b._id]}
+                              onChange={e => setLinkInputs(prev => ({ ...prev, [b._id]: e.target.value }))}
+                              placeholder="New meeting link…"
+                              className="flex-1 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500 min-w-0"
+                            />
+                            <button
+                              onClick={() => handleSetLink(b._id)}
+                              disabled={settingLink === b._id}
+                              className="text-xs font-bold bg-green-700 text-white px-3 py-1.5 rounded-lg hover:bg-green-800 transition disabled:opacity-50 shrink-0">
+                              {settingLink === b._id ? '…' : 'Save'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* No link yet — prompt tutor to set one */
+                      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                        <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                          <AlertCircle size={12} className="text-amber-600 shrink-0" />
+                          <span className="text-[11px] text-amber-700 font-semibold">No meeting link set</span>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <input
+                            value={linkInputs[b._id] || ''}
+                            onChange={e => setLinkInputs(prev => ({ ...prev, [b._id]: e.target.value }))}
+                            onKeyDown={e => e.key === 'Enter' && handleSetLink(b._id)}
+                            placeholder="Paste Google Meet / Zoom link…"
+                            className="flex-1 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500 min-w-0"
+                          />
+                          <button
+                            onClick={() => handleSetLink(b._id)}
+                            disabled={settingLink === b._id}
+                            className="text-xs font-bold bg-green-700 text-white px-3 py-1.5 rounded-lg hover:bg-green-800 transition disabled:opacity-50 shrink-0 flex items-center gap-1">
+                            {settingLink === b._id
+                              ? <span className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                              : <Video size={11} />}
+                            {settingLink === b._id ? '…' : 'Set Link'}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-gray-400">Student will be notified by email instantly.</p>
+                      </div>
+                    )
                   )}
 
-                  {/* Mark as Done — confirmed sessions only */}
+                  {/* Mark as Done */}
                   {b.status === 'confirmed' && (
                     <button
                       onClick={() => handleAction(b._id, 'complete')}

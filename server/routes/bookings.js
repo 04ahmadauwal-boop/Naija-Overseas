@@ -423,6 +423,145 @@ router.get('/', protect, isAdmin, async (req, res) => {
   }
 });
 
+// POST /api/bookings/:id/notify-student — tutor has joined; ping student with Join Now link
+router.post('/:id/notify-student', protect, async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate({ path: 'tutorId', select: 'user', populate: { path: 'user', select: 'name email' } });
+
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (!booking.tutorId || booking.tutorId.user?._id?.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Not your booking' });
+    if (!booking.callLink) return res.status(400).json({ message: 'No call link set' });
+
+    const dateStr = new Date(booking.date).toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const tutorName = booking.tutorId?.user?.name || 'Your tutor';
+
+    await sendEmail({
+      to: booking.email,
+      subject: `⚡ ${tutorName} has joined your class — Join now!`,
+      html: `
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+      <tr><td style="background:#14532d;padding:24px 40px;text-align:center;">
+        <p style="margin:0;font-size:18px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
+      </td></tr>
+      <tr><td style="padding:36px 40px 28px;text-align:center;">
+        <div style="width:60px;height:60px;background:#dcfce7;border-radius:50%;margin:0 auto 16px;font-size:30px;line-height:60px;">🎓</div>
+        <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#111827;">Your tutor has joined!</h1>
+        <p style="margin:0 0 6px;font-size:15px;color:#374151;font-weight:600;">${tutorName} is in the class right now.</p>
+        <p style="margin:0;font-size:13px;color:#6b7280;">${dateStr} &nbsp;·&nbsp; ${booking.timeSlot}</p>
+      </td></tr>
+      <tr><td style="padding:0 40px 36px;text-align:center;">
+        <a href="${booking.callLink}"
+           style="display:inline-block;background:#16a34a;color:#fff;font-weight:800;font-size:16px;padding:18px 48px;border-radius:14px;text-decoration:none;box-shadow:0 6px 16px rgba(22,163,74,.35);letter-spacing:.01em;">
+          Join Class Now &rarr;
+        </a>
+        <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
+          Or open: <a href="${booking.callLink}" style="color:#16a34a;word-break:break-all;">${booking.callLink}</a>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`,
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PATCH /api/bookings/:id/set-link — tutor sets meeting link for their own session
+router.patch('/:id/set-link', protect, async (req, res) => {
+  try {
+    const { callLink } = req.body;
+    if (!callLink?.trim()) return res.status(400).json({ message: 'Call link is required' });
+
+    const booking = await Booking.findById(req.params.id)
+      .populate({ path: 'tutorId', select: 'user', populate: { path: 'user', select: 'email name' } });
+
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (booking.service !== 'tutoring-session')
+      return res.status(403).json({ message: 'Only tutoring sessions can have a link set here' });
+    if (!booking.tutorId || booking.tutorId.user?._id?.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Not your booking' });
+
+    booking.callLink = callLink.trim();
+    await booking.save();
+
+    const dateStr = new Date(booking.date).toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+
+    const linkEmailHtml = (recipientName) => `
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 16px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+      <tr><td style="background:#14532d;padding:28px 40px;text-align:center;">
+        <p style="margin:0;font-size:20px;font-weight:800;color:#fff;">Education Naija &amp; Overseas</p>
+        <p style="margin:4px 0 0;font-size:11px;color:#86efac;letter-spacing:.05em;">TUTORING PLATFORM</p>
+      </td></tr>
+      <tr><td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid #f0fdf4;">
+        <div style="width:52px;height:52px;background:#dcfce7;border-radius:50%;margin:0 auto 14px;font-size:26px;line-height:52px;">🔗</div>
+        <h1 style="margin:0 0 8px;font-size:20px;font-weight:800;color:#111827;">Class Link is Ready!</h1>
+        <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
+          Hi <strong>${recipientName}</strong>, the meeting link for your upcoming tutoring session has been set.
+        </p>
+      </td></tr>
+      <tr><td style="padding:24px 40px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr>
+            <td style="padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:13px;color:#6b7280;font-weight:600;width:38%;">Date</td>
+            <td style="padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;">${dateStr}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;background:#f9fafb;font-size:13px;color:#6b7280;font-weight:600;">Time</td>
+            <td style="padding:10px 16px;background:#fff;font-size:13px;color:#111827;">${booking.timeSlot}</td>
+          </tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:0 40px 32px;text-align:center;">
+        <a href="${callLink.trim()}" style="display:inline-block;background:#16a34a;color:#fff;font-weight:700;font-size:15px;padding:16px 40px;border-radius:12px;text-decoration:none;box-shadow:0 4px 12px rgba(22,163,74,.3);">
+          Join Class &rarr;
+        </a>
+        <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">Or copy this link: <a href="${callLink.trim()}" style="color:#16a34a;word-break:break-all;">${callLink.trim()}</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    // Email the student
+    sendEmail({
+      to: booking.email,
+      subject: `🔗 Class Link Ready — ${dateStr} at ${booking.timeSlot}`,
+      html: linkEmailHtml(booking.name),
+    }).catch(err => console.error('set-link student email:', err.message));
+
+    // Email the tutor
+    if (booking.tutorId?.user?.email) {
+      sendEmail({
+        to: booking.tutorId.user.email,
+        subject: `✅ Meeting Link Saved — ${dateStr} at ${booking.timeSlot}`,
+        html: linkEmailHtml(booking.tutorId.user.name || 'Tutor'),
+      }).catch(err => console.error('set-link tutor email:', err.message));
+    }
+
+    res.json({ booking });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // PATCH /api/bookings/:id/status — admin updates status and/or call link
 router.patch('/:id/status', protect, isAdmin, async (req, res) => {
   try {

@@ -27,6 +27,7 @@ const bookingSchema = new mongoose.Schema(
     googleEventId:    { type: String },
     reminderSent24h:  { type: Boolean, default: false },
     reminderSent1h:   { type: Boolean, default: false },
+    reminderSent10m:  { type: Boolean, default: false },
     isTrial:          { type: Boolean, default: false },
     subscriptionId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription' },
     quizResults: {

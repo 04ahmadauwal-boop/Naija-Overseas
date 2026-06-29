@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Timer, Play, Lock, Radio, GraduationCap, ExternalLink } from 'lucide-react';
+import { Timer, Play, Lock, Radio, GraduationCap, ExternalLink, Zap } from 'lucide-react';
 import {
   getClassStatus, getMsUntil, isSessionToday, parseSessionDateTime,
 } from '../utils/classSchedule';
+import api from '../utils/api';
+import toast from 'react-hot-toast';
 
-// ── ClassCountdown ────────────────────────────────────────────────────────────
-// Live ticking timer: "Starts in 2h 40m" → "Starting in 4m 32s" → "LIVE NOW" → "Ended"
+/* ── ClassCountdown ────────────────────────────────────────────────────────── */
 export function ClassCountdown({ date, timeSlot }) {
   const [, setTick] = useState(0);
   const status = getClassStatus(date, timeSlot);
 
   useEffect(() => {
     if (!['upcoming', 'soon', 'live'].includes(status)) return;
-    // tick every second when imminent; every minute when far away
     const ms = status === 'upcoming' ? 60_000 : 1_000;
     const id = setInterval(() => setTick(t => t + 1), ms);
     return () => clearInterval(id);
@@ -24,14 +24,10 @@ export function ClassCountdown({ date, timeSlot }) {
       LIVE NOW
     </span>
   );
-
-  if (status === 'ended') return (
-    <span className="text-gray-400 text-xs font-medium">Ended</span>
-  );
+  if (status === 'ended') return <span className="text-gray-400 text-xs font-medium">Ended</span>;
 
   const ms = getMsUntil(date, timeSlot);
   if (!ms || ms < 0) return null;
-
   const totalSec = Math.floor(ms / 1000);
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
@@ -39,17 +35,14 @@ export function ClassCountdown({ date, timeSlot }) {
   const text = h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
 
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
-      status === 'soon' ? 'text-amber-600' : 'text-gray-400'
-    }`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${status === 'soon' ? 'text-amber-600' : 'text-gray-400'}`}>
       <Timer size={10} />
       {status === 'soon' ? `Starting in ${text}` : `Starts in ${text}`}
     </span>
   );
 }
 
-// ── ClassJoinButton (student) ─────────────────────────────────────────────────
-// Always clickable when a callLink exists; visual state reflects proximity to class time.
+/* ── ClassJoinButton (student) ─────────────────────────────────────────────── */
 export function ClassJoinButton({ callLink, date, timeSlot, size = 'sm' }) {
   const status = getClassStatus(date, timeSlot);
   const lg = size === 'lg';
@@ -62,41 +55,32 @@ export function ClassJoinButton({ callLink, date, timeSlot, size = 'sm' }) {
       Link not ready
     </span>
   );
-
   if (status === 'ended') return (
-    <a href={callLink} target="_blank" rel="noreferrer"
-      className={`${base} bg-gray-200 hover:bg-gray-300 text-gray-500`}>
+    <a href={callLink} target="_blank" rel="noreferrer" className={`${base} bg-gray-200 hover:bg-gray-300 text-gray-500`}>
       <Play size={lg ? 14 : 11} fill="currentColor" /> Replay
     </a>
   );
-
   if (status === 'live') return (
-    <a href={callLink} target="_blank" rel="noreferrer"
-      className={`${base} bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-500/30`}>
+    <a href={callLink} target="_blank" rel="noreferrer" className={`${base} bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-500/30`}>
       <span className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
       Join Now
     </a>
   );
-
   if (status === 'soon') return (
-    <a href={callLink} target="_blank" rel="noreferrer"
-      className={`${base} bg-amber-500 hover:bg-amber-600 text-white`}>
+    <a href={callLink} target="_blank" rel="noreferrer" className={`${base} bg-amber-500 hover:bg-amber-600 text-white`}>
       <Play size={lg ? 14 : 11} fill="currentColor" /> Join Class
     </a>
   );
-
-  // upcoming — still clickable, just styled as secondary
   return (
-    <a href={callLink} target="_blank" rel="noreferrer"
-      className={`${base} bg-green-700 hover:bg-green-800 text-white`}>
+    <a href={callLink} target="_blank" rel="noreferrer" className={`${base} bg-green-700 hover:bg-green-800 text-white`}>
       <Play size={lg ? 14 : 11} fill="currentColor" /> Join Class
     </a>
   );
 }
 
-// ── ClassStartButton (tutor) ──────────────────────────────────────────────────
-// Disabled until 15 min before; amber when <60 min; green pulsing when live.
-export function ClassStartButton({ callLink, date, timeSlot, size = 'sm' }) {
+/* ── ClassStartButton (tutor) ─────────────────────────────────────────────── */
+// onJoin: optional callback fired when the tutor opens the link (used to notify student)
+export function ClassStartButton({ callLink, date, timeSlot, size = 'sm', onJoin }) {
   const status = getClassStatus(date, timeSlot);
   const lg = size === 'lg';
   const base = lg
@@ -104,36 +88,27 @@ export function ClassStartButton({ callLink, date, timeSlot, size = 'sm' }) {
     : 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0';
 
   if (!callLink) return (
-    <span className={`${base} bg-gray-100 text-gray-400 cursor-default`}>
-      No link
-    </span>
+    <span className={`${base} bg-gray-100 text-gray-400 cursor-default`}>No link</span>
   );
-
   if (status === 'upcoming') return (
-    <span
-      className={`${base} bg-gray-100 text-gray-400 cursor-not-allowed`}
-      title="Classroom opens 15 minutes before class"
-    >
+    <span className={`${base} bg-gray-100 text-gray-400 cursor-not-allowed`} title="Classroom opens 15 minutes before class">
       <Lock size={lg ? 14 : 11} /> Opens 15m before
     </span>
   );
-
   if (status === 'ended') return (
-    <span className={`${base} bg-gray-50 text-gray-300 cursor-default`}>
-      Done
-    </span>
+    <span className={`${base} bg-gray-50 text-gray-300 cursor-default`}>Done</span>
   );
 
+  const handleClick = () => { if (onJoin) onJoin(); };
+
   if (status === 'soon') return (
-    <a href={callLink} target="_blank" rel="noreferrer"
+    <a href={callLink} target="_blank" rel="noreferrer" onClick={handleClick}
       className={`${base} bg-amber-500 hover:bg-amber-600 text-white`}>
       <ExternalLink size={lg ? 14 : 11} /> Open Classroom
     </a>
   );
-
-  // live
   return (
-    <a href={callLink} target="_blank" rel="noreferrer"
+    <a href={callLink} target="_blank" rel="noreferrer" onClick={handleClick}
       className={`${base} bg-green-700 hover:bg-green-800 text-white shadow-sm shadow-green-700/30`}>
       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
       Start Class
@@ -141,11 +116,13 @@ export function ClassStartButton({ callLink, date, timeSlot, size = 'sm' }) {
   );
 }
 
-// ── TodayScheduleBanner ───────────────────────────────────────────────────────
-// Shows all of today's confirmed sessions with live countdown + smart action button.
-// sessions: booking objects with { _id, date, timeSlot, callLink, status, notes, user, name }
+/* ── TodayScheduleBanner ─────────────────────────────────────────────────── */
+// sessions: booking objects
 // role: 'student' | 'tutor'
-export function TodayScheduleBanner({ sessions = [], role = 'student' }) {
+// onTutorJoin: (bookingId) => void   — called when tutor opens a session link
+export function TodayScheduleBanner({ sessions = [], role = 'student', onTutorJoin }) {
+  const [notified, setNotified] = useState({}); // bookingId → true (throttle)
+
   const today = sessions
     .filter(s => s.status === 'confirmed' && isSessionToday(s.date))
     .sort((a, b) => {
@@ -156,15 +133,22 @@ export function TodayScheduleBanner({ sessions = [], role = 'student' }) {
 
   if (today.length === 0) return null;
 
-  const liveNow    = today.some(s => getClassStatus(s.date, s.timeSlot) === 'live');
-  const startSoon  = !liveNow && today.some(s => getClassStatus(s.date, s.timeSlot) === 'soon');
-
+  const liveNow   = today.some(s => getClassStatus(s.date, s.timeSlot) === 'live');
+  const startSoon = !liveNow && today.some(s => getClassStatus(s.date, s.timeSlot) === 'soon');
   const headerBg  = liveNow ? 'bg-green-700' : startSoon ? 'bg-amber-500' : 'bg-blue-700';
-  const wrapCls   = liveNow
-    ? 'border-green-300 bg-green-50'
-    : startSoon
-    ? 'border-amber-300 bg-amber-50'
-    : 'border-blue-200 bg-blue-50';
+  const wrapCls   = liveNow ? 'border-green-300 bg-green-50' : startSoon ? 'border-amber-300 bg-amber-50' : 'border-blue-200 bg-blue-50';
+
+  // Tutor opens a session: open link + notify student (once per session per page load)
+  const handleTutorOpen = (s) => {
+    if (!s.callLink) return;
+    window.open(s.callLink, '_blank', 'noopener,noreferrer');
+    if (notified[s._id]) return; // already notified this session in this session
+    setNotified(prev => ({ ...prev, [s._id]: true }));
+    api.post(`/bookings/${s._id}/notify-student`)
+      .then(() => toast.success('Student notified — join link sent to their email!', { icon: '📧' }))
+      .catch(() => {}); // silent — the class still opens
+    if (onTutorJoin) onTutorJoin(s._id);
+  };
 
   return (
     <div className={`rounded-2xl overflow-hidden border shadow-sm ${wrapCls}`}>
@@ -172,78 +156,92 @@ export function TodayScheduleBanner({ sessions = [], role = 'student' }) {
       <div className={`px-5 py-3 flex items-center justify-between ${headerBg}`}>
         <div className="flex items-center gap-2">
           {liveNow ? (
-            <>
-              <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-              <span className="text-white font-bold text-sm">Live Now</span>
-            </>
+            <><span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" /><span className="text-white font-bold text-sm">Live Now</span></>
           ) : startSoon ? (
-            <>
-              <Radio size={14} className="text-white shrink-0" />
-              <span className="text-white font-bold text-sm">Starting Soon</span>
-            </>
+            <><Radio size={14} className="text-white shrink-0" /><span className="text-white font-bold text-sm">Starting Soon</span></>
           ) : (
-            <>
-              <GraduationCap size={14} className="text-white shrink-0" />
-              <span className="text-white font-bold text-sm">Today's Schedule</span>
-            </>
+            <><GraduationCap size={14} className="text-white shrink-0" /><span className="text-white font-bold text-sm">Today's Schedule</span></>
           )}
         </div>
-        <span className="text-white/70 text-xs font-medium">
-          {today.length} session{today.length > 1 ? 's' : ''}
-        </span>
+        <span className="text-white/70 text-xs font-medium">{today.length} session{today.length > 1 ? 's' : ''}</span>
       </div>
 
       {/* Session rows */}
       <div className="divide-y divide-white/50">
         {today.map(s => {
-          const subject = s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim()
-            || s.notes?.slice(0, 50)
-            || 'Tutoring Session';
-          const tutorName  = s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim();
+          const subject     = s.notes?.match(/Subject: ([^|]+)/)?.[1]?.trim() || s.notes?.slice(0, 50) || 'Tutoring Session';
+          const tutorName   = s.notes?.match(/Tutor: ([^|]+)/)?.[1]?.trim();
           const studentName = s.user?.name || s.name || 'Student';
           const sessionStatus = getClassStatus(s.date, s.timeSlot);
+          const canOpen = role === 'tutor' && s.callLink && sessionStatus !== 'upcoming';
 
           return (
             <div
               key={s._id}
-              className={`px-4 py-3.5 flex items-center gap-3 ${
-                sessionStatus === 'live' ? 'bg-green-100/60' : ''
-              }`}
+              onClick={canOpen ? () => handleTutorOpen(s) : undefined}
+              className={`px-4 py-3.5 flex items-center gap-3 ${sessionStatus === 'live' ? 'bg-green-100/60' : ''} ${canOpen ? 'cursor-pointer hover:bg-white/60 transition-colors active:scale-[.99]' : ''}`}
             >
               {/* Time block */}
-              <div className="shrink-0 bg-white rounded-xl px-3 py-2 text-center shadow-sm min-w-16.5">
+              <div className="shrink-0 bg-white rounded-xl px-3 py-2 text-center shadow-sm min-w-[66px]">
                 <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-0.5">
                   {new Date(s.date).toLocaleDateString('en-GB', { weekday: 'short' })}
                 </p>
-                <p className="text-xs font-extrabold text-gray-900 leading-tight whitespace-nowrap">
-                  {s.timeSlot}
-                </p>
+                <p className="text-xs font-extrabold text-gray-900 leading-tight whitespace-nowrap">{s.timeSlot}</p>
               </div>
 
               {/* Details */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 truncate">{subject}</p>
                 <p className="text-xs text-gray-500 truncate">
-                  {role === 'student' && tutorName
-                    ? `Tutor: ${tutorName}`
-                    : role === 'tutor'
-                    ? `Student: ${studentName}`
-                    : ''}
+                  {role === 'student' && tutorName ? `Tutor: ${tutorName}` : role === 'tutor' ? `Student: ${studentName}` : ''}
                 </p>
                 <ClassCountdown date={s.date} timeSlot={s.timeSlot} />
               </div>
 
-              {/* Action button */}
-              <div className="shrink-0">
-                {role === 'student'
-                  ? <ClassJoinButton callLink={s.callLink} date={s.date} timeSlot={s.timeSlot} />
-                  : <ClassStartButton callLink={s.callLink} date={s.date} timeSlot={s.timeSlot} />
-                }
+              {/* Action */}
+              <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                {role === 'student' ? (
+                  <ClassJoinButton callLink={s.callLink} date={s.date} timeSlot={s.timeSlot} />
+                ) : (
+                  /* For tutor: visual pill only — row click handles navigation + notify */
+                  s.callLink ? (
+                    sessionStatus === 'upcoming' ? (
+                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gray-100 text-gray-400 cursor-not-allowed">
+                        <Lock size={11} /> Opens 15m before
+                      </span>
+                    ) : sessionStatus === 'ended' ? (
+                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gray-100 text-gray-400">
+                        Done
+                      </span>
+                    ) : (
+                      <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold pointer-events-none ${
+                        sessionStatus === 'live' ? 'bg-green-700 text-white' : 'bg-amber-500 text-white'
+                      }`}>
+                        {sessionStatus === 'live'
+                          ? <><span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Start Class</>
+                          : <><Zap size={11} /> Open Class</>
+                        }
+                      </span>
+                    )
+                  ) : (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                      No link set
+                    </span>
+                  )
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {role === 'tutor' && today.some(s => s.callLink && getClassStatus(s.date, s.timeSlot) !== 'upcoming') && (
+        <div className="px-5 py-2.5 bg-white/50 border-t border-white/60">
+          <p className="text-[11px] text-gray-400 text-center">
+            Tap a session to open your class — student will be notified by email instantly
+          </p>
+        </div>
+      )}
     </div>
   );
 }
