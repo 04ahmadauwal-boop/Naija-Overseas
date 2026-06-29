@@ -669,7 +669,7 @@ export default function Home() {
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col overflow-hidden">
+      <section className="relative flex flex-col overflow-hidden min-h-[88vh] sm:min-h-0">
         {/* Background — cinematic multi-layer */}
         <div className="absolute inset-0">
           <div
@@ -697,7 +697,7 @@ export default function Home() {
 
         {/* Main content */}
         <div className="relative z-20">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-6 pb-4 sm:pt-8 sm:pb-6 md:pt-10 md:pb-8 flex flex-col items-center sm:items-start">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-16 pb-10 sm:pt-8 sm:pb-6 md:pt-10 md:pb-8 flex flex-col items-center sm:items-start">
 
             {/* Headline */}
             <h1
@@ -914,7 +914,7 @@ export default function Home() {
             const CardItem = ({ school, idx }) => school ? (
               <Link to={`/schools/${school.slug || school._id}`}
                 className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200 h-full">
-                <div className="relative h-48 overflow-hidden bg-green-50 shrink-0">
+                <div className="relative h-44 sm:h-48 overflow-hidden bg-green-50 shrink-0">
                   {school.images?.[0] ? (
                     <img src={school.images[0]} alt={school.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -967,7 +967,7 @@ export default function Home() {
                 {/* ── Mobile: single-card slideshow ── */}
                 <div className="lg:hidden">
                   <div className="relative">
-                    <div className="overflow-hidden rounded-2xl">
+                    <div className="overflow-hidden rounded-2xl h-72">
                       <CardItem school={allSlots[editorSlide]} idx={editorSlide} />
                     </div>
 
