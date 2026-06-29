@@ -6,7 +6,7 @@ import {
   Search, SlidersHorizontal, CheckCircle, ArrowRight,
   Star, ChevronDown, BookOpen, Globe, BarChart3, Shield, X,
   ChevronLeft, ChevronRight, MessageSquare, GraduationCap, LayoutDashboard,
-  Clock, Eye, MapPin, Building2, Wallet,
+  Clock, Eye, MapPin, Building2, Wallet, School,
 } from 'lucide-react';
 import api from '../utils/api';
 import SchoolCard from '../components/SchoolCard';
@@ -386,8 +386,8 @@ export default function Home() {
   const [showAllMobile, setShowAllMobile] = useState(false);
 
   // Spotlight row (right under hero) — top choice near you, featured pick, many more
-  const [setDetectedState] = useState('');
-  const [setDetectedLga] = useState('');
+  const [detectedState, setDetectedState] = useState('');
+  const [detectedLga, setDetectedLga] = useState('');
   const [spotlightNear, setSpotlightNear] = useState(null);
   const [spotlightFeatured, setSpotlightFeatured] = useState(null);
   const [spotlightLoading, setSpotlightLoading] = useState(true);
@@ -658,6 +658,16 @@ export default function Home() {
     filters.minFee || filters.maxFee,
   ].filter(Boolean).length;
 
+  // Editor's choice — derived once, used in JSX
+  const editorCards = [spotlightNear, spotlightFeatured]
+    .filter(Boolean)
+    .concat(featuredSchools.filter(s => s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id))
+    .slice(0, 4);
+  const editorSlots = editorCards.length > 0
+    ? [...editorCards, ...Array.from({ length: Math.max(0, 4 - editorCards.length) }, () => null)]
+    : [null, null, null, null];
+  const editorActive = editorSlide % 4;
+
   // Animation refs
   const heroHeadingRef = useFadeIn(0.8, 0.2);
   useSlideIn('up', 0.8, 0.4);
@@ -878,164 +888,262 @@ export default function Home() {
 
       </section>
 
-      {/* ── POPULAR LISTINGS ─────────────────────────────────────────── */}
-      <section className="px-4 pt-8 sm:pt-12 pb-8 sm:pb-12 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between mb-5 sm:mb-7">
+      {/* ── EDITOR'S CHOICE ──────────────────────────────────────────── */}
+      <section className="py-12 sm:py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4 mb-8">
             <div>
-              <p className="text-green-600 font-semibold text-[11px] sm:text-xs uppercase tracking-widest mb-1">Editor's Choice</p>
-              <h2 className="text-lg sm:text-2xl font-extrabold text-gray-900 tracking-tight">Popular Listings</h2>
-              <p className="text-gray-400 text-xs mt-1">Hand-picked schools by our editorial team</p>
+              <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+                <Star size={10} fill="currentColor" /> Editor's Choice
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                Popular Listings
+              </h2>
+              <p className="text-gray-400 text-sm mt-1.5">Hand-picked schools by our editorial team</p>
             </div>
-            <Link to="/schools?featured=true"
-              className="text-xs font-semibold text-green-700 hover:text-green-800 hover:underline transition whitespace-nowrap">
-              View all →
+            <Link
+              to="/schools?featured=true"
+              className="shrink-0 mt-1 flex items-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 border border-green-200 bg-white px-3 py-2 rounded-xl hover:bg-green-50 transition"
+            >
+              Browse all <ChevronRight size={12} />
             </Link>
           </div>
 
-          {spotlightLoading ? (
-            <>
-              <div className="lg:hidden rounded-2xl bg-gray-100 animate-pulse h-64" />
-              <div className="hidden lg:grid grid-cols-4 gap-4">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="rounded-2xl bg-gray-100 animate-pulse h-64" />
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              {/* ── Mobile: single-card slideshow ── */}
-              <div className="lg:hidden">
-                <div className="relative px-5">
-                  {/* Card */}
-                  <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm" style={{ minHeight: 260 }}>
-                    {(() => {
-                      const editorCards = [spotlightNear, spotlightFeatured].filter(Boolean)
-                        .concat(featuredSchools.filter(s => s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id))
-                        .slice(0, 4);
-                      const total = Math.max(editorCards.length, 1);
-                      const school = editorCards[editorSlide % total];
-                      const idx = editorSlide % total;
-                      if (!school) return (
-                        <div className="h-64 flex items-center justify-center">
-                          <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
-                        </div>
-                      );
-                      return (
+          {/* Skeleton */}
+          {spotlightLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="rounded-2xl bg-gray-200 animate-pulse h-72" />
+              ))}
+            </div>
+          )}
+
+          {/* ── MOBILE CAROUSEL ────────────────────────────────────── */}
+          {!spotlightLoading && (
+            <div className="lg:hidden">
+              {/* Slide track */}
+              <div className="relative overflow-hidden rounded-2xl shadow-md">
+                <div
+                  className="flex transition-transform duration-400 ease-in-out"
+                  style={{ transform: `translateX(-${editorActive * 100}%)` }}
+                >
+                  {editorSlots.map((school, idx) => (
+                    <div key={school?._id ?? `m-${idx}`} className="w-full shrink-0">
+                      {school ? (
                         <Link to={`/schools/${school.slug || school._id}`} className="block">
-                          <div className="relative h-44 overflow-hidden bg-green-50">
+                          {/* Full-bleed image */}
+                          <div className="relative h-56 overflow-hidden">
                             {school.images?.[0] ? (
                               <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover" />
                             ) : (
-                              <div className={`w-full h-full flex items-center justify-center text-5xl font-black text-white ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
-                                {school.name?.[0] || '?'}
+                              <div className={`w-full h-full flex items-center justify-center text-6xl font-black text-white/80 ${['bg-green-800','bg-emerald-700','bg-teal-700','bg-green-900'][idx % 4]}`}>
+                                {school.name?.[0] ?? '?'}
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                            <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
-                            {school.rating > 0 && (
-                              <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                                <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            {/* Top badges */}
+                            <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                              <span className="bg-green-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                ★ Popular
                               </span>
-                            )}
+                              {school.admission?.isOpen && (
+                                <span className="bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+                                  Admissions Open
+                                </span>
+                              )}
+                            </div>
+                            {/* Bottom overlay text */}
+                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                              <h3 className="text-base font-extrabold text-white leading-snug line-clamp-2 mb-1">
+                                {school.name}
+                              </h3>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {(school.lga || school.state) && (
+                                  <span className="flex items-center gap-1 text-white/80 text-xs">
+                                    <MapPin size={10} /> {[school.lga, school.state].filter(Boolean).join(', ')}
+                                  </span>
+                                )}
+                                {school.rating > 0 && (
+                                  <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                    <Star size={9} fill="currentColor" className="text-amber-400" /> {school.rating.toFixed(1)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="p-4">
-                            <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{school.name}</h3>
-                            {(school.lga || school.state) && (
-                              <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                                <MapPin size={10} className="shrink-0" />
-                                {[school.lga, school.state].filter(Boolean).join(', ')}
-                              </p>
-                            )}
-                            {school.type && (
-                              <span className="inline-block mt-2 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
-                                {school.type}
+                          {/* Info strip */}
+                          <div className="bg-white px-4 py-3 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {school.type && (
+                                <span className="text-[10px] font-bold bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full capitalize">
+                                  {school.type}
+                                </span>
+                              )}
+                              {school.level && (
+                                <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">
+                                  {school.level}
+                                </span>
+                              )}
+                              {school.curriculum?.[0] && (
+                                <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                                  {school.curriculum[0]}
+                                </span>
+                              )}
+                            </div>
+                            {school.fees?.tuition > 0 && (
+                              <span className="text-xs font-bold text-gray-700 shrink-0">
+                                ₦{(school.fees.tuition / 1000).toFixed(0)}k/yr
                               </span>
                             )}
                           </div>
                         </Link>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Prev / Next arrows */}
-                  <button
-                    onClick={() => setEditorSlide(i => (i - 1 + 4) % 4)}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition z-10"
-                    aria-label="Previous">
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    onClick={() => setEditorSlide(i => (i + 1) % 4)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition z-10"
-                    aria-label="Next">
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-
-                {/* Dot indicators */}
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {[0,1,2,3].map(i => (
-                    <button
-                      key={i}
-                      onClick={() => setEditorSlide(i)}
-                      className={`transition-all duration-200 rounded-full ${i === editorSlide % 4 ? 'w-5 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
-                      aria-label={`Go to slide ${i + 1}`}
-                    />
+                      ) : (
+                        <div className="h-72 bg-white flex flex-col items-center justify-center text-gray-300 rounded-2xl border border-dashed border-gray-200">
+                          <School size={28} className="mb-2 opacity-40" />
+                          <p className="text-xs">No school selected yet</p>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* ── Desktop: 4-column grid ── */}
-              {(() => {
-                const editorCards = [spotlightNear, spotlightFeatured].filter(Boolean)
-                  .concat(featuredSchools.filter(s => s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id))
-                  .slice(0, 4);
-                const allSlots = [...editorCards, ...Array.from({ length: Math.max(0, 4 - editorCards.length) }, () => null)];
-                return (
-                  <div className="hidden lg:grid grid-cols-4 gap-4">
-                    {allSlots.map((school, idx) => school ? (
-                      <Link key={school._id} to={`/schools/${school.slug || school._id}`}
-                        className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200">
-                        <div className="relative h-40 overflow-hidden bg-green-50 shrink-0">
-                          {school.images?.[0] ? (
-                            <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                          ) : (
-                            <div className={`w-full h-full flex items-center justify-center text-4xl font-black text-white ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
-                              {school.name?.[0] || '?'}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                          <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
-                          {school.rating > 0 && (
-                            <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                              <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 p-3 flex flex-col gap-1">
-                          <h3 className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-green-700 transition-colors">{school.name}</h3>
-                          {(school.lga || school.state) && (
-                            <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                              <MapPin size={9} className="shrink-0" />
-                              {[school.lga, school.state].filter(Boolean).join(', ')}
-                            </p>
-                          )}
-                          {school.type && (
-                            <span className="self-start mt-1 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">{school.type}</span>
-                          )}
-                        </div>
-                      </Link>
-                    ) : (
-                      <div key={`empty-${idx}`} className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 h-56 flex items-center justify-center">
-                        <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </>
+              {/* Controls */}
+              <div className="flex items-center justify-between mt-4">
+                <button
+                  onClick={() => setEditorSlide(s => (s - 1 + 4) % 4)}
+                  className="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-green-700 hover:border-green-300 transition"
+                  aria-label="Previous"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {[0,1,2,3].map(i => (
+                    <button
+                      key={i}
+                      onClick={() => setEditorSlide(i)}
+                      className={`rounded-full transition-all duration-300 ${i === editorActive ? 'w-6 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+                      aria-label={`Slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setEditorSlide(s => (s + 1) % 4)}
+                  className="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-green-700 hover:border-green-300 transition"
+                  aria-label="Next"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Counter */}
+              <p className="text-center text-xs text-gray-400 mt-2 font-medium">
+                {editorActive + 1} of {editorSlots.filter(Boolean).length || 4}
+              </p>
+            </div>
           )}
+
+          {/* ── DESKTOP GRID ───────────────────────────────────────── */}
+          {!spotlightLoading && (
+            <div className="hidden lg:grid grid-cols-4 gap-5">
+              {editorSlots.map((school, idx) => school ? (
+                <Link
+                  key={school._id}
+                  to={`/schools/${school.slug || school._id}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                >
+                  {/* Image */}
+                  <div className="relative h-44 overflow-hidden shrink-0">
+                    {school.images?.[0] ? (
+                      <img
+                        src={school.images[0]}
+                        alt={school.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className={`w-full h-full flex items-center justify-center text-5xl font-black text-white/80 ${['bg-green-800','bg-emerald-700','bg-teal-700','bg-green-900'][idx % 4]}`}>
+                        {school.name?.[0] ?? '?'}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    {/* Top-left badge */}
+                    <span className="absolute top-2.5 left-2.5 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      ★ Popular
+                    </span>
+                    {/* Admission open */}
+                    {school.admission?.isOpen && (
+                      <span className="absolute top-2.5 right-2.5 bg-blue-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        Open
+                      </span>
+                    )}
+                    {/* Rating */}
+                    {school.rating > 0 && (
+                      <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-white/90 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        <Star size={9} fill="currentColor" /> {school.rating.toFixed(1)}
+                        {school.reviewCount > 0 && <span className="text-gray-400 font-normal">({school.reviewCount})</span>}
+                      </span>
+                    )}
+                    {/* Name overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                      <h3 className="text-sm font-extrabold text-white leading-snug line-clamp-2 drop-shadow-sm group-hover:text-green-200 transition-colors">
+                        {school.name}
+                      </h3>
+                      {(school.lga || school.state) && (
+                        <p className="text-white/75 text-[10px] flex items-center gap-1 mt-0.5">
+                          <MapPin size={9} /> {[school.lga, school.state].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Info strip */}
+                  <div className="flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+                    <div className="flex flex-wrap gap-1">
+                      {school.type && (
+                        <span className="text-[9px] font-bold bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full capitalize">
+                          {school.type}
+                        </span>
+                      )}
+                      {school.level && (
+                        <span className="text-[9px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full capitalize">
+                          {school.level}
+                        </span>
+                      )}
+                      {school.curriculum?.[0] && (
+                        <span className="text-[9px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                          {school.curriculum[0]}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      {school.fees?.tuition > 0 ? (
+                        <span className="text-xs font-bold text-gray-800">
+                          ₦{(school.fees.tuition / 1000).toFixed(0)}k
+                          <span className="text-gray-400 font-normal text-[10px]">/yr</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-300">—</span>
+                      )}
+                      <span className="text-[10px] font-bold text-green-700 group-hover:underline">
+                        View →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div key={`empty-${idx}`} className="rounded-2xl border-2 border-dashed border-gray-200 bg-white h-64 flex flex-col items-center justify-center text-gray-200">
+                  <School size={24} className="mb-2" />
+                  <p className="text-xs text-center px-3">No school selected</p>
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
       </section>
 
