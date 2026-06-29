@@ -669,7 +669,7 @@ export default function Home() {
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col overflow-hidden min-h-[88vh] sm:min-h-0">
+      <section className="relative flex flex-col overflow-hidden min-h-[45vh] sm:min-h-0">
         {/* Background — cinematic multi-layer */}
         <div className="absolute inset-0">
           <div
@@ -697,7 +697,7 @@ export default function Home() {
 
         {/* Main content */}
         <div className="relative z-20">
-          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-16 pb-10 sm:pt-8 sm:pb-6 md:pt-10 md:pb-8 flex flex-col items-center sm:items-start">
+          <div className="w-full xl:w-[56%] xl:ml-[6%] px-4 sm:px-8 lg:px-14 xl:px-0 pt-10 pb-8 sm:pt-8 sm:pb-6 md:pt-10 md:pb-8 flex flex-col items-center sm:items-start">
 
             {/* Headline */}
             <h1
@@ -895,121 +895,147 @@ export default function Home() {
 
           {spotlightLoading ? (
             <>
-              {/* Mobile skeleton: single card */}
               <div className="lg:hidden rounded-2xl bg-gray-100 animate-pulse h-64" />
-              {/* Desktop skeleton: 4 cards */}
               <div className="hidden lg:grid grid-cols-4 gap-4">
                 {[1,2,3,4].map(i => (
                   <div key={i} className="rounded-2xl bg-gray-100 animate-pulse h-64" />
                 ))}
               </div>
             </>
-          ) : (() => {
-            const editorCards = [spotlightNear, spotlightFeatured].filter(Boolean)
-              .concat(featuredSchools.filter(s =>
-                s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id
-              ))
-              .slice(0, 4);
-
-            const CardItem = ({ school, idx }) => school ? (
-              <Link to={`/schools/${school.slug || school._id}`}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200 h-full">
-                <div className="relative h-44 sm:h-48 overflow-hidden bg-green-50 shrink-0">
-                  {school.images?.[0] ? (
-                    <img src={school.images[0]} alt={school.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className={`w-full h-full flex items-center justify-center text-5xl font-black text-white
-                      ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
-                      {school.name?.[0] || '?'}
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
-                  <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Popular
-                  </span>
-                  {school.rating > 0 && (
-                    <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                      <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 p-4 flex flex-col gap-1">
-                  <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-green-700 transition-colors">
-                    {school.name}
-                  </h3>
-                  {(school.lga || school.state) && (
-                    <p className="text-xs text-gray-400 flex items-center gap-1">
-                      <MapPin size={10} className="shrink-0" />
-                      {[school.lga, school.state].filter(Boolean).join(', ')}
-                    </p>
-                  )}
-                  {school.type && (
-                    <span className="self-start mt-1 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
-                      {school.type}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 h-64 flex items-center justify-center">
-                <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
-              </div>
-            );
-
-            const allSlots = [
-              ...editorCards,
-              ...Array.from({ length: Math.max(0, 4 - editorCards.length) }, () => null),
-            ];
-
-            return (
-              <>
-                {/* ── Mobile: single-card slideshow ── */}
-                <div className="lg:hidden">
-                  <div className="relative">
-                    <div className="overflow-hidden rounded-2xl h-72">
-                      <CardItem school={allSlots[editorSlide]} idx={editorSlide} />
-                    </div>
-
-                    {/* Prev button */}
-                    <button
-                      onClick={() => setEditorSlide(i => (i - 1 + allSlots.length) % allSlots.length)}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition"
-                      aria-label="Previous">
-                      <ChevronLeft size={16} />
-                    </button>
-
-                    {/* Next button */}
-                    <button
-                      onClick={() => setEditorSlide(i => (i + 1) % allSlots.length)}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition"
-                      aria-label="Next">
-                      <ChevronRight size={16} />
-                    </button>
+          ) : (
+            <>
+              {/* ── Mobile: single-card slideshow ── */}
+              <div className="lg:hidden">
+                <div className="relative px-5">
+                  {/* Card */}
+                  <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm" style={{ minHeight: 260 }}>
+                    {(() => {
+                      const editorCards = [spotlightNear, spotlightFeatured].filter(Boolean)
+                        .concat(featuredSchools.filter(s => s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id))
+                        .slice(0, 4);
+                      const total = Math.max(editorCards.length, 1);
+                      const school = editorCards[editorSlide % total];
+                      const idx = editorSlide % total;
+                      if (!school) return (
+                        <div className="h-64 flex items-center justify-center">
+                          <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
+                        </div>
+                      );
+                      return (
+                        <Link to={`/schools/${school.slug || school._id}`} className="block">
+                          <div className="relative h-44 overflow-hidden bg-green-50">
+                            {school.images?.[0] ? (
+                              <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center text-5xl font-black text-white ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
+                                {school.name?.[0] || '?'}
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                            <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
+                            {school.rating > 0 && (
+                              <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{school.name}</h3>
+                            {(school.lga || school.state) && (
+                              <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                                <MapPin size={10} className="shrink-0" />
+                                {[school.lga, school.state].filter(Boolean).join(', ')}
+                              </p>
+                            )}
+                            {school.type && (
+                              <span className="inline-block mt-2 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
+                                {school.type}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })()}
                   </div>
 
-                  {/* Dot indicators */}
-                  <div className="flex items-center justify-center gap-2 mt-4">
-                    {allSlots.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setEditorSlide(i)}
-                        className={`transition-all duration-200 rounded-full ${i === editorSlide ? 'w-5 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
-                        aria-label={`Go to slide ${i + 1}`}
-                      />
-                    ))}
-                  </div>
+                  {/* Prev / Next arrows */}
+                  <button
+                    onClick={() => setEditorSlide(i => (i - 1 + 4) % 4)}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition z-10"
+                    aria-label="Previous">
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    onClick={() => setEditorSlide(i => (i + 1) % 4)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-green-700 transition z-10"
+                    aria-label="Next">
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
 
-                {/* ── Desktop: 4-column grid ── */}
-                <div className="hidden lg:grid grid-cols-4 gap-4">
-                  {allSlots.map((school, idx) => (
-                    <CardItem key={school?._id || `empty-${idx}`} school={school} idx={idx} />
+                {/* Dot indicators */}
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {[0,1,2,3].map(i => (
+                    <button
+                      key={i}
+                      onClick={() => setEditorSlide(i)}
+                      className={`transition-all duration-200 rounded-full ${i === editorSlide % 4 ? 'w-5 h-2 bg-green-600' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
                   ))}
                 </div>
-              </>
-            );
-          })()}
+              </div>
+
+              {/* ── Desktop: 4-column grid ── */}
+              {(() => {
+                const editorCards = [spotlightNear, spotlightFeatured].filter(Boolean)
+                  .concat(featuredSchools.filter(s => s._id !== spotlightNear?._id && s._id !== spotlightFeatured?._id))
+                  .slice(0, 4);
+                const allSlots = [...editorCards, ...Array.from({ length: Math.max(0, 4 - editorCards.length) }, () => null)];
+                return (
+                  <div className="hidden lg:grid grid-cols-4 gap-4">
+                    {allSlots.map((school, idx) => school ? (
+                      <Link key={school._id} to={`/schools/${school.slug || school._id}`}
+                        className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:shadow-md transition-all duration-200">
+                        <div className="relative h-40 overflow-hidden bg-green-50 shrink-0">
+                          {school.images?.[0] ? (
+                            <img src={school.images[0]} alt={school.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center text-4xl font-black text-white ${['bg-green-700','bg-emerald-600','bg-teal-600','bg-green-800'][idx % 4]}`}>
+                              {school.name?.[0] || '?'}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                          <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
+                          {school.rating > 0 && (
+                            <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 text-amber-600 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                              <Star size={10} fill="currentColor" /> {school.rating.toFixed(1)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 p-3 flex flex-col gap-1">
+                          <h3 className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-green-700 transition-colors">{school.name}</h3>
+                          {(school.lga || school.state) && (
+                            <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                              <MapPin size={9} className="shrink-0" />
+                              {[school.lga, school.state].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          {school.type && (
+                            <span className="self-start mt-1 text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">{school.type}</span>
+                          )}
+                        </div>
+                      </Link>
+                    ) : (
+                      <div key={`empty-${idx}`} className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 h-56 flex items-center justify-center">
+                        <p className="text-xs text-gray-300 text-center px-3">No school selected yet</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </>
+          )}
         </div>
       </section>
 
